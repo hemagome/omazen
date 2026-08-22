@@ -35,7 +35,7 @@ The bridge rejects missing keys, unknown keys, wrong schema versions, non-object
 
 ## Window behavior
 
-fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome document. Every browser window therefore owns a small watcher and applies the current palette to itself. The bridge observes the exact `Browser:About` window type and applies the same validated palette to an existing or later-created About Zen dialog; other auxiliary windows are ignored. A later-created browser window reads the existing JSON during initial injection.
+fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome document. Every browser window therefore owns a small watcher and applies the current palette to itself. The bridge observes only the exact `Browser:About` and `Places:Organizer` window types and applies the same validated palette to existing or later-created About Zen and Library windows; other auxiliary windows are ignored. A later-created browser window reads the existing JSON during initial injection.
 
 The actor is registered only for a fixed list of internal `about:` documents plus Zen's Spotlight and Firefox's common-dialog documents. It reads validated palette preferences when the actor is created and at `DOMContentLoaded`, and accepts only `Omazen:Apply` messages matching the same strict color contract. It is not registered for `http:`, `https:`, arbitrary extension pages or arbitrary chrome URLs.
 

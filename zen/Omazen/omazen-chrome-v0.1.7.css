@@ -159,6 +159,148 @@
   fill: var(--omazen-accent) !important;
 }
 
+:root#places[data-omazen-enabled="true"] {
+  --input-text-background-color: var(--omazen-background-dark) !important;
+  --input-text-border-color: var(--omazen-border) !important;
+  --input-text-color: var(--omazen-foreground) !important;
+  --text-color-deemphasized: var(--omazen-foreground-muted) !important;
+  background-color: var(--omazen-background) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root#places[data-omazen-enabled="true"] :is(
+  #placesToolbar,
+  #placesMenu
+) {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #placesToolbar {
+  border-bottom: 1px solid var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] :is(
+  #placesMenu > menu,
+  #placesToolbar > toolbarbutton
+) {
+  color: var(--omazen-foreground) !important;
+}
+
+:root#places[data-omazen-enabled="true"] :is(
+  #placesMenu > menu,
+  #placesToolbar > toolbarbutton
+):is(:hover, [open]) {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #searchFilter {
+  --input-text-background-color: var(--omazen-background-dark) !important;
+  --input-text-border-color: var(--omazen-border) !important;
+  --input-text-color: var(--omazen-foreground) !important;
+  --icon-color: var(--omazen-foreground-muted) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root#places[data-omazen-enabled="true"] :is(
+  #placesView,
+  #placesViewsBox,
+  #contentView,
+  #placeContent,
+  #downloadsListBox
+) {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #downloadsListBox {
+  appearance: none !important;
+  -moz-default-appearance: none !important;
+  margin: 0 !important;
+  background: var(--omazen-background-dark) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #placesList {
+  background-color: var(--omazen-background) !important;
+  color: var(--omazen-foreground) !important;
+  border-inline-end: 1px solid var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] splitter {
+  background-color: var(--omazen-border) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] treecols {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground-muted) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] treecol {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground-muted) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] treechildren::-moz-tree-row {
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+:root#places[data-omazen-enabled="true"] treechildren::-moz-tree-cell-text {
+  color: var(--omazen-foreground) !important;
+}
+
+:root#places[data-omazen-enabled="true"] treechildren::-moz-tree-cell-text(selected) {
+  color: var(--omazen-foreground) !important;
+}
+
+:root#places[data-omazen-enabled="true"] treechildren::-moz-tree-row(selected) {
+  background-color: var(--omazen-selection) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] treechildren::-moz-tree-row(selected, focus) {
+  background-color: var(--omazen-selection) !important;
+  border-color: var(--omazen-accent) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #detailsPane {
+  background-color: var(--omazen-background) !important;
+  color: var(--omazen-foreground) !important;
+  border-top: 1px solid var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #detailsPane :is(
+  input,
+  menulist,
+  richlistbox
+) {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #downloadsListBox > richlistitem {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #downloadsListBox > richlistitem[selected] {
+  background-color: var(--omazen-selection) !important;
+  color: var(--omazen-foreground) !important;
+  outline-color: var(--omazen-accent) !important;
+}
+
+:root#places[data-omazen-enabled="true"] #downloadsListBox .downloadDetails {
+  color: var(--omazen-foreground-muted) !important;
+}
+
 :root[data-omazen-enabled="true"] notification-message :is(
   .notification-button,
   button

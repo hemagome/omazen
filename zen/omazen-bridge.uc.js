@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        0.1.6
+// @version        0.1.7
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
@@ -16,9 +16,9 @@
   const MAX_LOG_BYTES = 131072;
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
-  const VERSION = "0.1.6";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.6.css";
-  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.6.css";
+  const VERSION = "0.1.7";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.7.css";
+  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.7.css";
   const STATE_LEAF = ".local/state/omazen";
   const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
   const COLOR_KEYS = Object.freeze([
@@ -35,6 +35,11 @@
   const SPOTLIGHT_URI = "chrome://browser/content/spotlight.html";
   const COMMON_DIALOG_URI = "chrome://global/content/commonDialog.xhtml";
   const ABOUT_DIALOG_URI = "chrome://browser/content/aboutDialog.xhtml";
+  const PLACES_ORGANIZER_URI = "chrome://browser/content/places/places.xhtml";
+  const AUXILIARY_WINDOW_TYPES = Object.freeze({
+    "Browser:About": ABOUT_DIALOG_URI,
+    "Places:Organizer": PLACES_ORGANIZER_URI,
+  });
   let paletteSignature = "";
   let disabledState = null;
   let currentPalette = null;
@@ -130,14 +135,15 @@
     return link;
   }
 
-  function applyToAboutDialog(aboutWindow, palette, enabled) {
-    const aboutDocument = aboutWindow?.document;
-    const root = aboutDocument?.documentElement;
-    if (!root || aboutWindow.location.href !== ABOUT_DIALOG_URI) return;
+  function applyToAuxiliaryWindow(auxiliaryWindow, palette, enabled) {
+    const auxiliaryDocument = auxiliaryWindow?.document;
+    const root = auxiliaryDocument?.documentElement;
+    const expectedUri = AUXILIARY_WINDOW_TYPES[root?.getAttribute("windowtype")];
+    if (!root || !expectedUri || auxiliaryWindow.location.href !== expectedUri) return;
 
-    let link = aboutDocument.getElementById(STYLE_ID);
+    let link = auxiliaryDocument.getElementById(STYLE_ID);
     if (!link) {
-      link = aboutDocument.createElementNS("http://www.w3.org/1999/xhtml", "link");
+      link = auxiliaryDocument.createElementNS("http://www.w3.org/1999/xhtml", "link");
       link.id = STYLE_ID;
       link.rel = "stylesheet";
       link.href = STYLE_URI;
@@ -271,9 +277,11 @@
         // Non-matching internal documents do not have an Omazen actor.
       }
     }
-    const aboutWindows = Services.wm.getEnumerator("Browser:About");
-    while (aboutWindows.hasMoreElements()) {
-      applyToAboutDialog(aboutWindows.getNext(), palette, enabled);
+    for (const windowType of Object.keys(AUXILIARY_WINDOW_TYPES)) {
+      const auxiliaryWindows = Services.wm.getEnumerator(windowType);
+      while (auxiliaryWindows.hasMoreElements()) {
+        applyToAuxiliaryWindow(auxiliaryWindows.getNext(), palette, enabled);
+      }
     }
   }
 
@@ -364,20 +372,20 @@
   }
 
   ensureChromeStyle();
-  const aboutWindowObserver = {
+  const auxiliaryWindowObserver = {
     observe(subject, topic) {
       if (topic !== "domwindowopened") return;
       subject.addEventListener(
         "DOMContentLoaded",
-        () => applyToAboutDialog(subject, currentPalette, !disabledState),
+        () => applyToAuxiliaryWindow(subject, currentPalette, !disabledState),
         { once: true },
       );
     },
   };
-  Services.obs.addObserver(aboutWindowObserver, "domwindowopened");
+  Services.obs.addObserver(auxiliaryWindowObserver, "domwindowopened");
   window.addEventListener(
     "unload",
-    () => Services.obs.removeObserver(aboutWindowObserver, "domwindowopened"),
+    () => Services.obs.removeObserver(auxiliaryWindowObserver, "domwindowopened"),
     { once: true },
   );
   new MutationObserver(scheduleInternalPageBroadcast).observe(document.documentElement, {
