@@ -1,0 +1,114 @@
+#!/bin/bash
+
+set -euo pipefail
+
+OMAZEN_ENTRYPOINT=$(readlink -f -- "${BASH_SOURCE[0]}")
+OMAZEN_ROOT=$(cd -- "$(dirname -- "$OMAZEN_ENTRYPOINT")/.." && pwd -P)
+export OMAZEN_ROOT
+
+# shellcheck source=../lib/common.sh
+source "$OMAZEN_ROOT/lib/common.sh"
+# shellcheck source=../lib/palette.sh
+source "$OMAZEN_ROOT/lib/palette.sh"
+# shellcheck source=../lib/profile.sh
+source "$OMAZEN_ROOT/lib/profile.sh"
+# shellcheck source=../lib/hook.sh
+source "$OMAZEN_ROOT/lib/hook.sh"
+# shellcheck source=../lib/install.sh
+source "$OMAZEN_ROOT/lib/install.sh"
+# shellcheck source=../lib/doctor.sh
+source "$OMAZEN_ROOT/lib/doctor.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: omazen <command> [arguments]
+
+Commands:
+  setup             Install or repair the Zen integration
+  sync              Regenerate the normalized palette from active colors.toml
+  set [theme]       Set an Omarchy theme, or sync the current theme
+  status            Show concise installation and runtime state
+  doctor            Run compatibility and installation diagnostics
+  disable           Disable Omazen live without removing it
+  enable            Re-enable Omazen live
+  uninstall         Remove only files owned by Omazen
+  help              Show this help
+EOF
+}
+
+cmd_set() {
+  if (( $# > 1 )); then
+    die "set accepts zero arguments or one quoted theme name"
+  fi
+  if (( $# == 1 )); then
+    require_command omarchy
+    omarchy theme set "$1"
+  fi
+  sync_palette
+}
+
+cmd_status() {
+  local zen_version="not detected"
+  local palette_state="missing"
+  local enabled_state="enabled"
+  local profile_count=0
+
+  zen_version=$(detect_zen_version 2>/dev/null || printf 'not detected')
+  if validate_palette_json "$OMAZEN_PALETTE_FILE"; then
+    palette_state="valid ($OMAZEN_PALETTE_FILE)"
+  elif [[ -f $OMAZEN_PALETTE_FILE ]]; then
+    palette_state="invalid ($OMAZEN_PALETTE_FILE)"
+  fi
+  [[ -e $OMAZEN_DISABLED_FILE ]] && enabled_state="disabled"
+  while IFS= read -r _profile; do
+    ((profile_count += 1))
+  done < <(zen_profiles)
+
+  printf 'Omazen: %s\n' "$OMAZEN_VERSION"
+  printf 'State: %s\n' "$enabled_state"
+  printf 'Zen: %s\n' "$zen_version"
+  printf 'Profiles detected: %d\n' "$profile_count"
+  printf 'Palette: %s\n' "$palette_state"
+  if [[ -f $OMAZEN_BRIDGE_LOG ]]; then
+    printf 'Bridge: %s\n' "$(tail -n 1 "$OMAZEN_BRIDGE_LOG")"
+  else
+    printf 'Bridge: no runtime log yet\n'
+  fi
+}
+
+cmd_disable() {
+  ensure_state_dir
+  : >"$OMAZEN_DISABLED_FILE"
+  chmod 600 "$OMAZEN_DISABLED_FILE"
+  say "Omazen disabled. Open Zen windows will revert on the next poll."
+}
+
+cmd_enable() {
+  rm -f -- "$OMAZEN_DISABLED_FILE"
+  sync_palette
+  say "Omazen enabled. Open Zen windows will update on the next poll."
+}
+
+main() {
+  local command=${1:-help}
+  (( $# == 0 )) || shift
+
+  case "$command" in
+    setup) (( $# == 0 )) || die "setup takes no arguments"; setup_omazen ;;
+    sync) (( $# == 0 )) || die "sync takes no arguments"; sync_palette ;;
+    set) cmd_set "$@" ;;
+    status) (( $# == 0 )) || die "status takes no arguments"; cmd_status ;;
+    doctor) (( $# == 0 )) || die "doctor takes no arguments"; doctor_omazen ;;
+    disable) (( $# == 0 )) || die "disable takes no arguments"; cmd_disable ;;
+    enable) (( $# == 0 )) || die "enable takes no arguments"; cmd_enable ;;
+    uninstall)
+      (( $# == 0 )) || die "uninstall takes no arguments"
+      uninstall_omazen
+      remove_installed_application_copy
+      ;;
+    help|-h|--help) usage ;;
+    *) usage >&2; die "unknown command: $command" ;;
+  esac
+}
+
+main "$@"

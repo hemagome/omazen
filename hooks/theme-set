@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -euo pipefail
+
+if command -v omazen >/dev/null 2>&1; then
+  exec omazen sync
+fi
+
+candidate="${XDG_BIN_HOME:-$HOME/.local/bin}/omazen"
+if [[ -x $candidate ]]; then
+  exec "$candidate" sync
+fi
+
+printf 'Omazen hook: omazen command not found\n' >&2
+exit 127
+

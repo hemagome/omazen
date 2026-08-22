@@ -1,0 +1,56 @@
+# Security model
+
+Omazen deliberately installs privileged browser code. This is more powerful than a Zen Mod or WebExtension and must be treated like startup code.
+
+## Trust boundary
+
+fx-autoconfig allows JavaScript under a profile's `chrome` directory to execute with browser privileges. A malicious process that can modify those files can take over the browser context. Omazen does not make that mechanism safe; it minimizes and documents its use.
+
+Installed privileged files per Zen profile:
+
+```text
+chrome/utils/boot.sys.mjs
+chrome/utils/chrome.manifest
+chrome/utils/fs.sys.mjs
+chrome/utils/module_loader.mjs
+chrome/utils/uc_api.sys.mjs
+chrome/utils/utils.sys.mjs
+chrome/JS/omazen-bridge.uc.js
+chrome/JS/Omazen/OmazenParent.sys.mjs
+chrome/JS/Omazen/OmazenChild.sys.mjs
+chrome/JS/Omazen/omazen-chrome.css
+chrome/JS/Omazen/omazen-content.css
+```
+
+Program-level files for the supported Zen package:
+
+```text
+/opt/zen-browser-bin/config.js
+/opt/zen-browser-bin/defaults/pref/config-prefs.js
+/opt/zen-browser-bin/defaults/pref/omazen-prefs.js
+```
+
+The first two may be reused from a compatible pre-existing fx-autoconfig installation. Omazen never silently replaces a foreign program config or partial profile runtime.
+
+## Reductions
+
+- No remote download, update or execution at runtime.
+- Dependencies are pinned by commit and SHA-256.
+- No `eval`, dynamic import path, local port, native-messaging host or page-exposed API.
+- Palette path and log path are fixed; JSON cannot select a path.
+- JSON is size-limited and strictly validated before use.
+- Only normalized colors and mode cross the actor boundary.
+- The actor matches a fixed internal-page allowlist, never ordinary web origins.
+- CSS is static and shipped with Omazen; JSON never becomes CSS text.
+- Logs contain timestamps, fixed event names, mode, accent and validation errors—not URLs, page titles, profile paths or browsing data.
+- Logs rotate at 128 KiB.
+- Disable is live and uninstall is ownership/hash aware.
+
+## Updates
+
+Zen package upgrades can replace program-level files. Omazen does not fight the package manager or auto-repair as root. Run `omazen doctor`; if the owned loader is missing, run `omazen setup` interactively. `sudo` is used only when a terminal is available, otherwise the installer asks through `pkexec`.
+
+## Uninstall limits
+
+If another user script is found, Omazen leaves an owned shared fx-autoconfig program loader in place rather than breaking that script. If an owned file has been modified, it is also retained. In both cases ownership records remain so the user can inspect and resolve the shared state explicitly.
+

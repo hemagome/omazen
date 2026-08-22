@@ -1,0 +1,132 @@
+:root[data-omazen-enabled="true"] {
+  --zen-primary-color: var(--omazen-accent) !important;
+  --zen-colors-primary: var(--omazen-background) !important;
+  --zen-colors-secondary: var(--omazen-background-dark) !important;
+  --zen-colors-tertiary: var(--omazen-background-light) !important;
+  --zen-colors-primary-foreground: var(--omazen-foreground) !important;
+  --zen-colors-border: var(--omazen-border) !important;
+  --zen-colors-border-contrast: var(--omazen-accent) !important;
+  --zen-colors-input-bg: var(--omazen-background-dark) !important;
+  --zen-colors-hover-bg: color-mix(in srgb, var(--omazen-background-light) 82%, var(--omazen-accent)) !important;
+  --zen-main-browser-background: var(--omazen-background-dark) !important;
+  --zen-main-browser-background-toolbar: var(--omazen-background) !important;
+  --zen-navigator-toolbox-background: var(--omazen-background) !important;
+  --zen-toolbar-element-bg: color-mix(in srgb, var(--omazen-background-light) 88%, transparent) !important;
+  --zen-toolbar-element-bg-hover: color-mix(in srgb, var(--omazen-selection) 78%, var(--omazen-accent)) !important;
+  --zen-split-view-active-tab-bg: var(--omazen-selection) !important;
+  --zen-active-split-outline-color: var(--omazen-accent) !important;
+  --zen-urlbar-background-base: var(--omazen-background-dark) !important;
+  --zen-urlbar-background: var(--omazen-background-dark) !important;
+  --toolbar-bgcolor: var(--omazen-background) !important;
+  --toolbar-color: var(--omazen-foreground) !important;
+  --toolbox-bgcolor: var(--omazen-background) !important;
+  --toolbox-textcolor: var(--omazen-foreground) !important;
+  --lwt-accent-color: var(--omazen-background) !important;
+  --lwt-text-color: var(--omazen-foreground) !important;
+  --lwt-toolbar-field-background-color: var(--omazen-background-dark) !important;
+  --lwt-toolbar-field-color: var(--omazen-foreground) !important;
+  --lwt-toolbar-field-border-color: var(--omazen-border) !important;
+  --lwt-toolbar-field-focus: var(--omazen-background-dark) !important;
+  --arrowpanel-background: var(--omazen-background-dark) !important;
+  --arrowpanel-color: var(--omazen-foreground) !important;
+  --arrowpanel-border-color: var(--omazen-border) !important;
+  --panel-separator-color: var(--omazen-border) !important;
+  --input-bgcolor: var(--omazen-background-dark) !important;
+  --input-color: var(--omazen-foreground) !important;
+  --focus-outline-color: var(--omazen-accent) !important;
+  --tab-selected-bgcolor: var(--omazen-selection) !important;
+  --tab-selected-textcolor: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  #navigator-toolbox,
+  #nav-bar,
+  #TabsToolbar,
+  #zen-sidebar-top-buttons,
+  #zen-sidebar-foot-buttons,
+  #zen-current-workspace-indicator-container
+) {
+  background-color: var(--omazen-background) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  #urlbar-background,
+  #searchbar,
+  search-textbox,
+  input
+) {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] #urlbar[breakout-extend] #urlbar-background {
+  outline: 1px solid var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  .tabbrowser-tab[selected] .tab-background,
+  .tabbrowser-tab[multiselected] .tab-background,
+  zen-workspace[active],
+  .zen-current-workspace-indicator
+) {
+  background: var(--omazen-selection) !important;
+  color: var(--omazen-foreground) !important;
+  outline-color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  menupopup,
+  panel,
+  panelmultiview,
+  .panel-arrowcontent,
+  .panel-subview-body,
+  #zen-sidebar-web-panel,
+  #sidebar-box
+) {
+  --panel-background: var(--omazen-background-dark) !important;
+  --panel-color: var(--omazen-foreground) !important;
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  #tabbrowser-tabbox,
+  #tabbrowser-tabpanels,
+  .browserSidebarContainer,
+  .zen-glance-overlay,
+  #zen-glance-background
+) {
+  background-color: var(--omazen-background-dark) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] .browserSidebarContainer[is-zen-split="true"] {
+  outline-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] ::selection {
+  background-color: var(--omazen-selection) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-omazen-enabled="true"]:not([customizing]) :is(
+    #navigator-toolbox,
+    #nav-bar,
+    #TabsToolbar,
+    #urlbar-background,
+    .tab-background,
+    .browserSidebarContainer,
+    panel,
+    menupopup
+  ) {
+    transition:
+      background-color var(--omazen-transition-duration) ease,
+      color var(--omazen-transition-duration) ease,
+      border-color var(--omazen-transition-duration) ease,
+      outline-color var(--omazen-transition-duration) ease !important;
+  }
+}
