@@ -99,6 +99,72 @@
 }
 
 :root[data-omazen-enabled="true"] :is(
+  notification-message,
+  moz-message-bar
+) {
+  --message-bar-background-color: var(--omazen-background-dark) !important;
+  --message-bar-background-color-critical: var(--omazen-background-dark) !important;
+  --message-bar-background-color-success: var(--omazen-background-dark) !important;
+  --message-bar-background-color-warning: var(--omazen-background-dark) !important;
+  --message-bar-border-color: var(--omazen-border) !important;
+  --message-bar-icon-background-color: var(--omazen-background-light) !important;
+  --message-bar-icon-background-color-critical: var(--omazen-background-light) !important;
+  --message-bar-icon-background-color-success: var(--omazen-background-light) !important;
+  --message-bar-icon-background-color-warning: var(--omazen-background-light) !important;
+  --message-bar-icon-color: var(--omazen-accent) !important;
+  --message-bar-text-color: var(--omazen-foreground) !important;
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] notification-message :is(
+  .notification-button,
+  button
+) {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] notification-message :is(
+  .notification-button,
+  button
+):is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--omazen-background-light) 82%, var(--omazen-accent)) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] notification-message :is(
+  .notification-button,
+  button
+):hover:active {
+  background-color: var(--omazen-selection) !important;
+}
+
+:root[data-omazen-enabled="true"] notification-message .notification-button.primary {
+  background-color: var(--omazen-accent) !important;
+  color: var(--omazen-background-dark) !important;
+  border-color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] notification-message .notification-button.primary:is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
+  color: var(--omazen-background-dark) !important;
+}
+
+:root[data-omazen-enabled="true"] notification-message :is(
+  .notification-button,
+  button
+)[disabled] {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground-muted) !important;
+  border-color: var(--omazen-border) !important;
+  opacity: 0.7;
+}
+
+:root[data-omazen-enabled="true"] :is(
   #tabbrowser-tabbox,
   #tabbrowser-tabpanels,
   .browserSidebarContainer,

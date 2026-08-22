@@ -11,7 +11,7 @@ omarchy theme set
   -> strict schema and color validation
   -> CSS variables + Omazen-scoped chrome stylesheet
   -> allowlisted Omazen JSWindowActor
-  -> allowlisted about: pages
+  -> allowlisted about: pages and internal dialog documents
 ```
 
 ## State contract
@@ -37,7 +37,7 @@ The bridge rejects missing keys, unknown keys, wrong schema versions, non-object
 
 fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome document. Every window therefore owns a small watcher and applies the current palette to itself. A later-created window reads the existing JSON during initial injection.
 
-The actor is registered only for a fixed list of internal `about:` documents. It reads validated palette preferences at `DOMContentLoaded` and accepts only `Omazen:Apply` messages matching the same strict color contract. It is not registered for `http:`, `https:`, arbitrary extension pages or arbitrary chrome URLs.
+The actor is registered only for a fixed list of internal `about:` documents plus Zen's Spotlight and Firefox's common-dialog documents. It reads validated palette preferences when the actor is created and at `DOMContentLoaded`, and accepts only `Omazen:Apply` messages matching the same strict color contract. It is not registered for `http:`, `https:`, arbitrary extension pages or arbitrary chrome URLs.
 
 ## Enable and disable
 
@@ -46,4 +46,3 @@ The actor is registered only for a fixed list of internal `about:` documents. It
 ## Installation ownership
 
 Omazen records only files it created in `~/.local/state/omazen/owned/`, including an expected SHA-256. Upgrades back up owned files before replacement. Uninstall deletes a recorded file only when its current hash still matches the recorded hash; modified files are retained with a warning. Identical pre-existing files are reused but not claimed.
-

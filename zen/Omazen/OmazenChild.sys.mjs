@@ -1,7 +1,7 @@
 "use strict";
 
 const STYLE_ID = "omazen-content-style";
-const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.4.css";
+const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.5.css";
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const COLOR_KEYS = Object.freeze([
   "accent",
@@ -53,6 +53,7 @@ function applyToDocument(document, payload) {
   const root = document?.documentElement;
   if (!root) return;
   ensureStyle(document);
+  const acceptButton = document.getElementById("commonDialog")?.getButton?.("accept");
   if (!payload.enabled) {
     root.removeAttribute("data-omazen-enabled");
     root.removeAttribute("data-omazen-mode");
@@ -60,6 +61,7 @@ function applyToDocument(document, payload) {
     for (const key of COLOR_KEYS) {
       root.style.removeProperty(`--omazen-${key.replaceAll("_", "-")}`);
     }
+    acceptButton?.part.remove("omazen-primary-button");
     return;
   }
   root.setAttribute("data-omazen-enabled", "true");
@@ -68,9 +70,14 @@ function applyToDocument(document, payload) {
   for (const key of COLOR_KEYS) {
     root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, payload[key]);
   }
+  acceptButton?.part.add("omazen-primary-button");
 }
 
 export class OmazenChild extends JSWindowActorChild {
+  actorCreated() {
+    applyToDocument(this.document, readPrefs());
+  }
+
   handleEvent(event) {
     if (event.type === "DOMContentLoaded") applyToDocument(this.document, readPrefs());
   }
