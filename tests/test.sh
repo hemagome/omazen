@@ -95,42 +95,48 @@ assert_file "$FAKE_ZEN/defaults/pref/config-prefs.js"
 assert_file "$FAKE_ZEN/defaults/pref/omazen-prefs.js"
 assert_file "$FAKE_PROFILE/chrome/JS/omazen-bridge.uc.js"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenChild.sys.mjs"
-assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v0.1.3.css"
-assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v0.1.3.css"
+assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v0.1.4.css"
+assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v0.1.4.css"
 assert_file "$FAKE_HOOKS/theme-set.d/theme-set"
-grep -Fq 'Omazen: 0.1.3' <(run_omazen status) || fail "reported package version"
-grep -Fq 'omazen-chrome-v0.1.3.css' "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || \
+grep -Fq 'Omazen: 0.1.4' <(run_omazen status) || fail "reported package version"
+grep -Fq 'omazen-chrome-v0.1.4.css' "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || \
   fail "chrome stylesheet cache buster"
-grep -Fq 'omazen-content-v0.1.3.css' "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" || \
+grep -Fq 'omazen-content-v0.1.4.css' "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" || \
   fail "content stylesheet cache buster"
 grep -Fq '"mode": "light"' "$FAKE_STATE/palette.json" || fail "palette mode mapping"
 grep -Fq '"background_dark": "#eeeeee"' "$FAKE_STATE/palette.json" || fail "palette background mapping"
 grep -Fq -- '--zen-urlbar-background-base: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css" || fail "inactive URL bar background"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css" || fail "inactive URL bar background"
 grep -Fq -- '--lwt-toolbar-field-focus: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css" || fail "focused URL bar background"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css" || fail "focused URL bar background"
 grep -Fq -- '--zen-urlbar-background-transparent: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css" || fail "expanded URL bar background"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css" || fail "expanded URL bar background"
 grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) .urlbar-background' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css" || fail "focused URL bar outline"
-if grep -Fq -- '#urlbar-background' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css"; then
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css" || fail "focused URL bar outline"
+if grep -Fq -- '#urlbar-background' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css"; then
   fail "obsolete URL bar background ID selector"
 fi
-if grep -Fq -- 'zen-workspace[active]' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css"; then
+if grep -Fq -- 'zen-workspace[active]' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css"; then
   fail "active workspace container must not receive selection background"
 fi
-if grep -Fq -- '.zen-current-workspace-indicator' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css"; then
+if grep -Fq -- '.zen-current-workspace-indicator' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css"; then
   fail "workspace indicator must retain native padding and background"
 fi
-if sed -n '/:is(/,/)/p' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.3.css" | grep -Fxq '  input'; then
+if sed -n '/:is(/,/)/p' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.4.css" | grep -Fxq '  input'; then
   fail "generic input selector must not repaint the URL text field"
 fi
 grep -Fq -- '--background-color-canvas: var(--omazen-background)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.3.css" || fail "Settings canvas palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.4.css" || fail "Settings canvas palette"
 grep -Fq -- '--input-text-background-color: var(--omazen-background-dark)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.3.css" || fail "Settings search palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.4.css" || fail "Settings search palette"
 grep -Fq -- '--theme-bg-color: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.3.css" || fail "managed notice palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.4.css" || fail "managed notice palette"
+grep -Fq -- '--checkbox-background-color-checked: var(--omazen-accent)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.4.css" || fail "Settings radio palette"
+grep -Fq -- '--toggle-background-color-pressed: var(--omazen-accent)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.4.css" || fail "Settings toggle palette"
+grep -Fq -- '--select-text-color: var(--omazen-foreground)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.4.css" || fail "Settings selector text palette"
 pass "setup installs the isolated runtime and maps Quattro colors"
 
 LEGACY_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome.css"
