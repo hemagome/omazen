@@ -22,7 +22,7 @@ for item in bin lib zen hooks vendor docs tests README.md LICENSE THIRD_PARTY_LI
   [[ -e $SOURCE_ROOT/$item ]] || continue
   cp -a -- "$SOURCE_ROOT/$item" "$DESTINATION/"
 done
-printf '0.1.0\n' >"$DESTINATION/.omazen-installed"
+printf '0.1.2\n' >"$DESTINATION/.omazen-installed"
 chmod +x "$DESTINATION/bin/omazen" "$DESTINATION/hooks/theme-set" "$DESTINATION/install.sh" "$DESTINATION/uninstall.sh"
 
 if [[ -e $BIN_DIRECTORY/omazen && ! -L $BIN_DIRECTORY/omazen ]]; then
@@ -42,4 +42,3 @@ printf 'Installed Omazen command: %s/omazen\n' "$BIN_DIRECTORY"
 if [[ ${OMAZEN_INSTALL_NO_SETUP:-0} != 1 ]]; then
   "$DESTINATION/bin/omazen" setup
 fi
-

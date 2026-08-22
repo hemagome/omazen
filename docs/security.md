@@ -18,7 +18,7 @@ chrome/utils/utils.sys.mjs
 chrome/JS/omazen-bridge.uc.js
 chrome/JS/Omazen/OmazenParent.sys.mjs
 chrome/JS/Omazen/OmazenChild.sys.mjs
-chrome/JS/Omazen/omazen-chrome.css
+chrome/JS/Omazen/omazen-chrome-v0.1.2.css
 chrome/JS/Omazen/omazen-content.css
 ```
 
@@ -53,4 +53,3 @@ Zen package upgrades can replace program-level files. Omazen does not fight the 
 ## Uninstall limits
 
 If another user script is found, Omazen leaves an owned shared fx-autoconfig program loader in place rather than breaking that script. If an owned file has been modified, it is also retained. In both cases ownership records remain so the user can inspect and resolve the shared state explicitly.
-

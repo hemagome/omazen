@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        0.1.0
+// @version        0.1.2
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
@@ -15,7 +15,8 @@
   const MAX_PALETTE_BYTES = 2048;
   const MAX_LOG_BYTES = 131072;
   const STYLE_ID = "omazen-chrome-style";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome.css";
+  const VERSION = "0.1.2";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.2.css";
   const STATE_LEAF = ".local/state/omazen";
   const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
   const COLOR_KEYS = Object.freeze([
@@ -175,6 +176,20 @@
       const primary = getComputedStyle(root).getPropertyValue("--zen-primary-color").trim();
       if (primary === palette.accent) appendLog("INFO", `CHROME_CSS_APPLIED primary=${primary}`);
       else appendLog("ERROR", "chrome stylesheet did not expose the expected primary color");
+
+      const styleProbe = (selector) => {
+        const element = document.querySelector(selector);
+        if (!element) return `${selector}=missing`;
+        const style = getComputedStyle(element);
+        const background = style.backgroundColor.replaceAll(" ", "");
+        const toolbar = style.getPropertyValue("--zen-toolbar-element-bg").trim().replaceAll(" ", "");
+        const base = style.getPropertyValue("--zen-urlbar-background-base").trim().replaceAll(" ", "");
+        return `${selector}=${background}|toolbar:${toolbar}|base:${base}`;
+      };
+      appendLog(
+        "INFO",
+        `CHROME_STYLE_PROBE ${styleProbe(".urlbar-background")} ${styleProbe(".urlbar-input-container")} ${styleProbe("#urlbar")}`,
+      );
     }, 100);
   }
 
@@ -219,7 +234,7 @@
   }
 
   ensureChromeStyle();
-  appendLog("INFO", "BRIDGE_LOADED version=0.1.0");
+  appendLog("INFO", `BRIDGE_LOADED version=${VERSION}`);
   sync();
   window.setInterval(sync, POLL_MS);
 })();

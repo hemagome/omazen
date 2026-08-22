@@ -13,7 +13,7 @@ OMAZEN_PROFILE_FILES=(
   omazen-bridge.uc.js
   Omazen/OmazenParent.sys.mjs
   Omazen/OmazenChild.sys.mjs
-  Omazen/omazen-chrome.css
+  Omazen/omazen-chrome-v0.1.2.css
   Omazen/omazen-content.css
 )
 
@@ -72,6 +72,24 @@ install_omazen_profile_files() {
   done
 }
 
+cleanup_obsolete_profile_styles() {
+  local profile=$1
+  local current="$profile/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
+  local style
+
+  while IFS= read -r style; do
+    [[ $style == "$current" ]] && continue
+    if manifest_has_path "$OMAZEN_PROFILE_MANIFEST" "$style"; then
+      if ! remove_owned_user_file "$OMAZEN_PROFILE_MANIFEST" "$style"; then
+        warn "obsolete stylesheet was modified and remains installed: $style"
+      fi
+    fi
+  done < <(
+    find "$profile/chrome/JS/Omazen" -maxdepth 1 -type f \
+      \( -name 'omazen-chrome.css' -o -name 'omazen-chrome-v*.css' \) -print 2>/dev/null
+  )
+}
+
 check_supported_install() {
   [[ -d $OMAZEN_ZEN_PROGRAM_DIR ]] || die "supported Zen program directory not found: $OMAZEN_ZEN_PROGRAM_DIR"
   [[ -f $OMAZEN_ZEN_PROGRAM_DIR/application.ini ]] || die "Zen application.ini not found in supported installation"
@@ -97,6 +115,7 @@ setup_omazen() {
     ((profile_count += 1))
     install_fx_profile_runtime "$profile"
     install_omazen_profile_files "$profile"
+    cleanup_obsolete_profile_styles "$profile"
   done
 
   install_theme_hook

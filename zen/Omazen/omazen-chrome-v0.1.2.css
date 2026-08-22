@@ -1,3 +1,4 @@
+/* Versioned filename prevents stale chrome:// stylesheet caches after upgrades. */
 :root[data-omazen-enabled="true"] {
   --zen-primary-color: var(--omazen-accent) !important;
   --zen-colors-primary: var(--omazen-background) !important;
@@ -6,7 +7,7 @@
   --zen-colors-primary-foreground: var(--omazen-foreground) !important;
   --zen-colors-border: var(--omazen-border) !important;
   --zen-colors-border-contrast: var(--omazen-accent) !important;
-  --zen-colors-input-bg: var(--omazen-background-dark) !important;
+  --zen-colors-input-bg: var(--omazen-background-light) !important;
   --zen-colors-hover-bg: color-mix(in srgb, var(--omazen-background-light) 82%, var(--omazen-accent)) !important;
   --zen-main-browser-background: var(--omazen-background-dark) !important;
   --zen-main-browser-background-toolbar: var(--omazen-background) !important;
@@ -15,18 +16,18 @@
   --zen-toolbar-element-bg-hover: color-mix(in srgb, var(--omazen-selection) 78%, var(--omazen-accent)) !important;
   --zen-split-view-active-tab-bg: var(--omazen-selection) !important;
   --zen-active-split-outline-color: var(--omazen-accent) !important;
-  --zen-urlbar-background-base: var(--zen-toolbar-element-bg) !important;
-  --zen-urlbar-background: var(--zen-toolbar-element-bg) !important;
+  --zen-urlbar-background-base: var(--omazen-background-light) !important;
+  --zen-urlbar-background: var(--omazen-background-light) !important;
   --toolbar-bgcolor: var(--omazen-background) !important;
   --toolbar-color: var(--omazen-foreground) !important;
   --toolbox-bgcolor: var(--omazen-background) !important;
   --toolbox-textcolor: var(--omazen-foreground) !important;
   --lwt-accent-color: var(--omazen-background) !important;
   --lwt-text-color: var(--omazen-foreground) !important;
-  --lwt-toolbar-field-background-color: var(--zen-toolbar-element-bg) !important;
+  --lwt-toolbar-field-background-color: var(--omazen-background-light) !important;
   --lwt-toolbar-field-color: var(--omazen-foreground) !important;
   --lwt-toolbar-field-border-color: var(--omazen-border) !important;
-  --lwt-toolbar-field-focus: var(--omazen-background-dark) !important;
+  --lwt-toolbar-field-focus: var(--omazen-background-light) !important;
   --arrowpanel-background: var(--omazen-background-dark) !important;
   --arrowpanel-color: var(--omazen-foreground) !important;
   --arrowpanel-border-color: var(--omazen-border) !important;
@@ -52,29 +53,29 @@
 
 :root[data-omazen-enabled="true"] :is(
   #searchbar,
-  search-textbox,
-  input
+  search-textbox
 ) {
   background-color: var(--omazen-background-dark) !important;
   color: var(--omazen-foreground) !important;
   border-color: var(--omazen-border) !important;
 }
 
-:root[data-omazen-enabled="true"] #urlbar:not([focused="true"]):not([breakout-extend]) #urlbar-background {
-  background-color: var(--zen-toolbar-element-bg) !important;
+:root[data-omazen-enabled="true"] .urlbar-background {
+  --zen-toolbar-element-bg: var(--omazen-background-light) !important;
+  --zen-urlbar-background-base: var(--omazen-background-light) !important;
+  --zen-urlbar-background-transparent: var(--omazen-background-light) !important;
+  background-color: var(--omazen-background-light) !important;
   color: var(--omazen-foreground) !important;
   border-color: var(--omazen-border) !important;
 }
 
-:root[data-omazen-enabled="true"] #urlbar:is([focused="true"], [breakout-extend]) #urlbar-background {
-  background-color: var(--omazen-background-dark) !important;
+:root[data-omazen-enabled="true"] #urlbar:is([focused="true"], [breakout-extend]) .urlbar-background {
   outline: 1px solid var(--omazen-accent) !important;
 }
 
 :root[data-omazen-enabled="true"] :is(
   .tabbrowser-tab[selected] .tab-background,
-  .tabbrowser-tab[multiselected] .tab-background,
-  .zen-current-workspace-indicator
+  .tabbrowser-tab[multiselected] .tab-background
 ) {
   background: var(--omazen-selection) !important;
   color: var(--omazen-foreground) !important;
@@ -122,7 +123,7 @@
     #navigator-toolbox,
     #nav-bar,
     #TabsToolbar,
-    #urlbar-background,
+    .urlbar-background,
     .tab-background,
     .browserSidebarContainer,
     panel,

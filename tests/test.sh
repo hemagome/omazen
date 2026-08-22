@@ -96,22 +96,46 @@ assert_file "$FAKE_ZEN/defaults/pref/omazen-prefs.js"
 assert_file "$FAKE_PROFILE/chrome/JS/omazen-bridge.uc.js"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenChild.sys.mjs"
 assert_file "$FAKE_HOOKS/theme-set.d/theme-set"
+grep -Fq 'Omazen: 0.1.2' <(run_omazen status) || fail "reported package version"
+grep -Fq 'omazen-chrome-v0.1.2.css' "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || \
+  fail "chrome stylesheet cache buster"
 grep -Fq '"mode": "light"' "$FAKE_STATE/palette.json" || fail "palette mode mapping"
 grep -Fq '"background_dark": "#eeeeee"' "$FAKE_STATE/palette.json" || fail "palette background mapping"
-grep -Fq -- '--zen-urlbar-background-base: var(--zen-toolbar-element-bg)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome.css" || fail "inactive URL bar background"
-grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) #urlbar-background' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome.css" || fail "focused URL bar background"
-if grep -Fq -- 'zen-workspace[active]' "$PROJECT_ROOT/zen/Omazen/omazen-chrome.css"; then
+grep -Fq -- '--zen-urlbar-background-base: var(--omazen-background-light)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css" || fail "inactive URL bar background"
+grep -Fq -- '--lwt-toolbar-field-focus: var(--omazen-background-light)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css" || fail "focused URL bar background"
+grep -Fq -- '--zen-urlbar-background-transparent: var(--omazen-background-light)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css" || fail "expanded URL bar background"
+grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) .urlbar-background' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css" || fail "focused URL bar outline"
+if grep -Fq -- '#urlbar-background' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css"; then
+  fail "obsolete URL bar background ID selector"
+fi
+if grep -Fq -- 'zen-workspace[active]' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css"; then
   fail "active workspace container must not receive selection background"
+fi
+if grep -Fq -- '.zen-current-workspace-indicator' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css"; then
+  fail "workspace indicator must retain native padding and background"
+fi
+if sed -n '/:is(/,/)/p' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.2.css" | grep -Fxq '  input'; then
+  fail "generic input selector must not repaint the URL text field"
 fi
 pass "setup installs the isolated runtime and maps Quattro colors"
 
+LEGACY_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome.css"
+FOREIGN_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v9.9.9.css"
+printf 'owned legacy style\n' >"$LEGACY_STYLE"
+printf '%s|%s\n' "$LEGACY_STYLE" "$(sha256sum "$LEGACY_STYLE" | awk '{print $1}')" \
+  >>"$FAKE_STATE/owned/profile-files"
+printf 'foreign style\n' >"$FOREIGN_STYLE"
 run_omazen setup >/dev/null
+assert_absent "$LEGACY_STYLE"
+assert_file "$FOREIGN_STYLE"
 assert_same_hash "$FAKE_PROFILE/chrome/userChrome.css" "$TEST_ROOT/userChrome.before"
 assert_same_hash "$FAKE_PROFILE/user.js" "$TEST_ROOT/user.before"
 run_omazen doctor >/dev/null
-pass "setup is idempotent and preserves existing user files"
+pass "setup is idempotent, cleans owned legacy styles, and preserves user files"
 
 run_omazen disable >/dev/null
 assert_file "$FAKE_STATE/disabled"
