@@ -18,8 +18,8 @@ chrome/utils/utils.sys.mjs
 chrome/JS/omazen-bridge.uc.js
 chrome/JS/Omazen/OmazenParent.sys.mjs
 chrome/JS/Omazen/OmazenChild.sys.mjs
-chrome/JS/Omazen/omazen-chrome-v0.1.5.css
-chrome/JS/Omazen/omazen-content-v0.1.5.css
+chrome/JS/Omazen/omazen-chrome-v0.1.6.css
+chrome/JS/Omazen/omazen-content-v0.1.6.css
 ```
 
 Program-level files for the supported Zen package:

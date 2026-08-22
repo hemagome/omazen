@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        0.1.5
+// @version        0.1.6
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
@@ -16,9 +16,9 @@
   const MAX_LOG_BYTES = 131072;
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
-  const VERSION = "0.1.5";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.5.css";
-  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.5.css";
+  const VERSION = "0.1.6";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.6.css";
+  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.6.css";
   const STATE_LEAF = ".local/state/omazen";
   const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
   const COLOR_KEYS = Object.freeze([
@@ -34,6 +34,7 @@
   const PALETTE_KEYS = Object.freeze(["schema_version", "mode", ...COLOR_KEYS]);
   const SPOTLIGHT_URI = "chrome://browser/content/spotlight.html";
   const COMMON_DIALOG_URI = "chrome://global/content/commonDialog.xhtml";
+  const ABOUT_DIALOG_URI = "chrome://browser/content/aboutDialog.xhtml";
   let paletteSignature = "";
   let disabledState = null;
   let currentPalette = null;
@@ -127,6 +128,38 @@
     link.href = STYLE_URI;
     document.documentElement.appendChild(link);
     return link;
+  }
+
+  function applyToAboutDialog(aboutWindow, palette, enabled) {
+    const aboutDocument = aboutWindow?.document;
+    const root = aboutDocument?.documentElement;
+    if (!root || aboutWindow.location.href !== ABOUT_DIALOG_URI) return;
+
+    let link = aboutDocument.getElementById(STYLE_ID);
+    if (!link) {
+      link = aboutDocument.createElementNS("http://www.w3.org/1999/xhtml", "link");
+      link.id = STYLE_ID;
+      link.rel = "stylesheet";
+      link.href = STYLE_URI;
+      root.appendChild(link);
+    }
+
+    if (!enabled || !palette) {
+      root.removeAttribute("data-omazen-enabled");
+      root.removeAttribute("data-omazen-mode");
+      root.style.removeProperty("color-scheme");
+      for (const key of COLOR_KEYS) {
+        root.style.removeProperty(`--omazen-${key.replaceAll("_", "-")}`);
+      }
+      return;
+    }
+
+    root.setAttribute("data-omazen-enabled", "true");
+    root.setAttribute("data-omazen-mode", palette.mode);
+    root.style.setProperty("color-scheme", palette.mode);
+    for (const key of COLOR_KEYS) {
+      root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, palette[key]);
+    }
   }
 
   function writePalettePrefs(palette, enabled) {
@@ -238,6 +271,10 @@
         // Non-matching internal documents do not have an Omazen actor.
       }
     }
+    const aboutWindows = Services.wm.getEnumerator("Browser:About");
+    while (aboutWindows.hasMoreElements()) {
+      applyToAboutDialog(aboutWindows.getNext(), palette, enabled);
+    }
   }
 
   function scheduleInternalPageBroadcast() {
@@ -327,6 +364,22 @@
   }
 
   ensureChromeStyle();
+  const aboutWindowObserver = {
+    observe(subject, topic) {
+      if (topic !== "domwindowopened") return;
+      subject.addEventListener(
+        "DOMContentLoaded",
+        () => applyToAboutDialog(subject, currentPalette, !disabledState),
+        { once: true },
+      );
+    },
+  };
+  Services.obs.addObserver(aboutWindowObserver, "domwindowopened");
+  window.addEventListener(
+    "unload",
+    () => Services.obs.removeObserver(aboutWindowObserver, "domwindowopened"),
+    { once: true },
+  );
   new MutationObserver(scheduleInternalPageBroadcast).observe(document.documentElement, {
     childList: true,
     subtree: true,
