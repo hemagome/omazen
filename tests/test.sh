@@ -98,6 +98,13 @@ assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenChild.sys.mjs"
 assert_file "$FAKE_HOOKS/theme-set.d/theme-set"
 grep -Fq '"mode": "light"' "$FAKE_STATE/palette.json" || fail "palette mode mapping"
 grep -Fq '"background_dark": "#eeeeee"' "$FAKE_STATE/palette.json" || fail "palette background mapping"
+grep -Fq -- '--zen-urlbar-background-base: var(--zen-toolbar-element-bg)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome.css" || fail "inactive URL bar background"
+grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) #urlbar-background' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome.css" || fail "focused URL bar background"
+if grep -Fq -- 'zen-workspace[active]' "$PROJECT_ROOT/zen/Omazen/omazen-chrome.css"; then
+  fail "active workspace container must not receive selection background"
+fi
 pass "setup installs the isolated runtime and maps Quattro colors"
 
 run_omazen setup >/dev/null
@@ -133,4 +140,3 @@ grep -Fq 'foreign autoconfig' "$CONFLICT_ROOT/config.js" || fail "foreign config
 pass "setup stops on an unowned autoconfig conflict"
 
 printf '1..5\n'
-
