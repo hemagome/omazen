@@ -13,8 +13,8 @@ OMAZEN_PROFILE_FILES=(
   omazen-bridge.uc.js
   Omazen/OmazenParent.sys.mjs
   Omazen/OmazenChild.sys.mjs
-  Omazen/omazen-chrome-v0.1.2.css
-  Omazen/omazen-content.css
+  Omazen/omazen-chrome-v0.1.3.css
+  Omazen/omazen-content-v0.1.3.css
 )
 
 program_has_compatible_fx() {
@@ -74,11 +74,12 @@ install_omazen_profile_files() {
 
 cleanup_obsolete_profile_styles() {
   local profile=$1
-  local current="$profile/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
+  local current_chrome="$profile/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
+  local current_content="$profile/chrome/JS/Omazen/omazen-content-v${OMAZEN_VERSION}.css"
   local style
 
   while IFS= read -r style; do
-    [[ $style == "$current" ]] && continue
+    [[ $style == "$current_chrome" || $style == "$current_content" ]] && continue
     if manifest_has_path "$OMAZEN_PROFILE_MANIFEST" "$style"; then
       if ! remove_owned_user_file "$OMAZEN_PROFILE_MANIFEST" "$style"; then
         warn "obsolete stylesheet was modified and remains installed: $style"
@@ -86,7 +87,8 @@ cleanup_obsolete_profile_styles() {
     fi
   done < <(
     find "$profile/chrome/JS/Omazen" -maxdepth 1 -type f \
-      \( -name 'omazen-chrome.css' -o -name 'omazen-chrome-v*.css' \) -print 2>/dev/null
+      \( -name 'omazen-chrome.css' -o -name 'omazen-chrome-v*.css' \
+         -o -name 'omazen-content.css' -o -name 'omazen-content-v*.css' \) -print 2>/dev/null
   )
 }
 

@@ -1,7 +1,7 @@
 "use strict";
 
 const STYLE_ID = "omazen-content-style";
-const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content.css";
+const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.3.css";
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const COLOR_KEYS = Object.freeze([
   "accent",
@@ -82,4 +82,3 @@ export class OmazenChild extends JSWindowActorChild {
     return null;
   }
 }
-
