@@ -1,7 +1,7 @@
 "use strict";
 
 const STYLE_ID = "omazen-content-style";
-const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.10.css";
+const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.11.css";
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const COLOR_KEYS = Object.freeze([
   "accent",

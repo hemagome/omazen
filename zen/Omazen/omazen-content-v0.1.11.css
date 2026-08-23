@@ -346,6 +346,116 @@
   border-color: var(--omazen-accent) !important;
 }
 
+/* Zen Settings: Zen Mods also bypasses Firefox tokens for its cards, actions
+ * and preference dialogs. Keep the entire surface on the active palette. */
+:root[data-omazen-enabled="true"] #zenMarketplaceGroup {
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenMarketplaceHeader > h2 {
+  color: var(--omazen-foreground) !important;
+  opacity: 1 !important;
+}
+
+:root[data-omazen-enabled="true"] #zenMarketplaceGroup > .description-deemphasized,
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItemDescription {
+  color: color-mix(in srgb, var(--omazen-foreground-muted) 55%, var(--omazen-foreground)) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenThemeMarketplaceLink {
+  color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenMarketplaceGroup button {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenMarketplaceGroup button:is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--omazen-background-light) 82%, var(--omazen-accent)) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenMarketplaceGroup button:hover:active {
+  background-color: var(--omazen-selection) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItem {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItemTitle,
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItemPreferenceLabel,
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItemPreferenceCheckbox,
+:root[data-omazen-enabled="true"] #zenThemeMarketplaceAutoUpdate {
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenMarketplaceGroup .checkbox-check {
+  background-color: var(--omazen-background-light) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenMarketplaceGroup checkbox[checked] .checkbox-check {
+  background-color: var(--omazen-accent) !important;
+  border-color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  .zenThemeMarketplaceItemHomepageButton,
+  .zenThemeMarketplaceItemConfigureButton
+) {
+  color: var(--omazen-foreground) !important;
+  fill: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItem > dialog {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border: 1px solid var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItem > dialog::backdrop {
+  background-color: color-mix(in srgb, var(--omazen-background-dark) 68%, transparent) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItemPreferenceDialog {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItemPreference :is(input, menulist) {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenThemeMarketplaceItemPreference :is(menupopup, menuitem) {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  #zenThemeMarketplaceUpdatesSuccess,
+  #zenThemeMarketplaceImportSuccess,
+  #zenThemeMarketplaceExportSuccess
+) {
+  color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(
+  #zenThemeMarketplaceUpdatesFailure,
+  #zenThemeMarketplaceImportFailure,
+  #zenThemeMarketplaceExportFailure
+) {
+  color: color-mix(in srgb, #ff6b6b 72%, var(--omazen-foreground)) !important;
+}
+
 :root[data-omazen-enabled="true"] ::selection {
   background-color: var(--omazen-selection) !important;
   color: var(--omazen-foreground) !important;
