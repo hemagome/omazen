@@ -271,6 +271,81 @@
   --icon-color: var(--omazen-foreground-muted);
 }
 
+/* Zen Settings: Keyboard Shortcuts uses literal colors instead of Firefox
+ * design tokens, so map that pane explicitly to the active Omazen palette. */
+:root[data-omazen-enabled="true"] #zenCKSGroup {
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenCKSGroup > label > h2 {
+  color: var(--omazen-foreground) !important;
+  opacity: 1 !important;
+}
+
+:root[data-omazen-enabled="true"] #zenCKSGroup > .description-deemphasized {
+  color: color-mix(in srgb, var(--omazen-foreground-muted) 55%, var(--omazen-foreground)) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenCKSResetButton {
+  background-color: var(--omazen-background-light) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenCKSResetButton:is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--omazen-background-light) 82%, var(--omazen-accent)) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenCKSResetButton:hover:active {
+  background-color: var(--omazen-selection) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenCKSOption-wrapper > [data-group] {
+  color: var(--omazen-foreground) !important;
+  border-bottom-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption > .zenCKSOption-label {
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-input {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-input.zenCKSOption-input-not-set {
+  color: color-mix(in srgb, var(--omazen-foreground-muted) 55%, var(--omazen-foreground)) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-input.zenCKSOption-input-editing {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-conflict {
+  color: color-mix(in srgb, #ff6b6b 72%, var(--omazen-foreground)) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-unsafed {
+  color: color-mix(in srgb, #f4b942 72%, var(--omazen-foreground)) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-input.zenCKSOption-input-invalid {
+  border-color: color-mix(in srgb, #ff6b6b 72%, var(--omazen-border)) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-input.zenCKSOption-input-unsafed {
+  border-color: color-mix(in srgb, #f4b942 72%, var(--omazen-border)) !important;
+}
+
+:root[data-omazen-enabled="true"] .zenCKSOption-input.zenCKSOption-input-valid {
+  border-color: var(--omazen-accent) !important;
+}
+
 :root[data-omazen-enabled="true"] ::selection {
   background-color: var(--omazen-selection) !important;
   color: var(--omazen-foreground) !important;
