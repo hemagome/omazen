@@ -137,6 +137,12 @@ grep -Fq -- '--toggle-background-color-pressed: var(--omazen-accent)' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings toggle palette"
 grep -Fq -- '--select-text-color: var(--omazen-foreground)' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings selector text palette"
+grep -Fq -- 'scrollbar-color: var(--omazen-scrollbar-thumb) var(--omazen-scrollbar-track)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "internal page scrollbar palette"
+grep -Fq -- 'scrollbar-color: var(--omazen-scrollbar-thumb) var(--omazen-scrollbar-track)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.11.css" || fail "browser chrome scrollbar palette"
+grep -Fq -- '--omazen-scrollbar-thumb: ${palette.foreground_muted}' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "isolated document scrollbar palette"
 grep -Fq -- '--link-color: var(--omazen-accent)' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings link token palette"
 grep -Fq -- '::part(support-link)' \

@@ -221,6 +221,9 @@
     --theme-text-color-alt: ${palette.foreground_muted} !important;
     --theme-text-color-strong: ${palette.foreground} !important;
     --theme-focus-outline-color: ${palette.accent} !important;
+    --omazen-scrollbar-thumb: ${palette.foreground_muted};
+    --omazen-scrollbar-track: ${palette.background_dark};
+    scrollbar-color: var(--omazen-scrollbar-thumb) var(--omazen-scrollbar-track) !important;
     background: ${palette.background} !important;
     color: ${palette.foreground} !important;
   }

@@ -37,6 +37,9 @@
   --focus-outline-color: var(--omazen-accent) !important;
   --tab-selected-bgcolor: var(--omazen-selection) !important;
   --tab-selected-textcolor: var(--omazen-foreground) !important;
+  --omazen-scrollbar-thumb: var(--omazen-foreground-muted);
+  --omazen-scrollbar-track: var(--omazen-background-dark);
+  scrollbar-color: var(--omazen-scrollbar-thumb) var(--omazen-scrollbar-track) !important;
 }
 
 :root[data-omazen-enabled="true"] :is(
