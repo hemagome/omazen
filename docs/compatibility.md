@@ -28,7 +28,6 @@ Zen-specific selectors and `--zen-*` variables are not a stable public API. The 
 ## Known MVP boundaries
 
 - Browser chrome, URL bar, tabs, sidebar, workspace controls, popups, split containers, Glance containers and relevant internal pages are targeted.
-- Ordinary website content is deliberately not recolored.
+- Ordinary website content is deliberately not recolored; only vertical and horizontal scrollbar colors are mapped to the active palette.
 - Zen Boost storage is deliberately not mutated.
 - No WebExtension/native-messaging alternative is shipped because the privileged PoC succeeded and the alternate backend has not yet demonstrated equivalent Zen-specific coverage.
-

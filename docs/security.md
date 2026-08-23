@@ -41,7 +41,7 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
 - JSON is size-limited and strictly validated before use.
 - Only normalized colors and mode cross the actor boundary.
 - The actor matches a fixed internal-page allowlist and the built-in DevTools chrome namespace, never ordinary web origins.
-- Most CSS is static and shipped with Omazen. For isolated Passwords, Print and DevTools processes, the eight strictly validated hex colors and validated mode are inserted into a fixed, URL-scoped user-sheet template; JSON cannot supply selectors, property names or URLs.
+- Most CSS is static and shipped with Omazen. For isolated Passwords, Print and DevTools processes, the eight strictly validated hex colors and validated mode are inserted into fixed, URL-scoped internal-page rules. The same generated user sheet contains a separate fixed rule for `http:`, `https:` and `file:` documents that can set only `scrollbar-color`; it provides no script, DOM access or page-exposed API. JSON cannot supply selectors, property names or URLs in either scope.
 - Logs contain timestamps, fixed event names, mode, accent and validation errors—not URLs, page titles, profile paths or browsing data.
 - Logs rotate at 128 KiB.
 - Disable is live and uninstall is ownership/hash aware.

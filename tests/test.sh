@@ -147,6 +147,12 @@ grep -Fq -- '@-moz-document url-prefix("http://"), url-prefix("https://"), url-p
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "web page scrollbar scope"
 grep -Fq -- 'scrollbar-color: ${palette.foreground_muted} ${palette.background_dark}' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "web page scrollbar palette"
+grep -Fq -- 'solely to set `scrollbar-color`' \
+  "$PROJECT_ROOT/docs/architecture.md" || fail "web scrollbar architecture documentation"
+grep -Fq -- 'can set only `scrollbar-color`' \
+  "$PROJECT_ROOT/docs/security.md" || fail "web scrollbar security boundary documentation"
+grep -Fq -- 'only vertical and horizontal scrollbar colors' \
+  "$PROJECT_ROOT/docs/compatibility.md" || fail "web scrollbar compatibility boundary documentation"
 grep -Fq -- '--link-color: var(--omazen-accent)' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings link token palette"
 grep -Fq -- '::part(support-link)' \
