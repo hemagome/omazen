@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        0.1.7
+// @version        0.1.8
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
-// @WindowActorMatches ["about:addons","about:config","about:downloads","about:home","about:newtab","about:preferences","about:privatebrowsing","about:profiles","about:protections","about:support","about:welcome","chrome://browser/content/spotlight.html","chrome://global/content/commonDialog.xhtml"]
+// @WindowActorMatches ["about:addons","about:config","about:debugging","about:devtools-toolbox","about:devtools-toolbox?*","about:downloads","about:home","about:logins","about:newtab","about:preferences","about:privatebrowsing","about:profiles","about:protections","about:support","about:translations","about:welcome","chrome://browser/content/aboutlogins/aboutLogins.html","chrome://browser/content/spotlight.html","chrome://devtools/content/*","chrome://global/content/commonDialog.xhtml","chrome://global/content/translations/about-translations.html"]
 // ==/UserScript==
 
 (() => {
@@ -16,9 +16,9 @@
   const MAX_LOG_BYTES = 131072;
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
-  const VERSION = "0.1.7";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.7.css";
-  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.7.css";
+  const VERSION = "0.1.8";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.8.css";
+  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.8.css";
   const STATE_LEAF = ".local/state/omazen";
   const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
   const COLOR_KEYS = Object.freeze([
@@ -36,13 +36,23 @@
   const COMMON_DIALOG_URI = "chrome://global/content/commonDialog.xhtml";
   const ABOUT_DIALOG_URI = "chrome://browser/content/aboutDialog.xhtml";
   const PLACES_ORGANIZER_URI = "chrome://browser/content/places/places.xhtml";
+  const DEVTOOLS_TOOLBOX_URI = "chrome://devtools/content/framework/toolbox-window.xhtml";
+  const ACTOR_CHROME_PREFIXES = Object.freeze([
+    "chrome://browser/content/aboutlogins/aboutLogins.html",
+    "chrome://browser/content/spotlight.html",
+    "chrome://devtools/content/",
+    "chrome://global/content/commonDialog.xhtml",
+    "chrome://global/content/translations/about-translations.html",
+  ]);
   const AUXILIARY_WINDOW_TYPES = Object.freeze({
     "Browser:About": ABOUT_DIALOG_URI,
     "Places:Organizer": PLACES_ORGANIZER_URI,
+    "devtools:toolbox": DEVTOOLS_TOOLBOX_URI,
   });
   let paletteSignature = "";
   let disabledState = null;
   let currentPalette = null;
+  let contentPaletteSheet = null;
   let broadcastTimer = 0;
 
   function stateDirectory() {
@@ -135,6 +145,104 @@
     return link;
   }
 
+  function contentPaletteCss(palette) {
+    const hover = `color-mix(in srgb, ${palette.background_light} 82%, ${palette.accent})`;
+    return `
+@-moz-document url("about:logins"), url-prefix("chrome://browser/content/aboutlogins/"),
+  url("about:translations"), url-prefix("chrome://global/content/translations/"),
+  url("about:debugging"), url-prefix("chrome://devtools/content/") {
+  :root {
+    color-scheme: ${palette.mode} !important;
+    --omazen-accent: ${palette.accent} !important;
+    --omazen-background: ${palette.background} !important;
+    --omazen-background-dark: ${palette.background_dark} !important;
+    --omazen-background-light: ${palette.background_light} !important;
+    --omazen-foreground: ${palette.foreground} !important;
+    --omazen-foreground-muted: ${palette.foreground_muted} !important;
+    --omazen-selection: ${palette.selection} !important;
+    --omazen-border: ${palette.border} !important;
+    --background-color-canvas: ${palette.background} !important;
+    --background-color-box: ${palette.background_dark} !important;
+    --background-color-box-info: ${palette.background_light} !important;
+    --background-color-overlay: ${palette.background_dark} !important;
+    --button-background-color: ${palette.background_light} !important;
+    --button-background-color-hover: ${hover} !important;
+    --button-background-color-active: ${palette.selection} !important;
+    --button-background-color-primary: ${palette.accent} !important;
+    --button-background-color-ghost-hover: ${palette.background_light} !important;
+    --button-text-color: ${palette.foreground} !important;
+    --button-text-color-hover: ${palette.foreground} !important;
+    --button-text-color-primary: ${palette.background_dark} !important;
+    --button-text-color-ghost: ${palette.foreground_muted} !important;
+    --button-text-color-ghost-hover: ${palette.foreground} !important;
+    --border-color: ${palette.border} !important;
+    --border-color-selected: ${palette.accent} !important;
+    --card-background-color: ${palette.background_dark} !important;
+    --card-border-color: ${palette.border} !important;
+    --color-accent-primary: ${palette.accent} !important;
+    --icon-color: ${palette.foreground_muted} !important;
+    --input-text-background-color: ${palette.background_dark} !important;
+    --input-text-border-color: ${palette.border} !important;
+    --input-text-color: ${palette.foreground} !important;
+    --text-color: ${palette.foreground} !important;
+    --text-color-deemphasized: ${palette.foreground_muted} !important;
+    --box-background: ${palette.background_dark} !important;
+    --category-background-hover: ${palette.background_light} !important;
+    --category-text: ${palette.foreground} !important;
+    --category-text-selected: ${palette.accent} !important;
+    --sidebar-text-color: ${palette.foreground} !important;
+    --sidebar-selected-color: ${palette.accent} !important;
+    --sidebar-background-hover: ${palette.background_light} !important;
+    --card-separator-color: ${palette.border} !important;
+    --theme-body-background: ${palette.background} !important;
+    --theme-body-emphasized-background: ${palette.background_light} !important;
+    --theme-sidebar-background: ${palette.background_dark} !important;
+    --theme-toolbar-background: ${palette.background_dark} !important;
+    --theme-toolbar-alternate-background: ${palette.background_light} !important;
+    --theme-toolbar-color: ${palette.foreground} !important;
+    --theme-toolbar-selected-color: ${palette.accent} !important;
+    --theme-toolbar-hover: ${palette.background_light} !important;
+    --theme-toolbar-separator: ${palette.border} !important;
+    --theme-selection-background: ${palette.selection} !important;
+    --theme-selection-color: ${palette.foreground} !important;
+    --theme-splitter-color: ${palette.border} !important;
+    --theme-icon-color: ${palette.foreground_muted} !important;
+    --theme-icon-checked-color: ${palette.accent} !important;
+    --theme-body-color: ${palette.foreground} !important;
+    --theme-link-color: ${palette.accent} !important;
+    --theme-text-color-alt: ${palette.foreground_muted} !important;
+    --theme-text-color-strong: ${palette.foreground} !important;
+    --theme-focus-outline-color: ${palette.accent} !important;
+    background: ${palette.background} !important;
+    color: ${palette.foreground} !important;
+  }
+  html, body, header, body > section {
+    background-color: ${palette.background} !important;
+    color: ${palette.foreground} !important;
+  }
+  login-list, .app__sidebar, .sidebar, .card, .debug-target-item {
+    background-color: ${palette.background_dark} !important;
+    color: ${palette.foreground} !important;
+    border-color: ${palette.border} !important;
+  }
+}`;
+  }
+
+  function syncContentPaletteSheet(palette, enabled) {
+    const styleSheetService = Cc["@mozilla.org/content/style-sheet-service;1"].getService(
+      Ci.nsIStyleSheetService,
+    );
+    if (contentPaletteSheet && styleSheetService.sheetRegistered(contentPaletteSheet, styleSheetService.USER_SHEET)) {
+      styleSheetService.unregisterSheet(contentPaletteSheet, styleSheetService.USER_SHEET);
+    }
+    contentPaletteSheet = null;
+    if (!enabled || !palette) return;
+    contentPaletteSheet = Services.io.newURI(
+      `data:text/css;charset=UTF-8,${encodeURIComponent(contentPaletteCss(palette))}`,
+    );
+    styleSheetService.loadAndRegisterSheet(contentPaletteSheet, styleSheetService.USER_SHEET);
+  }
+
   function applyToAuxiliaryWindow(auxiliaryWindow, palette, enabled) {
     const auxiliaryDocument = auxiliaryWindow?.document;
     const root = auxiliaryDocument?.documentElement;
@@ -182,6 +290,10 @@
     const payload = { enabled: true, mode: palette.mode };
     for (const key of COLOR_KEYS) payload[key] = palette[key];
     return payload;
+  }
+
+  function isActorInternalUri(uri) {
+    return uri?.startsWith("about:") || ACTOR_CHROME_PREFIXES.some((prefix) => uri?.startsWith(prefix));
   }
 
   function applyToInternalDialogFrame(frame, palette, enabled) {
@@ -266,11 +378,7 @@
     for (const browser of browsers) {
       try {
         const spec = browser?.currentURI?.spec;
-        if (
-          !spec?.startsWith("about:") &&
-          !spec?.startsWith(SPOTLIGHT_URI) &&
-          !spec?.startsWith(COMMON_DIALOG_URI)
-        ) continue;
+        if (!isActorInternalUri(spec)) continue;
         const global = browser.browsingContext?.currentWindowGlobal;
         global?.getActor("Omazen")?.sendAsyncMessage("Omazen:Apply", payload);
       } catch (_error) {
@@ -307,6 +415,7 @@
       root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, palette[key]);
     }
     currentPalette = palette;
+    syncContentPaletteSheet(palette, true);
     writePalettePrefs(palette, true);
     broadcastToInternalPages(palette, true);
     appendLog("INFO", `PALETTE_APPLIED accent=${palette.accent} mode=${palette.mode}`);
@@ -340,6 +449,7 @@
     for (const key of COLOR_KEYS) {
       root.style.removeProperty(`--omazen-${key.replaceAll("_", "-")}`);
     }
+    syncContentPaletteSheet(currentPalette, false);
     writePalettePrefs(currentPalette, false);
     broadcastToInternalPages(currentPalette, false);
   }

@@ -35,9 +35,11 @@ The bridge rejects missing keys, unknown keys, wrong schema versions, non-object
 
 ## Window behavior
 
-fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome document. Every browser window therefore owns a small watcher and applies the current palette to itself. The bridge observes only the exact `Browser:About` and `Places:Organizer` window types and applies the same validated palette to existing or later-created About Zen and Library windows; other auxiliary windows are ignored. A later-created browser window reads the existing JSON during initial injection.
+fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome document. Every browser window therefore owns a small watcher and applies the current palette to itself. The bridge observes only the exact `Browser:About`, `Places:Organizer` and `devtools:toolbox` window types and applies the same validated palette to existing or later-created About Zen, Library and Developer Tools windows; other auxiliary windows are ignored. A later-created browser window reads the existing JSON during initial injection.
 
-The actor is registered only for a fixed list of internal `about:` documents plus Zen's Spotlight and Firefox's common-dialog documents. It reads validated palette preferences when the actor is created and at `DOMContentLoaded`, and accepts only `Omazen:Apply` messages matching the same strict color contract. It is not registered for `http:`, `https:`, arbitrary extension pages or arbitrary chrome URLs.
+The actor is registered only for a fixed list of internal `about:` documents plus Zen's Spotlight, Firefox's common-dialog documents and the `chrome://devtools/content/` namespace. This covers Passwords, Translations, Remote Debugging and the in-browser Developer Tools without granting access to ordinary content. It reads validated palette preferences when the actor is created and at `DOMContentLoaded`, and accepts only `Omazen:Apply` messages matching the same strict color contract. It is not registered for `http:`, `https:`, arbitrary extension pages or other chrome namespaces.
+
+Passwords and some Developer Tools documents can run in isolated processes that do not instantiate the custom actor. The bridge therefore also registers a Firefox user sheet generated from a fixed template and scoped with `@-moz-document` to the exact Passwords, Translations and DevTools URL families. It is replaced atomically when the palette changes and unregistered on disable; it never matches web origins.
 
 ## Enable and disable
 

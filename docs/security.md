@@ -18,8 +18,8 @@ chrome/utils/utils.sys.mjs
 chrome/JS/omazen-bridge.uc.js
 chrome/JS/Omazen/OmazenParent.sys.mjs
 chrome/JS/Omazen/OmazenChild.sys.mjs
-chrome/JS/Omazen/omazen-chrome-v0.1.7.css
-chrome/JS/Omazen/omazen-content-v0.1.7.css
+chrome/JS/Omazen/omazen-chrome-v0.1.8.css
+chrome/JS/Omazen/omazen-content-v0.1.8.css
 ```
 
 Program-level files for the supported Zen package:
@@ -40,8 +40,8 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
 - Palette path and log path are fixed; JSON cannot select a path.
 - JSON is size-limited and strictly validated before use.
 - Only normalized colors and mode cross the actor boundary.
-- The actor matches a fixed internal-page allowlist, never ordinary web origins.
-- CSS is static and shipped with Omazen; JSON never becomes CSS text.
+- The actor matches a fixed internal-page allowlist and the built-in DevTools chrome namespace, never ordinary web origins.
+- Most CSS is static and shipped with Omazen. For isolated Passwords and DevTools processes, the eight strictly validated hex colors and validated mode are inserted into a fixed, URL-scoped user-sheet template; JSON cannot supply selectors, property names or URLs.
 - Logs contain timestamps, fixed event names, mode, accent and validation errors—not URLs, page titles, profile paths or browsing data.
 - Logs rotate at 128 KiB.
 - Disable is live and uninstall is ownership/hash aware.

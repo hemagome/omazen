@@ -95,58 +95,86 @@ assert_file "$FAKE_ZEN/defaults/pref/config-prefs.js"
 assert_file "$FAKE_ZEN/defaults/pref/omazen-prefs.js"
 assert_file "$FAKE_PROFILE/chrome/JS/omazen-bridge.uc.js"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenChild.sys.mjs"
-assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v0.1.7.css"
-assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v0.1.7.css"
+assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v0.1.8.css"
+assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v0.1.8.css"
 assert_file "$FAKE_HOOKS/theme-set.d/theme-set"
-grep -Fq 'Omazen: 0.1.7' <(run_omazen status) || fail "reported package version"
-grep -Fq 'omazen-chrome-v0.1.7.css' "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || \
+grep -Fq 'Omazen: 0.1.8' <(run_omazen status) || fail "reported package version"
+grep -Fq 'omazen-chrome-v0.1.8.css' "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || \
   fail "chrome stylesheet cache buster"
-grep -Fq 'omazen-content-v0.1.7.css' "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" || \
+grep -Fq 'omazen-content-v0.1.8.css' "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" || \
   fail "content stylesheet cache buster"
 grep -Fq '"mode": "light"' "$FAKE_STATE/palette.json" || fail "palette mode mapping"
 grep -Fq '"background_dark": "#eeeeee"' "$FAKE_STATE/palette.json" || fail "palette background mapping"
 grep -Fq -- '--zen-urlbar-background-base: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "inactive URL bar background"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "inactive URL bar background"
 grep -Fq -- '--lwt-toolbar-field-focus: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "focused URL bar background"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "focused URL bar background"
 grep -Fq -- '--zen-urlbar-background-transparent: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "expanded URL bar background"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "expanded URL bar background"
 grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) .urlbar-background' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "focused URL bar outline"
-if grep -Fq -- '#urlbar-background' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css"; then
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "focused URL bar outline"
+if grep -Fq -- '#urlbar-background' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css"; then
   fail "obsolete URL bar background ID selector"
 fi
-if grep -Fq -- 'zen-workspace[active]' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css"; then
+if grep -Fq -- 'zen-workspace[active]' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css"; then
   fail "active workspace container must not receive selection background"
 fi
-if grep -Fq -- '.zen-current-workspace-indicator' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css"; then
+if grep -Fq -- '.zen-current-workspace-indicator' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css"; then
   fail "workspace indicator must retain native padding and background"
 fi
-if sed -n '/:is(/,/)/p' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" | grep -Fxq '  input'; then
+if sed -n '/:is(/,/)/p' "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" | grep -Fxq '  input'; then
   fail "generic input selector must not repaint the URL text field"
 fi
 grep -Fq -- '--background-color-canvas: var(--omazen-background)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "Settings canvas palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Settings canvas palette"
 grep -Fq -- '--input-text-background-color: var(--omazen-background-dark)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "Settings search palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Settings search palette"
 grep -Fq -- '--theme-bg-color: var(--omazen-background-light)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "managed notice palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "managed notice palette"
 grep -Fq -- '--checkbox-background-color-checked: var(--omazen-accent)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "Settings radio palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Settings radio palette"
 grep -Fq -- '--toggle-background-color-pressed: var(--omazen-accent)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "Settings toggle palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Settings toggle palette"
 grep -Fq -- '--select-text-color: var(--omazen-foreground)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "Settings selector text palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Settings selector text palette"
+grep -Fq -- '"about:logins"' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Passwords WindowActor match"
+grep -Fq -- 'chrome://browser/content/aboutlogins/aboutLogins.html' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Passwords redirected document match"
+grep -Fq -- ':has(login-list) login-list' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Passwords list palette"
+grep -Fq -- '--button-text-color-ghost: var(--omazen-foreground-muted)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Passwords secondary control palette"
+grep -Fq -- '"about:translations"' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Translations WindowActor match"
+grep -Fq -- 'chrome://global/content/translations/about-translations.html' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Translations redirected document match"
+grep -Fq -- '"about:debugging"' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Remote Debugging WindowActor match"
+grep -Fq -- '"chrome://devtools/content/*"' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Developer tools WindowActor scope"
+grep -Fq -- '"devtools:toolbox": DEVTOOLS_TOOLBOX_URI' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Developer toolbox window allowlist"
+grep -Fq -- '@-moz-document url("about:logins")' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "isolated content user-sheet scope"
+grep -Fq -- 'styleSheetService.USER_SHEET' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "isolated content user-sheet registration"
+grep -Fq -- 'encodeURIComponent(contentPaletteCss(palette))' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "validated content palette encoding"
+grep -Fq -- '--theme-body-background: var(--omazen-background)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Developer tools surface palette"
+grep -Fq -- '#customization-container' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "Customize Toolbar palette"
 grep -Fq -- '--message-bar-background-color: var(--omazen-background-dark)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "notification background palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "notification background palette"
 grep -Fq -- '--message-bar-text-color: var(--omazen-foreground)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "notification text palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "notification text palette"
 grep -Fq -- '#aboutDialogContainer #bottomBox' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "About Zen surface palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "About Zen surface palette"
 grep -Fq -- '#aboutDialogContainer button' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "About Zen button palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "About Zen button palette"
 grep -Fq -- 'notification-message .notification-button.primary' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "notification primary button palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "notification primary button palette"
 grep -Fq -- 'chrome://browser/content/spotlight.html' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Spotlight WindowActor match"
 grep -Fq -- '"Places:Organizer": PLACES_ORGANIZER_URI' \
@@ -156,11 +184,11 @@ grep -Fq -- 'Services.wm.getEnumerator(windowType)' \
 grep -Fq -- 'Services.obs.addObserver(auxiliaryWindowObserver, "domwindowopened")' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "late auxiliary window synchronization"
 grep -Fq -- ':root#places[data-omazen-enabled="true"] #placesList' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "Library navigation palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "Library navigation palette"
 grep -Fq -- 'treechildren::-moz-tree-row(selected)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "Library tree selection palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "Library tree selection palette"
 grep -Fq -- '#downloadsListBox > richlistitem[selected]' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.7.css" || fail "Library downloads palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.8.css" || fail "Library downloads palette"
 grep -Fq -- 'chrome://global/content/commonDialog.xhtml' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "common dialog WindowActor match"
 grep -Fq -- 'document.querySelectorAll("browser")' \
@@ -178,11 +206,11 @@ grep -Fq -- 'new MutationObserver(scheduleInternalPageBroadcast)' \
 grep -Fq -- 'actorCreated()' \
   "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" || fail "actor initial palette application"
 grep -Fq -- 'body[data-page="spotlight"]' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "Spotlight surface palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Spotlight surface palette"
 grep -Fq -- '#commonDialog::part(omazen-primary-button)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "common dialog primary button palette"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "common dialog primary button palette"
 grep -Fq -- '--button-text-color-primary: var(--omazen-background-dark)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.7.css" || fail "Spotlight primary button contrast"
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.8.css" || fail "Spotlight primary button contrast"
 pass "setup installs the isolated runtime and maps Quattro colors"
 
 LEGACY_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome.css"

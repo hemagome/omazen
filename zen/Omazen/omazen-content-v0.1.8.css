@@ -21,7 +21,11 @@
   --button-text-color-primary: var(--omazen-background-dark) !important;
   --button-text-color-primary-active: var(--omazen-background-dark) !important;
   --button-text-color-primary-hover: var(--omazen-background-dark) !important;
+  --button-background-color-ghost-hover: var(--omazen-background-light) !important;
+  --button-text-color-ghost: var(--omazen-foreground-muted) !important;
+  --button-text-color-ghost-hover: var(--omazen-foreground) !important;
   --border-color: var(--omazen-border) !important;
+  --border-color-selected: var(--omazen-accent) !important;
   --border-color-interactive: var(--omazen-border) !important;
   --border-color-interactive-active: var(--omazen-accent) !important;
   --border-color-interactive-hover: var(--omazen-accent) !important;
@@ -30,6 +34,8 @@
   --color-accent-primary-hover: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
   --color-accent-primary-selected: var(--omazen-accent) !important;
   --icon-color: var(--omazen-foreground-muted) !important;
+  --card-background-color: var(--omazen-background-dark) !important;
+  --card-border-color: var(--omazen-border) !important;
   --input-text-background-color: var(--omazen-background-dark) !important;
   --input-text-border-color: var(--omazen-border) !important;
   --input-text-color: var(--omazen-foreground) !important;
@@ -46,6 +52,48 @@
   --in-content-primary-button-background-hover: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
   --in-content-accent-color: var(--omazen-accent) !important;
   --in-content-focus-outline-color: var(--omazen-accent) !important;
+  --box-background: var(--omazen-background-dark) !important;
+  --category-background-hover: var(--omazen-background-light) !important;
+  --category-text: var(--omazen-foreground) !important;
+  --category-text-selected: var(--omazen-accent) !important;
+  --fieldpair-text-color: var(--omazen-foreground-muted) !important;
+  --sidebar-text-color: var(--omazen-foreground) !important;
+  --sidebar-selected-color: var(--omazen-accent) !important;
+  --sidebar-background-hover: var(--omazen-background-light) !important;
+  --card-separator-color: var(--omazen-border) !important;
+  --theme-body-background: var(--omazen-background) !important;
+  --theme-body-emphasized-background: var(--omazen-background-light) !important;
+  --theme-body-alternate-emphasized-background: var(--omazen-background-light) !important;
+  --theme-sidebar-background: var(--omazen-background-dark) !important;
+  --theme-tab-toolbar-background: var(--omazen-background-dark) !important;
+  --theme-toolbar-background: var(--omazen-background-dark) !important;
+  --theme-toolbar-alternate-background: var(--omazen-background-light) !important;
+  --theme-toolbar-color: var(--omazen-foreground) !important;
+  --theme-toolbar-selected-color: var(--omazen-accent) !important;
+  --theme-toolbar-background-hover: var(--omazen-background-light) !important;
+  --theme-toolbar-hover: var(--omazen-background-light) !important;
+  --theme-toolbar-separator: var(--omazen-border) !important;
+  --theme-selection-background: var(--omazen-selection) !important;
+  --theme-selection-focus-background: var(--omazen-selection) !important;
+  --theme-selection-color: var(--omazen-foreground) !important;
+  --theme-text-selection-background: var(--omazen-selection) !important;
+  --theme-splitter-color: var(--omazen-border) !important;
+  --theme-emphasized-splitter-color: var(--omazen-accent) !important;
+  --theme-icon-color: var(--omazen-foreground-muted) !important;
+  --theme-icon-hover-color: var(--omazen-foreground) !important;
+  --theme-icon-checked-color: var(--omazen-accent) !important;
+  --theme-body-color: var(--omazen-foreground) !important;
+  --theme-link-color: var(--omazen-accent) !important;
+  --theme-internal-link-color: var(--omazen-accent) !important;
+  --theme-text-color-alt: var(--omazen-foreground-muted) !important;
+  --theme-text-color-inactive: var(--omazen-foreground-muted) !important;
+  --theme-text-color-strong: var(--omazen-foreground) !important;
+  --theme-popup-background: var(--omazen-background-dark) !important;
+  --theme-popup-color: var(--omazen-foreground) !important;
+  --theme-popup-border-color: var(--omazen-border) !important;
+  --theme-select-background: var(--omazen-background-light) !important;
+  --theme-select-color: var(--omazen-foreground) !important;
+  --theme-focus-outline-color: var(--omazen-accent) !important;
   background: var(--omazen-background) !important;
   color: var(--omazen-foreground) !important;
 }
@@ -53,6 +101,31 @@
 :root[data-omazen-enabled="true"] body {
   background-color: var(--omazen-background) !important;
   color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"]:has(login-list) :is(header, body > section) {
+  background-color: var(--omazen-background) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"]:has(login-list) login-list {
+  --background-color-box: var(--omazen-background-dark) !important;
+  --background-color-canvas: var(--omazen-background) !important;
+  --border-color: var(--omazen-border) !important;
+  --border-color-selected: var(--omazen-accent) !important;
+  --text-color: var(--omazen-foreground) !important;
+  --text-color-deemphasized: var(--omazen-foreground-muted) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(.app__sidebar, .sidebar) {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(.card, .debug-target-item) {
+  background-color: var(--omazen-background-dark) !important;
+  color: var(--omazen-foreground) !important;
+  border-color: var(--omazen-border) !important;
 }
 
 :root[data-omazen-enabled="true"] body[data-page="spotlight"] {
