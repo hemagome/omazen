@@ -33,6 +33,10 @@
   --color-accent-primary-active: var(--omazen-selection) !important;
   --color-accent-primary-hover: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
   --color-accent-primary-selected: var(--omazen-accent) !important;
+  --link-color: var(--omazen-accent) !important;
+  --link-color-hover: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
+  --link-color-active: var(--omazen-accent) !important;
+  --link-color-visited: var(--omazen-accent) !important;
   --icon-color: var(--omazen-foreground-muted) !important;
   --card-background-color: var(--omazen-background-dark) !important;
   --card-border-color: var(--omazen-border) !important;
@@ -101,6 +105,24 @@
 :root[data-omazen-enabled="true"] body {
   background-color: var(--omazen-background) !important;
   color: var(--omazen-foreground) !important;
+}
+
+/* Firefox's redesigned Settings panes use both regular anchors and support
+ * links exposed as a shadow part. Map both paths explicitly because some
+ * panes override the inherited design-system link tokens. */
+:root[data-omazen-enabled="true"] :is(a, .text-link),
+:root[data-omazen-enabled="true"] ::part(support-link) {
+  color: var(--omazen-accent) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(a, .text-link):hover,
+:root[data-omazen-enabled="true"] ::part(support-link):hover {
+  color: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
+}
+
+:root[data-omazen-enabled="true"] :is(a, .text-link):hover:active,
+:root[data-omazen-enabled="true"] ::part(support-link):hover:active {
+  color: var(--omazen-accent) !important;
 }
 
 :root[data-omazen-enabled="true"]:has(login-list) :is(header, body > section) {

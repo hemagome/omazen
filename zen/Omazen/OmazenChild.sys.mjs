@@ -1,6 +1,7 @@
 "use strict";
 
 const STYLE_ID = "omazen-content-style";
+const SHADOW_LINK_STYLE_ID = "omazen-shadow-link-style";
 const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.11.css";
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const COLOR_KEYS = Object.freeze([
@@ -13,6 +14,7 @@ const COLOR_KEYS = Object.freeze([
   "selection",
   "border",
 ]);
+const shadowObservers = new WeakMap();
 
 function validatePayload(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -49,6 +51,41 @@ function ensureStyle(document) {
   return link;
 }
 
+function ensureSecurityPrivacyCardLinks(document) {
+  const applyToCard = card => {
+    const shadowRoot = card.shadowRoot;
+    if (!shadowRoot || shadowRoot.getElementById(SHADOW_LINK_STYLE_ID)) return;
+    const style = document.createElementNS("http://www.w3.org/1999/xhtml", "style");
+    style.id = SHADOW_LINK_STYLE_ID;
+    style.textContent = `
+      a {
+        color: var(--omazen-accent, inherit) !important;
+      }
+      a:hover,
+      a:hover:active {
+        color: color-mix(in srgb, var(--omazen-accent, currentColor) 82%, var(--omazen-foreground, currentColor)) !important;
+      }
+    `;
+    shadowRoot.appendChild(style);
+  };
+
+  const scan = node => {
+    if (node?.nodeType !== 1) return;
+    if (node.localName === "security-privacy-card") applyToCard(node);
+    for (const card of node.querySelectorAll?.("security-privacy-card") || []) applyToCard(card);
+  };
+
+  scan(document.documentElement);
+  if (shadowObservers.has(document)) return;
+  const observer = new document.defaultView.MutationObserver(records => {
+    for (const record of records) {
+      for (const node of record.addedNodes) scan(node);
+    }
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  shadowObservers.set(document, observer);
+}
+
 function applyToDocument(document, payload) {
   const root = document?.documentElement;
   if (!root) return;
@@ -70,6 +107,7 @@ function applyToDocument(document, payload) {
   for (const key of COLOR_KEYS) {
     root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, payload[key]);
   }
+  ensureSecurityPrivacyCardLinks(document);
   acceptButton?.part.add("omazen-primary-button");
 }
 

@@ -137,6 +137,14 @@ grep -Fq -- '--toggle-background-color-pressed: var(--omazen-accent)' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings toggle palette"
 grep -Fq -- '--select-text-color: var(--omazen-foreground)' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings selector text palette"
+grep -Fq -- '--link-color: var(--omazen-accent)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings link token palette"
+grep -Fq -- '::part(support-link)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings support link palette"
+grep -Fq -- 'ensureSecurityPrivacyCardLinks(document)' \
+  "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" || fail "Privacy card shadow link palette"
+grep -Fq -- 'a:hover:active {' \
+  "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" || fail "Privacy card shadow link interaction palette"
 grep -Fq -- '#zenCKSResetButton {' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Keyboard Shortcuts reset button palette"
 grep -Fq -- '.zenCKSOption > .zenCKSOption-label {' \

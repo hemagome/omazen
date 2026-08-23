@@ -148,6 +148,7 @@
 
   function contentPaletteCss(palette) {
     const hover = `color-mix(in srgb, ${palette.background_light} 82%, ${palette.accent})`;
+    const accentHover = `color-mix(in srgb, ${palette.accent} 82%, ${palette.foreground})`;
     return `
 @-moz-document url("about:logins"), url-prefix("chrome://browser/content/aboutlogins/"),
   url("about:translations"), url-prefix("chrome://global/content/translations/"),
@@ -182,6 +183,11 @@
     --card-background-color: ${palette.background_dark} !important;
     --card-border-color: ${palette.border} !important;
     --color-accent-primary: ${palette.accent} !important;
+    --color-accent-primary-hover: ${accentHover} !important;
+    --link-color: ${palette.accent} !important;
+    --link-color-hover: ${accentHover} !important;
+    --link-color-active: ${palette.accent} !important;
+    --link-color-visited: ${palette.accent} !important;
     --icon-color: ${palette.foreground_muted} !important;
     --input-text-background-color: ${palette.background_dark} !important;
     --input-text-border-color: ${palette.border} !important;
@@ -217,6 +223,15 @@
     --theme-focus-outline-color: ${palette.accent} !important;
     background: ${palette.background} !important;
     color: ${palette.foreground} !important;
+  }
+  :is(a, .text-link), ::part(support-link) {
+    color: ${palette.accent} !important;
+  }
+  :is(a, .text-link):hover, ::part(support-link):hover {
+    color: ${accentHover} !important;
+  }
+  :is(a, .text-link):hover:active, ::part(support-link):hover:active {
+    color: ${palette.accent} !important;
   }
   html, body, header, body > section {
     background-color: ${palette.background} !important;
