@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        0.1.8
+// @version        0.1.9
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
-// @WindowActorMatches ["about:addons","about:config","about:debugging","about:devtools-toolbox","about:devtools-toolbox?*","about:downloads","about:home","about:logins","about:newtab","about:preferences","about:privatebrowsing","about:profiles","about:protections","about:support","about:translations","about:welcome","chrome://browser/content/aboutlogins/aboutLogins.html","chrome://browser/content/spotlight.html","chrome://devtools/content/*","chrome://global/content/commonDialog.xhtml","chrome://global/content/translations/about-translations.html"]
+// @WindowActorMatches ["about:addons","about:config","about:debugging","about:devtools-toolbox","about:devtools-toolbox?*","about:downloads","about:home","about:logins","about:newtab","about:preferences","about:privatebrowsing","about:profiles","about:protections","about:support","about:translations","about:welcome","chrome://browser/content/aboutlogins/aboutLogins.html","chrome://browser/content/spotlight.html","chrome://devtools/content/*","chrome://global/content/commonDialog.xhtml","chrome://global/content/print.html","chrome://global/content/translations/about-translations.html"]
 // ==/UserScript==
 
 (() => {
@@ -16,9 +16,9 @@
   const MAX_LOG_BYTES = 131072;
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
-  const VERSION = "0.1.8";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.8.css";
-  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.8.css";
+  const VERSION = "0.1.9";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v0.1.9.css";
+  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.9.css";
   const STATE_LEAF = ".local/state/omazen";
   const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
   const COLOR_KEYS = Object.freeze([
@@ -42,6 +42,7 @@
     "chrome://browser/content/spotlight.html",
     "chrome://devtools/content/",
     "chrome://global/content/commonDialog.xhtml",
+    "chrome://global/content/print.html",
     "chrome://global/content/translations/about-translations.html",
   ]);
   const AUXILIARY_WINDOW_TYPES = Object.freeze({
@@ -150,7 +151,8 @@
     return `
 @-moz-document url("about:logins"), url-prefix("chrome://browser/content/aboutlogins/"),
   url("about:translations"), url-prefix("chrome://global/content/translations/"),
-  url("about:debugging"), url-prefix("chrome://devtools/content/") {
+  url("about:debugging"), url-prefix("chrome://devtools/content/"),
+  url("chrome://global/content/print.html") {
   :root {
     color-scheme: ${palette.mode} !important;
     --omazen-accent: ${palette.accent} !important;
@@ -224,6 +226,30 @@
     background-color: ${palette.background_dark} !important;
     color: ${palette.foreground} !important;
     border-color: ${palette.border} !important;
+  }
+  #print, .header-container, .body-container, .footer-container {
+    background-color: ${palette.background} !important;
+    color: ${palette.foreground} !important;
+  }
+  #print :is(select, input[type="number"], input[type="text"]),
+  .toggle-group-label {
+    background-color: ${palette.background_dark} !important;
+    color: ${palette.foreground} !important;
+    border-color: ${palette.border} !important;
+  }
+  .toggle-group-input:checked + .toggle-group-label {
+    background-color: ${palette.accent} !important;
+    color: ${palette.background_dark} !important;
+    border-color: ${palette.accent} !important;
+  }
+  #print :is(input[type="radio"], input[type="checkbox"]) {
+    accent-color: ${palette.accent} !important;
+  }
+  #print :is(hr, .twisty, #button-container) {
+    border-color: ${palette.border} !important;
+  }
+  #open-dialog-link {
+    color: ${palette.accent} !important;
   }
 }`;
   }
