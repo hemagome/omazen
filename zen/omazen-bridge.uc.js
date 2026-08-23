@@ -269,6 +269,12 @@
   #open-dialog-link {
     color: ${palette.accent} !important;
   }
+}
+@-moz-document url-prefix("http://"), url-prefix("https://"), url-prefix("file://") {
+  :root,
+  * {
+    scrollbar-color: ${palette.foreground_muted} ${palette.background_dark} !important;
+  }
 }`;
   }
 

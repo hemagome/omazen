@@ -143,6 +143,10 @@ grep -Fq -- 'scrollbar-color: var(--omazen-scrollbar-thumb) var(--omazen-scrollb
   "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v0.1.11.css" || fail "browser chrome scrollbar palette"
 grep -Fq -- '--omazen-scrollbar-thumb: ${palette.foreground_muted}' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "isolated document scrollbar palette"
+grep -Fq -- '@-moz-document url-prefix("http://"), url-prefix("https://"), url-prefix("file://")' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "web page scrollbar scope"
+grep -Fq -- 'scrollbar-color: ${palette.foreground_muted} ${palette.background_dark}' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "web page scrollbar palette"
 grep -Fq -- '--link-color: var(--omazen-accent)' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Settings link token palette"
 grep -Fq -- '::part(support-link)' \
