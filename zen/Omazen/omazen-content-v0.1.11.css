@@ -1,4 +1,10 @@
 :root[data-omazen-enabled="true"] {
+  /* Semantic text roles. Firefox's moz-box-link maps enabled row actions
+   * through the menu/ghost button chain, so raw muted text must not be used
+   * as its default foreground. */
+  --omazen-action-text: var(--omazen-foreground);
+  --omazen-secondary-text: color-mix(in srgb, var(--omazen-foreground-muted) 40%, var(--omazen-foreground));
+  --omazen-disabled-text: var(--omazen-foreground-muted);
   --background-color-canvas: var(--omazen-background) !important;
   --background-color-box: var(--omazen-background-dark) !important;
   --background-color-box-info: var(--omazen-background-light) !important;
@@ -22,8 +28,20 @@
   --button-text-color-primary-active: var(--omazen-background-dark) !important;
   --button-text-color-primary-hover: var(--omazen-background-dark) !important;
   --button-background-color-ghost-hover: var(--omazen-background-light) !important;
-  --button-text-color-ghost: var(--omazen-foreground-muted) !important;
-  --button-text-color-ghost-hover: var(--omazen-foreground) !important;
+  --button-text-color-ghost: var(--omazen-action-text) !important;
+  --button-text-color-ghost-hover: var(--omazen-action-text) !important;
+  --button-text-color-ghost-active: var(--omazen-action-text) !important;
+  --button-text-color-ghost-selected: var(--omazen-action-text) !important;
+  --button-text-color-ghost-disabled: var(--omazen-disabled-text) !important;
+  --button-text-color-menu: var(--omazen-action-text) !important;
+  --button-text-color-menu-hover: var(--omazen-action-text) !important;
+  --button-text-color-menu-active: var(--omazen-action-text) !important;
+  --button-text-color-menu-selected: var(--omazen-action-text) !important;
+  --button-text-color-menu-disabled: var(--omazen-disabled-text) !important;
+  --box-button-text-color: var(--omazen-action-text) !important;
+  --box-button-text-color-hover: var(--omazen-action-text) !important;
+  --box-button-text-color-active: var(--omazen-action-text) !important;
+  --box-button-text-color-disabled: var(--omazen-disabled-text) !important;
   --border-color: var(--omazen-border) !important;
   --border-color-selected: var(--omazen-accent) !important;
   --border-color-interactive: var(--omazen-border) !important;
@@ -308,7 +326,7 @@
 }
 
 :root[data-omazen-enabled="true"] #zenCKSGroup > .description-deemphasized {
-  color: color-mix(in srgb, var(--omazen-foreground-muted) 55%, var(--omazen-foreground)) !important;
+  color: var(--omazen-secondary-text) !important;
 }
 
 :root[data-omazen-enabled="true"] #zenCKSResetButton {
@@ -343,7 +361,7 @@
 }
 
 :root[data-omazen-enabled="true"] .zenCKSOption-input.zenCKSOption-input-not-set {
-  color: color-mix(in srgb, var(--omazen-foreground-muted) 55%, var(--omazen-foreground)) !important;
+  color: var(--omazen-secondary-text) !important;
 }
 
 :root[data-omazen-enabled="true"] .zenCKSOption-input.zenCKSOption-input-editing {
@@ -384,7 +402,7 @@
 
 :root[data-omazen-enabled="true"] #zenMarketplaceGroup > .description-deemphasized,
 :root[data-omazen-enabled="true"] .zenThemeMarketplaceItemDescription {
-  color: color-mix(in srgb, var(--omazen-foreground-muted) 55%, var(--omazen-foreground)) !important;
+  color: var(--omazen-secondary-text) !important;
 }
 
 :root[data-omazen-enabled="true"] #zenThemeMarketplaceLink {

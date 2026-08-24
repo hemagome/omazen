@@ -183,8 +183,16 @@ grep -Fq -- 'chrome://browser/content/aboutlogins/aboutLogins.html' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Passwords redirected document match"
 grep -Fq -- ':has(login-list) login-list' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Passwords list palette"
-grep -Fq -- '--button-text-color-ghost: var(--omazen-foreground-muted)' \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Passwords secondary control palette"
+grep -Fq -- '--omazen-secondary-text: color-mix(in srgb, var(--omazen-foreground-muted) 40%, var(--omazen-foreground))' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "readable secondary text role"
+grep -Fq -- '--button-text-color-ghost: var(--omazen-action-text)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "enabled ghost action text palette"
+grep -Fq -- '--button-text-color-menu-active: var(--omazen-action-text)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "active menu action text palette"
+grep -Fq -- '--box-button-text-color-disabled: var(--omazen-disabled-text)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "disabled box action text palette"
+grep -Fq -- '--button-text-color-menu: var(--omazen-action-text)' \
+  "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "isolated page action text palette"
 grep -Fq -- '"about:translations"' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Translations WindowActor match"
 grep -Fq -- 'chrome://global/content/translations/about-translations.html' \
