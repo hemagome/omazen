@@ -26,6 +26,8 @@ grep -Fq -- 'Omazen/OmazenPalette.sys.mjs' "$BRIDGE" || fail "bridge shared pale
 grep -Fq -- 'from "./OmazenPalette.sys.mjs";' "$CHILD" || fail "child shared palette module"
 [[ -f $PROJECT_ROOT/zen/Omazen/$CHROME_CSS ]] || fail "missing versioned chrome stylesheet"
 [[ -f $PROJECT_ROOT/zen/Omazen/$CONTENT_CSS ]] || fail "missing versioned content stylesheet"
+grep -Fq -- "omazen-content-v$VERSION.css" \
+  "$PROJECT_ROOT/tests/fixtures/visual-smoke.html" || fail "visual fixture stylesheet version"
 grep -Fq -- 'OMAZEN_VERSION=$(<"$OMAZEN_ROOT/VERSION")' "$PROJECT_ROOT/lib/common.sh" || \
   fail "shell runtime does not read VERSION"
 grep -Fq -- 'printf '\''%s\n'\'' "$OMAZEN_VERSION" >"$STAGING/.omazen-installed"' \
