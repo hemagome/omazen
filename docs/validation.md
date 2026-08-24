@@ -1,4 +1,14 @@
-# Current release validation report
+# Release validation report
+
+## 1.1.1 maintenance release
+
+Omazen `1.1.1` contains release automation, test and documentation updates,
+plus versioned identifiers for the unchanged runtime. The automated
+`tests/release-gate.sh` passed for this release. No new live browser
+qualification was required; the validated `1.1.0` runtime baseline below
+remains applicable.
+
+## Validated 1.1.0 runtime baseline
 
 Date: 2026-08-24
 Release: Omazen `1.1.0`

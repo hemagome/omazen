@@ -1,21 +1,18 @@
 # Release checklist
 
-Use this checklist from a clean `main` worktree. Replace `1.1.0` when preparing a
+Use this checklist from a clean `main` worktree. Replace `1.1.1` when preparing a
 later release.
 
 ## Automated gate
 
 ```bash
-tests/install-linters.sh /tmp/omazen-release-linters
-PATH=/tmp/omazen-release-linters:$PATH tests/lint.sh
-tests/syntax.sh
-tests/test.sh
-tests/visual-smoke.sh
-git diff --check
+tests/release-gate.sh
 ```
 
-Require the release-consistency check to report the same version as `VERSION`
-and all tests to pass before deployment.
+The gate installs the pinned analyzers, runs static analysis, validates the
+release consistency, exercises the disposable lifecycle, renders the visual
+smoke fixture with Zen, and checks repository whitespace. It must pass before
+deployment.
 
 ## Local deployment gate
 
@@ -23,7 +20,7 @@ and all tests to pass before deployment.
 2. Run `./install.sh` from the release commit.
 3. Reopen Zen once so fx-autoconfig loads the new bridge and shared module.
 4. Run `omazen doctor` and require zero failures and zero warnings.
-5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.1.0`, a successful
+5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.1.1`, a successful
    `PALETTE_APPLIED`, and no current error.
 6. Exercise dark/light theme changes, disable/enable, Settings, a common dialog,
    Library, Passwords, Print and Developer Tools without destructive actions.
@@ -36,13 +33,16 @@ activated update.
 
 ## Publication gate
 
-After the live validation report is updated and committed:
+After the live validation report is updated and committed, create and push the
+version tag:
 
 ```bash
-git tag -a v1.1.0 -m "Omazen 1.1.0"
+git tag -a v1.1.1 -m "Omazen 1.1.1"
 git push origin main
-git push origin v1.1.0
+git push origin v1.1.1
 ```
 
-Create the GitHub release from the `1.1.0` changelog section. Verify the tag and
-release point to the same validated commit.
+The `Release` GitHub Actions workflow validates the tag against `VERSION`, runs
+the complete CI gate, extracts the matching changelog section, and creates the
+GitHub release only after every check passes. It can also be dispatched manually
+for an existing version tag.

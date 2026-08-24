@@ -9,8 +9,10 @@ bridge version and versioned stylesheet URI against it.
 
 ## Current status
 
-Omazen `1.1.0` has passed the automated syntax, release-consistency, functional
-and rendered-pixel suites, plus the live Zen release gate on 24 August 2026:
+Omazen `1.1.1` is a maintenance release containing release automation and
+documentation improvements. Its runtime is unchanged from the `1.1.0` build,
+which passed the automated syntax, release-consistency, functional and
+rendered-pixel suites, plus the live Zen release gate on 24 August 2026:
 
 - Omarchy `4.0.0-1` (Quattro)
 - `zen-browser-bin 1.21.15b-1`
@@ -97,6 +99,13 @@ tests/visual-smoke.sh
 ```
 
 It loads the production content stylesheet in a real headless Zen window and checks pixels from the resulting screenshot. To keep the capture for inspection, set `OMAZEN_KEEP_VISUAL_OUTPUT=1` and `OMAZEN_VISUAL_OUTPUT_DIR` to an explicit directory.
+
+To run the complete pre-release gate locally, including static analysis,
+functional tests, the visual smoke test and whitespace checks:
+
+```bash
+tests/release-gate.sh
+```
 
 Before publishing a release, follow the [release checklist](docs/release.md).
 

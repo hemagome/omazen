@@ -6,6 +6,7 @@ on:
       - main
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -44,3 +45,66 @@ jobs:
 
       - name: Run test suite
         run: tests/test.sh
+
+      - name: Check repository whitespace
+        run: git diff --check
+
+  visual:
+    name: Rendered-pixel smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Install visual test dependencies
+        run: sudo apt-get update && sudo apt-get install --yes imagemagick libasound2t64 libdbus-glib-1-2 libgtk-3-0t64
+
+      - name: Install validated Zen build
+        env:
+          ZEN_VERSION: 1.21.15b
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/zen.linux-x86_64.tar.xz"
+          zen_root="$RUNNER_TEMP/zen"
+          bin_root="$RUNNER_TEMP/bin"
+
+          curl --fail --location --proto '=https' --retry 3 --silent --show-error \
+            --output "$archive" \
+            "https://github.com/zen-browser/desktop/releases/download/$ZEN_VERSION/zen.linux-x86_64.tar.xz"
+
+          mkdir -p "$zen_root" "$bin_root"
+          first_entry=$(tar -tf "$archive" | sed -n '1p')
+          if [[ $first_entry == */* ]]; then
+            tar --strip-components=1 -xf "$archive" -C "$zen_root"
+          else
+            tar -xf "$archive" -C "$zen_root"
+          fi
+
+          grep -Fqx -- "Version=$ZEN_VERSION" "$zen_root/application.ini"
+          test -x "$zen_root/zen"
+          ln -s "$zen_root/zen" "$bin_root/zen-browser"
+          echo "$bin_root" >> "$GITHUB_PATH"
+
+      - name: Run rendered-pixel smoke test
+        env:
+          OMAZEN_KEEP_VISUAL_OUTPUT: 1
+          OMAZEN_VISUAL_OUTPUT_DIR: ${{ runner.temp }}/omazen-visual-output
+        run: tests/visual-smoke.sh
+
+      - name: Upload visual output on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: omazen-visual-smoke
+          path: ${{ runner.temp }}/omazen-visual-output/
+          if-no-files-found: ignore

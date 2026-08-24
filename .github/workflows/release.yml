@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to validate and publish
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate release
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  publish:
+    name: Publish GitHub Release
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_REF: ${{ inputs.tag || github.ref_name }}
+
+    steps:
+      - name: Check out validated tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify tag, version, and changelog
+        run: |
+          set -euo pipefail
+          version=$(<VERSION)
+          expected_tag="v$version"
+
+          [[ $RELEASE_REF == "$expected_tag" ]] || {
+            printf 'ERROR: ref %s does not match VERSION %s\n' "$RELEASE_REF" "$version" >&2
+            exit 1
+          }
+          git show-ref --verify --quiet "refs/tags/$RELEASE_REF"
+          [[ $(git rev-list -n 1 "$RELEASE_REF") == "$(git rev-parse HEAD)" ]]
+
+          awk -v version="$version" '
+            $0 ~ "^## \\[" version "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md >"$RUNNER_TEMP/release-notes.md"
+          [[ -s $RUNNER_TEMP/release-notes.md ]] || {
+            printf 'ERROR: changelog section for %s is missing\n' "$version" >&2
+            exit 1
+          }
+
+      - name: Create GitHub Release
+        run: |
+          set -euo pipefail
+          version=$(<VERSION)
+          gh release create "$RELEASE_REF" \
+            --verify-tag \
+            --title "Omazen $version" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"

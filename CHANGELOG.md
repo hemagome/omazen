@@ -4,6 +4,8 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-08-24
+
 ### Added
 
 - CI now verifies the exact file set, SHA-256 hashes, upstream commit and loader
@@ -20,6 +22,8 @@ All notable changes to Omazen are documented here.
   disables the unused package-manager cache.
 - CI now cancels superseded runs, times out stalled validation, supports manual
   dispatch and avoids duplicate runs when release tags are pushed.
+- Release validation now has one local gate, a CI rendered-pixel job, and a tag
+  workflow that publishes the GitHub Release only after all checks pass.
 
 ## [1.1.0] - 2026-08-24
 
