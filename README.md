@@ -76,6 +76,10 @@ See [compatibility details](docs/compatibility.md), [architecture](docs/architec
 
 ## Development
 
+Contributions are welcome. Please read the [contribution guide](.github/CONTRIBUTING.md),
+follow the [Code of Conduct](.github/CODE_OF_CONDUCT.md), and use the repository's
+pull request template when opening a change.
+
 CI uses Node.js 24 plus pinned ShellCheck 0.11.0 and actionlint 1.7.12
 binaries. To reproduce static analysis locally on Linux x86-64:
 
