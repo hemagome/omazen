@@ -27,7 +27,13 @@ pass() {
 }
 
 command -v zen-browser >/dev/null 2>&1 || fail "zen-browser is required"
-command -v magick >/dev/null 2>&1 || fail "ImageMagick magick is required"
+if command -v magick >/dev/null 2>&1; then
+  IMAGE_MAGICK=magick
+elif command -v convert >/dev/null 2>&1 && command -v identify >/dev/null 2>&1; then
+  IMAGE_MAGICK=legacy
+else
+  fail "ImageMagick magick or legacy convert/identify is required"
+fi
 [[ -f $FIXTURE ]] || fail "missing fixture: $FIXTURE"
 
 mkdir -p "$OUTPUT_DIR"
@@ -53,12 +59,20 @@ set -e
   fail "Zen did not produce a screenshot (exit $browser_status)"
 }
 
-geometry=$(magick identify -format '%m %w %h' "$OUTPUT")
+if [[ $IMAGE_MAGICK == magick ]]; then
+  geometry=$(magick identify -format '%m %w %h' "$OUTPUT")
+else
+  geometry=$(identify -format '%m %w %h' "$OUTPUT")
+fi
 [[ $geometry == "PNG 1000 768" ]] || \
   fail "unexpected screenshot geometry: $geometry"
 
 pixel() {
-  magick "$OUTPUT" -format "%[pixel:p{$1,$2}]" info:
+  if [[ $IMAGE_MAGICK == magick ]]; then
+    magick "$OUTPUT" -format "%[pixel:p{$1,$2}]" info:
+  else
+    convert "$OUTPUT" -format "%[pixel:p{$1,$2}]" info:
+  fi
 }
 
 assert_pixel() {
