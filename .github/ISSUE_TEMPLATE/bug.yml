@@ -1,0 +1,82 @@
+name: 🐛 Bug report
+description: Report a problem with Omazen or its integration with Zen.
+title: "[Bug]: "
+labels:
+  - bug
+  - triage
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting a bug report:
+
+        1. Run `omazen doctor`.
+        2. Run `omazen status`.
+        3. If `doctor` reports missing Omazen-owned loader files, run `omazen setup` and then run `omazen doctor` again.
+        4. Do not include passwords, tokens, or other sensitive information.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: "I searched for existing issues that describe the same problem."
+          required: true
+        - label: "I ran `omazen doctor` and will include its output below."
+          required: true
+        - label: "I ran `omazen status` and will include its output below."
+          required: true
+
+  - type: textarea
+    id: doctor_output
+    attributes:
+      label: Output of omazen doctor
+      description: Paste the complete output of `omazen doctor`.
+      placeholder: Paste the output of `omazen doctor` here.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: status_output
+    attributes:
+      label: Output of omazen status
+      description: Include the Omazen version, Zen version, and installation state.
+      placeholder: Paste the output of `omazen status` here.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: system
+    attributes:
+      label: System and Zen version
+      description: Include your Omarchy version and Zen package/version if known.
+      placeholder: Omarchy 4.x / zen-browser-bin 1.x
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the current behavior and what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Additional logs
+      description: Optionally include the relevant lines from `~/.local/state/omazen/bridge.log`.
+      render: shell
