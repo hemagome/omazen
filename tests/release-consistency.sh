@@ -10,6 +10,9 @@ BRIDGE="$PROJECT_ROOT/zen/omazen-bridge.uc.js"
 CHILD="$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs"
 CHROME_CSS="omazen-chrome-v${VERSION}.css"
 CONTENT_CSS="omazen-content-v${VERSION}.css"
+FX_AUTOCONFIG="$PROJECT_ROOT/vendor/fx-autoconfig"
+FX_AUTOCONFIG_VERSION=0.10.16
+FX_AUTOCONFIG_COMMIT=dfdab5684faffc112b76ccb1d8cab7f75da0102c
 
 fail() {
   printf 'Release consistency error: %s\n' "$*" >&2
@@ -28,12 +31,30 @@ grep -Fq -- 'from "./OmazenPalette.sys.mjs";' "$CHILD" || fail "child shared pal
 [[ -f $PROJECT_ROOT/zen/Omazen/$CONTENT_CSS ]] || fail "missing versioned content stylesheet"
 grep -Fq -- "omazen-content-v$VERSION.css" \
   "$PROJECT_ROOT/tests/fixtures/visual-smoke.html" || fail "visual fixture stylesheet version"
+# shellcheck disable=SC2016 # Match the literal shell source, not expanded values.
 grep -Fq -- 'OMAZEN_VERSION=$(<"$OMAZEN_ROOT/VERSION")' "$PROJECT_ROOT/lib/common.sh" || \
   fail "shell runtime does not read VERSION"
+# shellcheck disable=SC2016 # Match the literal shell source, not expanded values.
 grep -Fq -- 'printf '\''%s\n'\'' "$OMAZEN_VERSION" >"$STAGING/.omazen-installed"' \
   "$PROJECT_ROOT/install.sh" || fail "installer marker does not use VERSION"
 if grep -Rqs -- 'STATE_LEAF' "$PROJECT_ROOT/zen"; then
   fail "dead STATE_LEAF declaration remains"
 fi
+
+(
+  cd -- "$FX_AUTOCONFIG"
+  sha256sum --check --strict SHA256SUMS >/dev/null
+  expected_files=$(awk '{print $2}' SHA256SUMS | LC_ALL=C sort)
+  actual_files=$(find program profile -type f -print | LC_ALL=C sort)
+  [[ $actual_files == "$expected_files" ]]
+) || fail "vendored fx-autoconfig files do not match the pinned manifest"
+grep -Fq -- "$FX_AUTOCONFIG_COMMIT" "$FX_AUTOCONFIG/UPSTREAM.md" || \
+  fail "fx-autoconfig commit provenance is inconsistent"
+grep -Fq -- "Loader version: \`$FX_AUTOCONFIG_VERSION\`" "$FX_AUTOCONFIG/UPSTREAM.md" || \
+  fail "fx-autoconfig version provenance is inconsistent"
+while read -r checksum path; do
+  grep -Fq -- "$checksum" "$FX_AUTOCONFIG/UPSTREAM.md" || \
+    fail "fx-autoconfig documented checksum is inconsistent: $path"
+done <"$FX_AUTOCONFIG/SHA256SUMS"
 
 printf 'Release consistency checks passed for %s.\n' "$VERSION"

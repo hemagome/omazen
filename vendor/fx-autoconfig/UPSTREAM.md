@@ -8,6 +8,8 @@
 - Local modifications: none
 
 Only the files required by the Omazen runtime are vendored.
+`SHA256SUMS` is the canonical machine-readable integrity manifest; the table
+below mirrors it for review, and CI verifies both representations.
 
 | File | SHA-256 |
 |---|---|
@@ -21,4 +23,3 @@ Only the files required by the Omazen runtime are vendored.
 | `profile/chrome/utils/utils.sys.mjs` | `3fb7c9799864ee01428722939f324acea1e6065cb63a9298e7bbc59e5adbd96a` |
 
 Updates must change this document, the pinned commit, checksums and third-party review together. Omazen never downloads updates at runtime.
-
