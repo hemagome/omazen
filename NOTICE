@@ -1,0 +1,17 @@
+# Omazen notice
+
+Copyright (c) 2026 Omazen contributors
+Project: https://github.com/hemagome/omazen
+
+Unless a file or directory says otherwise, Omazen source code is licensed
+under the GNU General Public License version 3.0 only (GPL-3.0-only).
+
+The following attribution is a required legal notice under section 7 of the
+GPLv3 and must be preserved in copies and modified versions of the Omazen
+source code:
+
+Required Notice: Omazen contributors — https://github.com/hemagome/omazen
+
+The files under `vendor/fx-autoconfig` are third-party MPL 2.0 software and
+are not relicensed under the GPL. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
+for their provenance and license terms.

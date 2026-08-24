@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
 
 set -euo pipefail
 
@@ -13,4 +15,3 @@ fi
 
 printf 'Omazen hook: omazen command not found\n' >&2
 exit 127
-

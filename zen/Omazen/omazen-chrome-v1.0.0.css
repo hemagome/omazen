@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* See NOTICE for the required Omazen project attribution terms. */
+
 /* Versioned filename prevents stale chrome:// stylesheet caches after upgrades. */
 :root[data-omazen-enabled="true"] {
   --zen-primary-color: var(--omazen-accent) !important;

@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
 
 hook_destination() {
   printf '%s\n' "$OMAZEN_HOOKS_DIR/theme-set.d/theme-set"
@@ -32,4 +34,3 @@ install_theme_hook() {
   fi
   record_owned_file "$OMAZEN_HOOK_MANIFEST" "$destination" "$source_hash"
 }
-
