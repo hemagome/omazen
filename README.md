@@ -2,7 +2,7 @@
 
 Omazen hot-reloads the active Omarchy Quattro palette into Zen Browser without restarting Zen after the one-time privileged-loader setup.
 
-The supported MVP is intentionally small at runtime: Bash reads Quattro's semantic `colors.toml` and atomically writes a normalized JSON file; a constrained privileged JavaScript bridge watches that fixed file; CSS variables restyle Zen chrome; and a `JSWindowActor` limited to an allowlist of `about:` pages updates relevant internal pages. There is no Node.js, Python, Rust, Go, Matugen, Sine, WebExtension, remote code download or local server in the runtime path.
+The supported runtime is intentionally small: Bash reads Quattro's semantic `colors.toml` and atomically writes a normalized JSON file; a constrained privileged JavaScript bridge watches that fixed file; CSS variables restyle Zen chrome; and a `JSWindowActor` limited to an allowlist of `about:` pages updates relevant internal pages. There is no Node.js, Python, Rust, Go, Matugen, Sine, WebExtension, remote code download or local server in the runtime path.
 
 The canonical release number is stored in `VERSION`; CI checks every embedded
 bridge version and versioned stylesheet URI against it.
@@ -68,7 +68,7 @@ Transitions default to 180 ms, respect reduced-motion settings, and can be disab
 
 ## Compatibility
 
-The official MVP scope is **Omarchy Quattro plus the native Arch package `zen-browser-bin`** at `/opt/zen-browser-bin`. This release fully validates only Zen `1.21.15b` (`zen-browser-bin 1.21.15b-1`). Native Zen versions `>=1.20` are compatibility candidates: unknown newer versions may pass setup, but `omazen doctor` warns and they are not supported until tested. Flatpak, Firefox, AppImage, tarball, source-build, and other non-native Zen installations are outside the MVP. Run `omazen doctor` after every Zen update; package upgrades may replace the program-level loader files and `omazen setup` repairs an owned installation.
+The official support scope is **Omarchy Quattro plus the native Arch package `zen-browser-bin`** at `/opt/zen-browser-bin`. This release fully validates only Zen `1.21.15b` (`zen-browser-bin 1.21.15b-1`). Native Zen versions `>=1.20` are compatibility candidates: unknown newer versions may pass setup, but `omazen doctor` warns and they are not supported until tested. Flatpak, Firefox, AppImage, tarball, source-build, and other non-native Zen installations are outside the supported scope. Run `omazen doctor` after every Zen update; package upgrades may replace the program-level loader files and `omazen setup` repairs an owned installation.
 
 See [compatibility details](docs/compatibility.md), [architecture](docs/architecture.md), and [research notes](docs/research.md).
 

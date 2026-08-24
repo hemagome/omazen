@@ -43,7 +43,7 @@ The audited native package was `zen-browser-bin 1.21.15b-1`:
 - source repository recorded by the binary: [zen-browser/desktop](https://github.com/zen-browser/desktop)
 - source stamp recorded by the binary: `cee4147767801299dec330c81318c01e5a39e6ec`
 
-Inspection of the installed `browser/omni.ja` confirmed current Zen CSS surfaces for toolbar, omnibox, vertical tabs, workspaces, split view, Glance, popups, compact mode and panels. Stable variables used by the MVP include `--zen-primary-color`, `--zen-colors-primary`, `--zen-colors-secondary`, `--zen-colors-tertiary`, `--zen-colors-border`, `--zen-main-browser-background`, `--zen-toolbar-element-bg` and `--zen-split-view-active-tab-bg`. Selectors are scoped below `:root[data-omazen-enabled="true"]` so disabling Omazen restores Zen's own cascade.
+Inspection of the installed `browser/omni.ja` confirmed current Zen CSS surfaces for toolbar, omnibox, vertical tabs, workspaces, split view, Glance, popups, compact mode and panels. Stable variables used by Omazen include `--zen-primary-color`, `--zen-colors-primary`, `--zen-colors-secondary`, `--zen-colors-tertiary`, `--zen-colors-border`, `--zen-main-browser-background`, `--zen-toolbar-element-bg` and `--zen-split-view-active-tab-bg`. Selectors are scoped below `:root[data-omazen-enabled="true"]` so disabling Omazen restores Zen's own cascade.
 
 Zen's own `ZenActorsManager.sys.mjs` uses parent/child actors for Mods Marketplace, Glance, window drag and Boosts. Mozilla documents `JSWindowActor` as the Fission-safe parent/child communication primitive for frames in [Firefox Source Docs](https://firefox-source-docs.mozilla.org/dom/ipc/jsactors.html). Zen's official [live editing guide](https://docs.zen-browser.app/guides/live-editing) confirms the supported approach for discovering current chrome selectors, but CSS alone cannot observe an external palette file.
 
@@ -75,4 +75,3 @@ Its two layers are intentionally kept separate:
 The experimental `@WindowActor` metadata is gated by `userChromeJS.experimental.enabled`. Omazen enables it with an isolated program preference drop-in instead of editing `user.js`. The upstream [README warning](https://github.com/MrOtherGuy/fx-autoconfig/blob/dfdab5684faffc112b76ccb1d8cab7f75da0102c/readme.md) is accurate and central: any process able to modify profile loader scripts can inject privileged browser logic.
 
 The installer reuses an exact or structurally compatible existing loader, but refuses to overwrite or automatically merge a foreign autoconfig. No update URL is executed by Omazen and no component is fetched at runtime.
-

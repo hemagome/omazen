@@ -8,7 +8,7 @@ Date: 2026-08-22
 
 The proof succeeded. Zen changed visible chrome colors after an atomic JSON replacement while the browser window remained open and retained the same process ID. No window was reopened and Zen was not restarted between palette A and palette B.
 
-The packaged MVP was then exercised separately and produced the same hot-reload event through the final CLI-generated schema and final bridge.
+The packaged implementation was then exercised separately and produced the same hot-reload event through the final CLI-generated schema and final bridge.
 
 ## Test environment
 
@@ -59,4 +59,4 @@ The final packaged bridge was subsequently installed into another disposable pro
 
 ## Decision
 
-fx-autoconfig works with the tested Zen build, so the privileged backend remains the MVP architecture. A WebExtension/native-messaging backend is not needed as a fallback for this release. The initial restart remains necessary to activate autoconfig; subsequent theme changes are truly live.
+fx-autoconfig works with the tested Zen build, so the privileged backend remains the release architecture. A WebExtension/native-messaging backend is not needed as a fallback for this release. The initial restart remains necessary to activate autoconfig; subsequent theme changes are truly live.

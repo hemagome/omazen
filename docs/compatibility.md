@@ -1,8 +1,8 @@
 # Compatibility
 
-## Official MVP scope
+## Official support scope
 
-The official Omazen MVP contract is **Omarchy Quattro + the native Arch
+The official Omazen compatibility contract is **Omarchy Quattro + the native Arch
 `zen-browser-bin` package** installed at `/opt/zen-browser-bin`. Compatibility
 claims below apply only to that combination. Omazen does not claim support for
 other Zen packaging formats or for Firefox.
@@ -41,7 +41,7 @@ cannot be detected, is not a candidate and is rejected.
 
 ### Explicit exclusions
 
-The following are outside the MVP and have no support commitment:
+The following are outside the supported scope and have no support commitment:
 
 - Zen Flatpak.
 - Firefox.
@@ -62,9 +62,9 @@ The setup operation is idempotent. It reuses an intact compatible loader, update
 
 Zen-specific selectors and `--zen-*` variables are not a stable public API. The current CSS was checked against the installed 1.21.15b `browser/omni.ja`. A future Zen build may keep the bridge operational while individual surfaces stop matching. Compatibility updates should inspect the exact package's `zen-styles` files and extend CSS only under Omazen's scope attribute.
 
-## Known MVP boundaries
+## Known product boundaries
 
 - Browser chrome, URL bar, tabs, sidebar, workspace controls, popups, split containers, Glance containers and relevant internal pages are targeted.
 - Ordinary website content is deliberately not recolored; only vertical and horizontal scrollbar colors are mapped to the active palette.
 - Zen Boost storage is deliberately not mutated.
-- No WebExtension/native-messaging alternative is shipped because the privileged PoC succeeded and the alternate backend has not yet demonstrated equivalent Zen-specific coverage.
+- No WebExtension/native-messaging alternative is shipped because the privileged backend has proven reliable and the alternate backend has not demonstrated equivalent Zen-specific coverage.

@@ -13,6 +13,8 @@ All notable changes to Omazen are documented here.
 
 ### Changed
 
+- Documentation now describes Omazen's official support scope and product
+  boundaries without obsolete pre-release terminology.
 - CI uses Node.js 24, `actions/checkout` 7.0.1 and `actions/setup-node` 7.0.0,
   pins both actions to full commits, drops persisted checkout credentials and
   disables the unused package-manager cache.
@@ -73,7 +75,7 @@ First stable release.
 - Candidate range: native `zen-browser-bin` Zen `>=1.20`; unknown versions
   remain unvalidated and produce a `doctor` warning.
 - Flatpak, Firefox, AppImage, tarball, source builds and other non-native Zen
-  packaging formats remain outside the MVP.
+  packaging formats remain outside the supported scope.
 
 ### Fixed
 
