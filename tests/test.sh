@@ -171,6 +171,10 @@ grep -Fq -- '.zenCKSOption-input.zenCKSOption-input-editing {' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Keyboard Shortcuts editing palette"
 grep -Fq -- '#zenMarketplaceGroup button {' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Zen Mods action palette"
+grep -Fq -- '#zenThemeMarketplaceLink:is(:hover, :focus-visible)' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Zen Mods store link hover palette"
+grep -Fq -- '#zenThemeMarketplaceLink:hover:active' \
+  "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Zen Mods store link active palette"
 grep -Fq -- '.zenThemeMarketplaceItem {' \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v0.1.11.css" || fail "Zen Mods card palette"
 grep -Fq -- '.zenThemeMarketplaceItem > dialog {' \

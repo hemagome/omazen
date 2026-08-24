@@ -409,6 +409,14 @@
   color: var(--omazen-accent) !important;
 }
 
+:root[data-omazen-enabled="true"] #zenThemeMarketplaceLink:is(:hover, :focus-visible) {
+  color: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
+}
+
+:root[data-omazen-enabled="true"] #zenThemeMarketplaceLink:hover:active {
+  color: var(--omazen-accent) !important;
+}
+
 :root[data-omazen-enabled="true"] #zenMarketplaceGroup button {
   background-color: var(--omazen-background-light) !important;
   color: var(--omazen-foreground) !important;
