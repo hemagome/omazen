@@ -90,7 +90,7 @@ assert_pixel() {
 # They prove the browser painted the CSS values rather than merely accepting
 # the selectors in the stylesheet.
 assert_pixel "document surface" 10 10 "srgba(16,32,48,1)"
-assert_pixel "header surface" 500 70 "srgba(32,48,64,1)"
+assert_pixel "header surface" 900 70 "srgba(32,48,64,1)"
 assert_pixel "card surface" 80 190 "srgba(8,16,24,1)"
 assert_pixel "marketplace button" 220 245 "srgba(32,48,64,1)"
 assert_pixel "search input" 780 245 "srgba(8,16,24,1)"
