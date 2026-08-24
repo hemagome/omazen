@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
 
 set -euo pipefail
 
@@ -19,10 +21,15 @@ done
 javascript_files=(
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js"
   "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs"
+  "$PROJECT_ROOT/zen/Omazen/OmazenPalette.sys.mjs"
   "$PROJECT_ROOT/zen/Omazen/OmazenParent.sys.mjs"
+  "$PROJECT_ROOT/tests/bridge-regressions.mjs"
+  "$PROJECT_ROOT/tests/js-regressions.mjs"
 )
 for javascript_file in "${javascript_files[@]}"; do
   node --check "$javascript_file"
 done
+
+"$PROJECT_ROOT/tests/release-consistency.sh"
 
 printf 'Syntax checks passed.\n'

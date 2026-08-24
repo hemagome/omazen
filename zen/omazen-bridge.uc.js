@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* See NOTICE for the required Omazen project attribution terms. */
+
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
@@ -14,24 +17,21 @@
   const POLL_MS = 250;
   const MAX_PALETTE_BYTES = 2048;
   const MAX_LOG_BYTES = 131072;
+  const LOG_LEAF = "bridge.log";
+  const LOG_ARCHIVE_LEAF = "bridge.log.1";
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
   const VERSION = "1.0.0";
   const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v1.0.0.css";
   const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.0.0.css";
-  const STATE_LEAF = ".local/state/omazen";
-  const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
-  const COLOR_KEYS = Object.freeze([
-    "accent",
-    "background",
-    "background_dark",
-    "background_light",
-    "foreground",
-    "foreground_muted",
-    "selection",
-    "border",
-  ]);
-  const PALETTE_KEYS = Object.freeze(["schema_version", "mode", ...COLOR_KEYS]);
+  const {
+    COLOR_KEYS,
+    actorPayload,
+    setRootPalette,
+    validatePalette,
+  } = ChromeUtils.importESModule(
+    "chrome://userscripts/content/Omazen/OmazenPalette.sys.mjs",
+  );
   const SPOTLIGHT_URI = "chrome://browser/content/spotlight.html";
   const COMMON_DIALOG_URI = "chrome://global/content/commonDialog.xhtml";
   const ABOUT_DIALOG_URI = "chrome://browser/content/aboutDialog.xhtml";
@@ -55,6 +55,9 @@
   let currentPalette = null;
   let contentPaletteSheet = null;
   let broadcastTimer = 0;
+  let internalPageObserver = null;
+  let pollTimer = 0;
+  const diagnosticTimers = new Set();
 
   function stateDirectory() {
     const configured = Services.env.get("XDG_STATE_HOME");
@@ -73,8 +76,13 @@
   function appendLog(level, message) {
     const line = `${new Date().toISOString()} [${level}] ${message}\n`;
     try {
-      const file = stateFile("bridge.log");
-      if (file.exists() && file.fileSize > MAX_LOG_BYTES) file.remove(false);
+      let file = stateFile(LOG_LEAF);
+      if (file.exists() && file.fileSize + line.length > MAX_LOG_BYTES) {
+        const archive = stateFile(LOG_ARCHIVE_LEAF);
+        if (archive.exists()) archive.remove(false);
+        file.moveTo(null, LOG_ARCHIVE_LEAF);
+        file = stateFile(LOG_LEAF);
+      }
       const stream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(
         Ci.nsIFileOutputStream,
       );
@@ -113,37 +121,19 @@
     }
   }
 
-  function validatePalette(value) {
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-      throw new Error("palette must be a JSON object");
-    }
-    const keys = Object.keys(value).sort();
-    const expected = [...PALETTE_KEYS].sort();
-    if (keys.length !== expected.length || keys.some((key, index) => key !== expected[index])) {
-      throw new Error("palette contains missing or unknown keys");
-    }
-    if (value.schema_version !== 1) throw new Error("unsupported palette schema");
-    if (value.mode !== "dark" && value.mode !== "light") throw new Error("invalid palette mode");
-
-    const palette = { schema_version: 1, mode: value.mode };
-    for (const key of COLOR_KEYS) {
-      if (typeof value[key] !== "string" || !COLOR_RE.test(value[key])) {
-        throw new Error(`invalid color: ${key}`);
-      }
-      palette[key] = value[key].toLowerCase();
-    }
-    return Object.freeze(palette);
+  function ensureStyleLink(targetDocument, root, id, uri) {
+    let link = targetDocument.getElementById(id);
+    if (link) return link;
+    link = targetDocument.createElementNS("http://www.w3.org/1999/xhtml", "link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = uri;
+    root.appendChild(link);
+    return link;
   }
 
   function ensureChromeStyle() {
-    let link = document.getElementById(STYLE_ID);
-    if (link) return link;
-    link = document.createElementNS("http://www.w3.org/1999/xhtml", "link");
-    link.id = STYLE_ID;
-    link.rel = "stylesheet";
-    link.href = STYLE_URI;
-    document.documentElement.appendChild(link);
-    return link;
+    return ensureStyleLink(document, document.documentElement, STYLE_ID, STYLE_URI);
   }
 
   function contentPaletteCss(palette) {
@@ -314,31 +304,8 @@
     const expectedUri = AUXILIARY_WINDOW_TYPES[root?.getAttribute("windowtype")];
     if (!root || !expectedUri || auxiliaryWindow.location.href !== expectedUri) return;
 
-    let link = auxiliaryDocument.getElementById(STYLE_ID);
-    if (!link) {
-      link = auxiliaryDocument.createElementNS("http://www.w3.org/1999/xhtml", "link");
-      link.id = STYLE_ID;
-      link.rel = "stylesheet";
-      link.href = STYLE_URI;
-      root.appendChild(link);
-    }
-
-    if (!enabled || !palette) {
-      root.removeAttribute("data-omazen-enabled");
-      root.removeAttribute("data-omazen-mode");
-      root.style.removeProperty("color-scheme");
-      for (const key of COLOR_KEYS) {
-        root.style.removeProperty(`--omazen-${key.replaceAll("_", "-")}`);
-      }
-      return;
-    }
-
-    root.setAttribute("data-omazen-enabled", "true");
-    root.setAttribute("data-omazen-mode", palette.mode);
-    root.style.setProperty("color-scheme", palette.mode);
-    for (const key of COLOR_KEYS) {
-      root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, palette[key]);
-    }
+    ensureStyleLink(auxiliaryDocument, root, STYLE_ID, STYLE_URI);
+    setRootPalette(root, palette, enabled);
   }
 
   function writePalettePrefs(palette, enabled) {
@@ -350,11 +317,12 @@
     }
   }
 
-  function actorPayload(palette, enabled) {
-    if (!enabled || !palette) return { enabled: false };
-    const payload = { enabled: true, mode: palette.mode };
-    for (const key of COLOR_KEYS) payload[key] = palette[key];
-    return payload;
+  function scheduleDiagnostic(callback, delay) {
+    const timer = window.setTimeout(() => {
+      diagnosticTimers.delete(timer);
+      callback();
+    }, delay);
+    diagnosticTimers.add(timer);
   }
 
   function isActorInternalUri(uri) {
@@ -370,22 +338,9 @@
     }
     const wasEnabled = root.getAttribute("data-omazen-enabled") === "true";
 
-    let link = contentDocument.getElementById(CONTENT_STYLE_ID);
-    if (!link) {
-      link = contentDocument.createElementNS("http://www.w3.org/1999/xhtml", "link");
-      link.id = CONTENT_STYLE_ID;
-      link.rel = "stylesheet";
-      link.href = CONTENT_STYLE_URI;
-      root.appendChild(link);
-    }
+    ensureStyleLink(contentDocument, root, CONTENT_STYLE_ID, CONTENT_STYLE_URI);
 
-    if (!enabled || !palette) {
-      root.removeAttribute("data-omazen-enabled");
-      root.removeAttribute("data-omazen-mode");
-      root.style.removeProperty("color-scheme");
-      for (const key of COLOR_KEYS) {
-        root.style.removeProperty(`--omazen-${key.replaceAll("_", "-")}`);
-      }
+    if (!setRootPalette(root, palette, enabled)) {
       contentDocument
         .getElementById("commonDialog")
         ?.getButton?.("accept")
@@ -393,19 +348,13 @@
       return;
     }
 
-    root.setAttribute("data-omazen-enabled", "true");
-    root.setAttribute("data-omazen-mode", palette.mode);
-    root.style.setProperty("color-scheme", palette.mode);
-    for (const key of COLOR_KEYS) {
-      root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, palette[key]);
-    }
     const commonDialog = contentDocument.getElementById("commonDialog");
     const acceptButton = commonDialog?.getButton?.("accept");
     if (acceptButton) acceptButton.part.add("omazen-primary-button");
     if (!wasEnabled) {
       const kind = uri.startsWith(COMMON_DIALOG_URI) ? "COMMON_DIALOG" : "SPOTLIGHT";
       appendLog("INFO", `${kind}_PALETTE_APPLIED uri=${uri}`);
-      window.setTimeout(() => {
+      scheduleDiagnostic(() => {
         const surface = contentDocument.querySelector(".main-content, #commonDialog");
         const primary = contentDocument.querySelector("button.primary") || acceptButton;
         const surfaceColor = surface ? contentDocument.defaultView.getComputedStyle(surface).backgroundColor : "missing";
@@ -466,25 +415,29 @@
     }, 50);
   }
 
+  function mutationAddsBrowser(records) {
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (node?.localName === "browser" || node?.querySelector?.("browser")) return true;
+      }
+    }
+    return false;
+  }
+
   function applyPalette(palette) {
     ensureChromeStyle();
     const root = document.documentElement;
-    root.setAttribute("data-omazen-enabled", "true");
-    root.setAttribute("data-omazen-mode", palette.mode);
-    root.style.setProperty("color-scheme", palette.mode);
+    setRootPalette(root, palette, true);
     root.style.setProperty(
       "--omazen-transition-duration",
       Services.prefs.getBoolPref("omazen.transitions.enabled", true) ? "180ms" : "0ms",
     );
-    for (const key of COLOR_KEYS) {
-      root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, palette[key]);
-    }
     currentPalette = palette;
     syncContentPaletteSheet(palette, true);
     writePalettePrefs(palette, true);
     broadcastToInternalPages(palette, true);
     appendLog("INFO", `PALETTE_APPLIED accent=${palette.accent} mode=${palette.mode}`);
-    window.setTimeout(() => {
+    scheduleDiagnostic(() => {
       const primary = getComputedStyle(root).getPropertyValue("--zen-primary-color").trim();
       if (primary === palette.accent) appendLog("INFO", `CHROME_CSS_APPLIED primary=${primary}`);
       else appendLog("ERROR", "chrome stylesheet did not expose the expected primary color");
@@ -507,13 +460,8 @@
 
   function disablePalette() {
     const root = document.documentElement;
-    root.removeAttribute("data-omazen-enabled");
-    root.removeAttribute("data-omazen-mode");
-    root.style.removeProperty("color-scheme");
+    setRootPalette(root, currentPalette, false);
     root.style.removeProperty("--omazen-transition-duration");
-    for (const key of COLOR_KEYS) {
-      root.style.removeProperty(`--omazen-${key.replaceAll("_", "-")}`);
-    }
     syncContentPaletteSheet(currentPalette, false);
     writePalettePrefs(currentPalette, false);
     broadcastToInternalPages(currentPalette, false);
@@ -560,14 +508,27 @@
   Services.obs.addObserver(auxiliaryWindowObserver, "domwindowopened");
   window.addEventListener(
     "unload",
-    () => Services.obs.removeObserver(auxiliaryWindowObserver, "domwindowopened"),
+    () => {
+      Services.obs.removeObserver(auxiliaryWindowObserver, "domwindowopened");
+      internalPageObserver?.disconnect();
+      internalPageObserver = null;
+      if (broadcastTimer) window.clearTimeout(broadcastTimer);
+      broadcastTimer = 0;
+      if (pollTimer) window.clearInterval(pollTimer);
+      pollTimer = 0;
+      for (const timer of diagnosticTimers) window.clearTimeout(timer);
+      diagnosticTimers.clear();
+    },
     { once: true },
   );
-  new MutationObserver(scheduleInternalPageBroadcast).observe(document.documentElement, {
+  internalPageObserver = new MutationObserver(records => {
+    if (mutationAddsBrowser(records)) scheduleInternalPageBroadcast();
+  });
+  internalPageObserver.observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
   appendLog("INFO", `BRIDGE_LOADED version=${VERSION}`);
   sync();
-  window.setInterval(sync, POLL_MS);
+  pollTimer = window.setInterval(sync, POLL_MS);
 })();

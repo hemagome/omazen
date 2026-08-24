@@ -1,20 +1,14 @@
 #!/bin/bash
-
-FX_UTIL_FILES=(
-  boot.sys.mjs
-  chrome.manifest
-  fs.sys.mjs
-  module_loader.mjs
-  uc_api.sys.mjs
-  utils.sys.mjs
-)
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
 
 OMAZEN_PROFILE_FILES=(
   omazen-bridge.uc.js
   Omazen/OmazenParent.sys.mjs
   Omazen/OmazenChild.sys.mjs
-  Omazen/omazen-chrome-v1.0.0.css
-  Omazen/omazen-content-v1.0.0.css
+  Omazen/OmazenPalette.sys.mjs
+  "Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
+  "Omazen/omazen-content-v${OMAZEN_VERSION}.css"
 )
 
 program_has_compatible_fx() {
@@ -57,11 +51,32 @@ install_fx_profile_runtime() {
     return 0
   fi
   if profile_has_any_fx "$profile"; then
-    die "partial or incompatible fx-autoconfig runtime in profile: $profile"
+    fx_profile_runtime_is_repairable "$profile" || \
+      die "partial or incompatible unowned fx-autoconfig runtime in profile: $profile"
+    say "Repairing partial fx-autoconfig profile runtime: $profile"
   fi
   for name in "${FX_UTIL_FILES[@]}"; do
     install_user_file "$source_dir/$name" "$destination_dir/$name"
   done
+}
+
+fx_profile_runtime_is_repairable() {
+  local profile=$1
+  local source_dir="$OMAZEN_ROOT/vendor/fx-autoconfig/profile/chrome/utils"
+  local destination_dir="$profile/chrome/utils"
+  local name source destination source_hash destination_hash
+
+  for name in "${FX_UTIL_FILES[@]}"; do
+    source="$source_dir/$name"
+    destination="$destination_dir/$name"
+    [[ -e $destination ]] || continue
+    [[ -f $destination ]] || return 1
+    source_hash=$(sha256_file "$source")
+    destination_hash=$(sha256_file "$destination")
+    [[ $source_hash == "$destination_hash" ]] && continue
+    manifest_has_path "$OMAZEN_PROFILE_MANIFEST" "$destination" || return 1
+  done
+  return 0
 }
 
 install_omazen_profile_files() {
@@ -121,8 +136,8 @@ setup_omazen() {
   done
 
   install_theme_hook
-  rm -f -- "$OMAZEN_DISABLED_FILE"
   sync_palette
+  rm -f -- "$OMAZEN_DISABLED_FILE"
 
   say "Omazen setup complete for $profile_count profile(s)."
   say "Close Zen normally and open it once to activate the privileged loader."
@@ -191,7 +206,11 @@ uninstall_omazen() {
   remove_manifest_program_files || leftovers=1
   cleanup_empty_integration_dirs
 
-  rm -f -- "$OMAZEN_DISABLED_FILE" "$OMAZEN_PALETTE_FILE" "$OMAZEN_BRIDGE_LOG"
+  rm -f -- \
+    "$OMAZEN_DISABLED_FILE" \
+    "$OMAZEN_PALETTE_FILE" \
+    "$OMAZEN_BRIDGE_LOG" \
+    "$OMAZEN_BRIDGE_LOG_ARCHIVE"
   if (( leftovers == 0 )); then
     rm -f -- "$OMAZEN_HOOK_MANIFEST" "$OMAZEN_PROFILE_MANIFEST" "$OMAZEN_PROGRAM_MANIFEST"
     rmdir -- "$OMAZEN_OWNED_DIR" 2>/dev/null || true

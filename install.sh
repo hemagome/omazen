@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
 
 set -euo pipefail
 
@@ -6,24 +8,29 @@ SOURCE_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 OMAZEN_HOME_DIR=${OMAZEN_HOME_DIR:-$HOME}
 DESTINATION=${OMAZEN_DATA_DIR:-"${XDG_DATA_HOME:-$OMAZEN_HOME_DIR/.local/share}/omazen"}
 BIN_DIRECTORY=${OMAZEN_LOCAL_BIN_DIR:-"${XDG_BIN_HOME:-$OMAZEN_HOME_DIR/.local/bin}"}
-BACKUP="${DESTINATION}.backup.$(date -u +%Y%m%dT%H%M%SZ)"
+OMAZEN_VERSION=$(<"$SOURCE_ROOT/VERSION")
+BACKUP="${DESTINATION}.backup.$(date -u +%Y%m%dT%H%M%SZ).${BASHPID}"
+STAGING=""
+
+cleanup_staging() {
+  if [[ -n $STAGING && -d $STAGING ]]; then
+    case "$STAGING" in
+      "$DESTINATION".staging.*) rm -rf -- "$STAGING" ;;
+    esac
+  fi
+}
+trap cleanup_staging EXIT
+
+[[ $OMAZEN_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+  printf 'ERROR: invalid Omazen VERSION file\n' >&2
+  exit 1
+}
+"$SOURCE_ROOT/tests/release-consistency.sh" >/dev/null
 
 if [[ -e $DESTINATION && ! -f $DESTINATION/.omazen-installed ]]; then
   printf 'ERROR: refusing to overwrite unowned directory: %s\n' "$DESTINATION" >&2
   exit 1
 fi
-if [[ -d $DESTINATION ]]; then
-  cp -a -- "$DESTINATION" "$BACKUP"
-  printf 'Backed up previous Omazen application copy: %s\n' "$BACKUP"
-fi
-
-mkdir -p -- "$DESTINATION" "$BIN_DIRECTORY"
-for item in bin lib zen hooks vendor docs tests README.md CHANGELOG.md LICENSE THIRD_PARTY_LICENSES.md install.sh uninstall.sh; do
-  [[ -e $SOURCE_ROOT/$item ]] || continue
-  cp -a -- "$SOURCE_ROOT/$item" "$DESTINATION/"
-done
-printf '1.0.0\n' >"$DESTINATION/.omazen-installed"
-chmod +x "$DESTINATION/bin/omazen" "$DESTINATION/hooks/theme-set" "$DESTINATION/install.sh" "$DESTINATION/uninstall.sh"
 
 if [[ -e $BIN_DIRECTORY/omazen && ! -L $BIN_DIRECTORY/omazen ]]; then
   printf 'ERROR: refusing to replace non-symlink command: %s/omazen\n' "$BIN_DIRECTORY" >&2
@@ -36,9 +43,32 @@ if [[ -L $BIN_DIRECTORY/omazen ]]; then
     exit 1
   }
 fi
-ln -sfn -- "$DESTINATION/bin/omazen" "$BIN_DIRECTORY/omazen"
-printf 'Installed Omazen command: %s/omazen\n' "$BIN_DIRECTORY"
+
+mkdir -p -- "$(dirname -- "$DESTINATION")" "$BIN_DIRECTORY"
+STAGING=$(mktemp -d "${DESTINATION}.staging.XXXXXX")
+for item in bin lib zen hooks vendor docs tests README.md CHANGELOG.md LICENSE NOTICE THIRD_PARTY_LICENSES.md VERSION install.sh uninstall.sh; do
+  [[ -e $SOURCE_ROOT/$item ]] || continue
+  cp -a -- "$SOURCE_ROOT/$item" "$STAGING/"
+done
+printf '%s\n' "$OMAZEN_VERSION" >"$STAGING/.omazen-installed"
+chmod +x "$STAGING/bin/omazen" "$STAGING/hooks/theme-set" "$STAGING/install.sh" "$STAGING/uninstall.sh"
 
 if [[ ${OMAZEN_INSTALL_NO_SETUP:-0} != 1 ]]; then
-  "$DESTINATION/bin/omazen" setup
+  "$STAGING/bin/omazen" setup
 fi
+
+if [[ -d $DESTINATION ]]; then
+  mv -- "$DESTINATION" "$BACKUP"
+  if ! mv -- "$STAGING" "$DESTINATION"; then
+    mv -- "$BACKUP" "$DESTINATION"
+    printf 'ERROR: failed to activate staged Omazen application; previous copy restored\n' >&2
+    exit 1
+  fi
+  printf 'Backed up previous Omazen application copy: %s\n' "$BACKUP"
+else
+  mv -- "$STAGING" "$DESTINATION"
+fi
+STAGING=""
+
+ln -sfn -- "$DESTINATION/bin/omazen" "$BIN_DIRECTORY/omazen"
+printf 'Installed Omazen command: %s/omazen\n' "$BIN_DIRECTORY"

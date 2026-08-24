@@ -1,11 +1,18 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
 
-OMAZEN_VERSION="1.0.0"
+OMAZEN_VERSION=$(<"$OMAZEN_ROOT/VERSION")
+[[ $OMAZEN_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+  printf 'ERROR: invalid Omazen VERSION file\n' >&2
+  exit 1
+}
 OMAZEN_HOME_DIR=${OMAZEN_HOME_DIR:-$HOME}
 OMAZEN_STATE_DIR=${OMAZEN_STATE_DIR:-"${XDG_STATE_HOME:-$OMAZEN_HOME_DIR/.local/state}/omazen"}
 OMAZEN_PALETTE_FILE="$OMAZEN_STATE_DIR/palette.json"
 OMAZEN_DISABLED_FILE="$OMAZEN_STATE_DIR/disabled"
 OMAZEN_BRIDGE_LOG="$OMAZEN_STATE_DIR/bridge.log"
+OMAZEN_BRIDGE_LOG_ARCHIVE="$OMAZEN_STATE_DIR/bridge.log.1"
 OMAZEN_OWNED_DIR="$OMAZEN_STATE_DIR/owned"
 OMAZEN_BACKUP_DIR="$OMAZEN_STATE_DIR/backups"
 OMAZEN_PROFILE_MANIFEST="$OMAZEN_OWNED_DIR/profile-files"

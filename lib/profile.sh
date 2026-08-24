@@ -1,4 +1,15 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
+
+FX_UTIL_FILES=(
+  boot.sys.mjs
+  chrome.manifest
+  fs.sys.mjs
+  module_loader.mjs
+  uc_api.sys.mjs
+  utils.sys.mjs
+)
 
 zen_profiles() {
   local profiles_ini="$OMAZEN_ZEN_CONFIG_DIR/profiles.ini"
@@ -65,13 +76,19 @@ profile_has_compatible_fx() {
   local profile=$1
   local boot="$profile/chrome/utils/boot.sys.mjs"
   local manifest="$profile/chrome/utils/chrome.manifest"
-  [[ -f $boot && -f $manifest ]] || return 1
+  local name
+  for name in "${FX_UTIL_FILES[@]}"; do
+    [[ -f $profile/chrome/utils/$name ]] || return 1
+  done
   grep -Fq 'buildScriptActorDefinition' "$boot" && \
     grep -Fq 'content userscripts' "$manifest"
 }
 
 profile_has_any_fx() {
   local profile=$1
-  [[ -f $profile/chrome/utils/boot.sys.mjs || -f $profile/chrome/utils/chrome.manifest ]]
+  local name
+  for name in "${FX_UTIL_FILES[@]}"; do
+    [[ -e $profile/chrome/utils/$name ]] && return 0
+  done
+  return 1
 }
-

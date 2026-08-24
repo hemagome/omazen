@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# See NOTICE for the required Omazen project attribution terms.
 
 set -euo pipefail
 
@@ -84,8 +86,8 @@ cmd_disable() {
 }
 
 cmd_enable() {
-  rm -f -- "$OMAZEN_DISABLED_FILE"
   sync_palette
+  rm -f -- "$OMAZEN_DISABLED_FILE"
   say "Omazen enabled. Open Zen windows will update on the next poll."
 }
 
