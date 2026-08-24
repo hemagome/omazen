@@ -2,7 +2,7 @@
 
 Date: 2026-08-22
 
-> Historical report: this document records the initial backend experiment. It does not qualify the current release. See the [current release validation](validation.md) for the complete test of Omazen `1.0.0` after all subsequent fixes.
+> Historical report: this document records the initial backend experiment. It does not qualify the current release. See the [current release validation](validation.md) for the `1.1.0` qualification and exhaustive visual baseline.
 
 ## Result
 

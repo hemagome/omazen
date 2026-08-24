@@ -1,19 +1,43 @@
 # Current release validation report
 
 Date: 2026-08-24
-Release: Omazen `1.0.0`
+Release: Omazen `1.1.0`
 
 ## Result
 
-The current release passed the complete functional and visual validation below. This report supersedes the initial proof-of-concept report as the release-level test record; the PoC remains available only as historical evidence for the original backend decision.
+Omazen `1.1.0` passed the automated and live release gates. The qualification
+repeated the surfaces and state transitions most affected by the hardened
+bridge, observer, palette and installation lifecycle. The exhaustive `1.0.0`
+surface pass and its screenshots remain below as the visual baseline; the PoC
+remains available only as historical evidence for the original backend
+decision.
 
-The test covered dark and light palettes, live palette changes in both directions, live disable/enable, a normal Zen restart, every Settings subsection visible in the tested build, dialogs, Library, Passwords, Print, Developer Tools from More Tools, web scrollbars, and a real update/uninstall/clean-install cycle. The final state is Omazen installed and enabled, Zen running, and the original Osaka Jade theme restored.
+The final state is Omazen installed and enabled, Zen running bridge `1.1.0`,
+`omazen doctor` reporting zero failures and warnings, and the original Osaka
+Jade theme restored.
+
+## 1.1.0 release qualification
+
+| Gate | Observation | Result |
+|---|---|---|
+| Staged update | `./install.sh` removed both profiles' obsolete `v1.0.0` styles, activated `1.1.0`, and retained the previous application as `omazen.backup.20260824T185458Z.110154`. | Pass |
+| Restart and bridge | After Zen was restarted, the log recorded `BRIDGE_LOADED version=1.1.0`, `PALETTE_APPLIED`, and `CHROME_CSS_APPLIED`; the final doctor run reported `0 failure(s), 0 warning(s)`. | Pass |
+| Live dark/light | Osaka Jade changed to Catppuccin Latte in PID `6485`; the bridge logged `accent=#1e66f5 mode=light` and applied chrome CSS without restarting Zen. Returning to Osaka Jade logged `accent=#509475 mode=dark` in the same PID. | Pass |
+| Disable/enable | `disable` logged `DISABLED` and produced the expected doctor warning. `enable` reapplied the light palette and returned doctor to zero warnings without changing PID `6485`. | Pass |
+| Representative surfaces | Inspected Settings in both modes, Passwords with an empty profile, Debugging, the clear-data dialog, Library and Print. The destructive dialog and Print were cancelled; no credentials, browsing data, PDF or print job were touched. | Pass |
+| Automated gate | `tests/syntax.sh`, all 12 functional scenarios, `tests/visual-smoke.sh`, and `git diff --check` passed after the live review. | Pass |
+
+Together, the exhaustive `1.0.0` baseline and the focused `1.1.0`
+requalification cover dark and light palettes, live palette changes in both
+directions, live disable/enable, normal Zen restarts, every Settings subsection
+visible in the tested build, dialogs, Library, Passwords, Print, Developer
+Tools, web scrollbars, and real update/uninstall/clean-install exercises.
 
 ## Environment
 
 | Component | Observed value |
 |---|---|
-| Omazen | `1.0.0` |
+| Omazen | `1.1.0` |
 | Omarchy | `4.0.0-1` (Quattro) |
 | Zen package | `zen-browser-bin 1.21.15b-1` |
 | Zen build ID | `20260818101929` |
@@ -23,15 +47,15 @@ The test covered dark and light palettes, live palette changes in both direction
 | Light palette | Catppuccin Latte: `mode=light`, `accent=#1e66f5`, `background=#eff1f5` |
 | Zen profiles | 2 profiles from the active `profiles.ini` |
 
-## Functional matrix
+## Combined functional matrix
 
 | Area | Exercise and observation | Result |
 |---|---|---|
 | Dark theme | Started with Osaka Jade and inspected browser chrome, Settings controls, text, focus states, cards and scrollbars. | Pass |
 | Light theme | Switched to Catppuccin Latte and repeated the same surface checks. | Pass |
-| Live theme change | Osaka Jade → Catppuccin Latte kept Zen PID `4311`; the bridge logged `PALETTE_APPLIED accent=#1e66f5 mode=light` followed by `CHROME_CSS_APPLIED`. After the clean install, Catppuccin Latte → Osaka Jade kept PID `21651` and produced the corresponding dark events. | Pass |
-| Disable and enable | `omazen disable` logged `DISABLED` and reverted open chrome and Developer Tools without changing PID `4311`. `omazen enable` reapplied the light palette and logged the CSS probe with the same PID. | Pass |
-| Zen restart | The last Zen window was closed normally and Zen was reopened. PID changed from `4311` to `16534`; the new process logged `BRIDGE_LOADED version=1.0.0`, `PALETTE_APPLIED` and `CHROME_CSS_APPLIED`. | Pass |
+| Live theme change | The `1.0.0` baseline passed both directions. In `1.1.0`, Osaka Jade → Catppuccin Latte → Osaka Jade kept Zen PID `6485` and logged the expected light and dark `PALETTE_APPLIED` plus `CHROME_CSS_APPLIED` events. | Pass |
+| Disable and enable | Both releases logged `DISABLED`, reverted open chrome, and reapplied the current palette on enable without changing the tested Zen PID. The final `1.1.0` doctor run returned to zero warnings. | Pass |
+| Zen restart | The `1.0.0` baseline restart passed, and the `1.1.0` deployment restart subsequently logged `BRIDGE_LOADED version=1.1.0`, `PALETTE_APPLIED` and `CHROME_CSS_APPLIED`. | Pass |
 | Settings | Opened all 16 subsections visible in this build: Look and Feel, Tab Management, Keyboard Shortcuts, Zen Mods, Account and sync, Home and startup, Search, Privacy and security, Passwords and autofill, Appearance, Downloads, Tabs and browsing, Accessibility, Languages, Permissions and data, and About Zen. | Pass |
 | Dialogs | Opened the Clear browsing data and cookies modal, checked the surface, labels, checkboxes, selector and primary/secondary actions, then cancelled it without deleting data. | Pass |
 | Library | Opened the separate Library window and checked History, Downloads, Tags, bookmark tree, toolbar, search and empty state. | Pass |
@@ -39,12 +63,12 @@ The test covered dark and light palettes, live palette changes in both direction
 | Print | Opened Print on the local scrollbar fixture; checked preview, destination, orientation, pages, color mode, More settings, system-dialog link and Save/Cancel actions. No print or PDF job was submitted. | Pass |
 | More Tools | Opened the Inspector from Developer Tools and checked the docked toolbox, tabs, notification bar, DOM tree, rules and computed/layout panels. Disable/enable was also exercised while the toolbox was open. | Pass |
 | Web scrollbars | Opened the local `file:` fixture with deliberate vertical and horizontal overflow. The browser-provided thumb/track followed the Omazen palette while the document background and content retained their native colors. | Pass |
-| Automated regression suite | `tests/test.sh` completed all six TAP scenarios, including disposable setup, update backup, enable/disable, ownership-aware uninstall, conflict refusal and the top-level application lifecycle. | Pass |
-| Real update | Ran `./install.sh` over the active installation. It created `~/.local/share/omazen.backup.20260824T163901Z`, reused matching privileged/profile files, synchronized the palette and completed with zero doctor failures. | Pass |
-| Real uninstall | Closed Zen, ran `./uninstall.sh`, and verified that the command link, application copy, state, hook, owned profile runtime and three owned program files were absent. | Pass |
-| Clean install | Ran `./install.sh` from an uninstalled state, verified source/installed SHA-256 equality for all three program files, and reopened Zen as PID `21651`. The final bridge log contained no error and `omazen doctor` reported `0 failure(s), 0 warning(s)`. | Pass |
+| Automated regression suite | `tests/test.sh` completed all 12 TAP scenarios, including runtime repair and conflicts, strict doctor checks, palette failure handling, observer filtering and cleanup, staged update recovery, backup and uninstall. | Pass |
+| Real update | The `1.0.0` qualification update passed. The `1.1.0` staged update additionally removed obsolete versioned styles, created `~/.local/share/omazen.backup.20260824T185458Z.110154`, synchronized the palette and completed with zero doctor failures after restart. | Pass |
+| Real uninstall | In the `1.0.0` baseline, closed Zen, ran `./uninstall.sh`, and verified that the command link, application copy, state, hook, owned profile runtime and three owned program files were absent. The `1.1.0` equivalent also passes in the disposable lifecycle suite. | Pass |
+| Clean install | In the `1.0.0` baseline, installed from an uninstalled state, verified source/installed SHA-256 equality for all three program files, and reopened Zen successfully. The `1.1.0` clean-install path also passes in the disposable lifecycle suite. | Pass |
 
-## Visual evidence
+## Exhaustive 1.0.0 visual baseline
 
 ### Dark and light Settings
 
@@ -110,8 +134,8 @@ OMAZEN_VISUAL_OUTPUT_DIR=/tmp/omazen-visual-capture \
 
 The test machine was left in the supported state:
 
-- Omazen `1.0.0` installed and enabled.
-- Zen running with a freshly loaded bridge.
-- `omazen doctor`: `0 failure(s), 0 warning(s)` immediately after the clean installation and first start.
+- Omazen `1.1.0` installed and enabled.
+- Zen running with bridge `1.1.0` loaded.
+- `omazen doctor`: `0 failure(s), 0 warning(s)` after the live release review.
 - Original Osaka Jade theme restored and applied live.
-- The qualification and final documentation-sync backups remain at `~/.local/share/omazen.backup.20260824T163901Z` and `~/.local/share/omazen.backup.20260824T164516Z` for recovery.
+- The `1.1.0` pre-update application backup remains at `~/.local/share/omazen.backup.20260824T185458Z.110154` for recovery.

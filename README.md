@@ -9,17 +9,21 @@ bridge version and versioned stylesheet URI against it.
 
 ## Current status
 
-Omazen `1.1.0` is prepared for deployment and has passed the automated syntax,
-release-consistency, functional and rendered-pixel suites. The complete live Zen
-validation below was established for `1.0.0` on 24 August 2026 and must be
-repeated before publishing the `v1.1.0` tag:
+Omazen `1.1.0` has passed the automated syntax, release-consistency, functional
+and rendered-pixel suites, plus the live Zen release gate on 24 August 2026:
 
 - Omarchy `4.0.0-1` (Quattro)
 - `zen-browser-bin 1.21.15b-1`
 - Zen build ID `20260818101929`, Gecko `154.0`
 - fx-autoconfig `0.10.16`, pinned to commit `dfdab5684faffc112b76ccb1d8cab7f75da0102c`
 
-The `1.0.0` build passed dark and light themes, live changes in both directions, live disable/enable, a Zen restart, all visible Settings subsections, dialogs, Library, Passwords, Print, More Tools / Developer Tools, web scrollbars, and a real update/uninstall/clean-install cycle. See the [validation report](docs/validation.md). The earlier [proof-of-concept report](docs/proof-of-concept.md) is retained as historical backend evidence.
+The `1.1.0` build passed a real staged update, bridge restart/version validation,
+dark and light live changes, live disable/enable, Settings, dialogs, Library,
+Passwords, Print and Developer Tools. The exhaustive `1.0.0` visual baseline and
+real lifecycle qualification remain recorded alongside the `1.1.0` delta in the
+[validation report](docs/validation.md). The earlier
+[proof-of-concept report](docs/proof-of-concept.md) is retained as historical
+backend evidence.
 
 ## Install
 
