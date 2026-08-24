@@ -2,6 +2,8 @@
 
 Date: 2026-08-22
 
+> Historical report: this document records the initial backend experiment. It does not qualify the current release. See the [current release validation](validation.md) for the complete test of Omazen `1.0.0` after all subsequent fixes.
+
 ## Result
 
 The proof succeeded. Zen changed visible chrome colors after an atomic JSON replacement while the browser window remained open and retained the same process ID. No window was reopened and Zen was not restarted between palette A and palette B.

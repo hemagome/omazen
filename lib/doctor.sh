@@ -17,6 +17,23 @@ doctor_fail() {
   ((doctor_failures += 1))
 }
 
+current_bridge_error() {
+  local log=$1
+
+  awk '
+    /\[ERROR\]/ {
+      error = $0
+      next
+    }
+    /\[INFO\] (BRIDGE_LOADED|PALETTE_APPLIED|CHROME_CSS_APPLIED|DISABLED)( |$)/ {
+      error = ""
+    }
+    END {
+      if (error != "") print error
+    }
+  ' "$log"
+}
+
 doctor_profile() {
   local profile=$1
   local relative
@@ -47,9 +64,9 @@ doctor_omazen() {
 
   if version=$(detect_zen_version 2>/dev/null); then
     if [[ $version == 1.21.15b ]]; then
-      doctor_pass "Zen $version (PoC-tested version)"
+      doctor_pass "Zen $version (fully validated version)"
     elif version_at_least "$version" "1.20"; then
-      doctor_warn "Zen $version is a compatible candidate but has not been PoC-tested by this release"
+      doctor_warn "Zen $version is a compatible candidate but has not been fully validated by this release"
     else
       doctor_fail "Zen $version is below the minimum candidate version 1.20"
     fi
@@ -101,12 +118,12 @@ doctor_omazen() {
 
   last_error=""
   if [[ -f $OMAZEN_BRIDGE_LOG ]]; then
-    last_error=$(grep -F '[ERROR]' "$OMAZEN_BRIDGE_LOG" | tail -n 1 || true)
+    last_error=$(current_bridge_error "$OMAZEN_BRIDGE_LOG")
   fi
   if [[ -n $last_error ]]; then
-    doctor_warn "last bridge error: $last_error"
+    doctor_warn "current bridge error: $last_error"
   else
-    doctor_pass "no bridge error recorded"
+    doctor_pass "no current bridge error recorded"
   fi
 
   if [[ -d $OMAZEN_HOME_DIR/.var/app/app.zen_browser.zen || -d $OMAZEN_HOME_DIR/.var/app/io.github.zen_browser.zen ]]; then
@@ -116,4 +133,3 @@ doctor_omazen() {
   printf '\nDoctor: %d failure(s), %d warning(s)\n' "$doctor_failures" "$doctor_warnings"
   (( doctor_failures == 0 ))
 }
-

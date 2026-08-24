@@ -13,8 +13,8 @@ OMAZEN_PROFILE_FILES=(
   omazen-bridge.uc.js
   Omazen/OmazenParent.sys.mjs
   Omazen/OmazenChild.sys.mjs
-  Omazen/omazen-chrome-v0.1.11.css
-  Omazen/omazen-content-v0.1.11.css
+  Omazen/omazen-chrome-v1.0.0.css
+  Omazen/omazen-content-v1.0.0.css
 )
 
 program_has_compatible_fx() {

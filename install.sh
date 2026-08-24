@@ -18,11 +18,11 @@ if [[ -d $DESTINATION ]]; then
 fi
 
 mkdir -p -- "$DESTINATION" "$BIN_DIRECTORY"
-for item in bin lib zen hooks vendor docs tests README.md LICENSE THIRD_PARTY_LICENSES.md install.sh uninstall.sh; do
+for item in bin lib zen hooks vendor docs tests README.md CHANGELOG.md LICENSE THIRD_PARTY_LICENSES.md install.sh uninstall.sh; do
   [[ -e $SOURCE_ROOT/$item ]] || continue
   cp -a -- "$SOURCE_ROOT/$item" "$DESTINATION/"
 done
-printf '0.1.11\n' >"$DESTINATION/.omazen-installed"
+printf '1.0.0\n' >"$DESTINATION/.omazen-installed"
 chmod +x "$DESTINATION/bin/omazen" "$DESTINATION/hooks/theme-set" "$DESTINATION/install.sh" "$DESTINATION/uninstall.sh"
 
 if [[ -e $BIN_DIRECTORY/omazen && ! -L $BIN_DIRECTORY/omazen ]]; then

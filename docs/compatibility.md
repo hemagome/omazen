@@ -1,14 +1,51 @@
 # Compatibility
 
-| Target | Status |
+## Official MVP scope
+
+The official Omazen MVP contract is **Omarchy Quattro + the native Arch
+`zen-browser-bin` package** installed at `/opt/zen-browser-bin`. Compatibility
+claims below apply only to that combination. Omazen does not claim support for
+other Zen packaging formats or for Firefox.
+
+## Compatibility contract
+
+| Target | Contract |
 |---|---|
-| Omarchy 4.0.0 / Quattro | Supported and tested |
-| `zen-browser-bin 1.21.15b-1` | Supported and tested |
-| Native Zen >= 1.20 | Candidate; doctor warns as untested |
-| Native Zen < 1.20 | Rejected |
-| Zen Flatpak | Outside MVP |
-| Firefox | Outside MVP |
-| AppImage/tarball Zen | Detection can be added later; outside MVP |
+| Omarchy 4.0.0 / Quattro | Supported; full validation 2026-08-24 |
+| `zen-browser-bin 1.21.15b-1` | Supported; full validation 2026-08-24 |
+| Native `zen-browser-bin` Zen >= 1.20 | Compatibility candidate; `omazen doctor` warns unless it is the fully validated version above |
+| Native Zen < 1.20 | Rejected by `omazen setup` and `omazen doctor` |
+
+The only fully validated Zen version in this release is `1.21.15b` (package
+`1.21.15b-1`). The candidate range is native `zen-browser-bin` Zen `>=1.20`;
+being in that range means that setup may proceed, not that the version is
+stable or covered by the release guarantee.
+
+### New and unknown Zen versions
+
+A native Zen version `>=1.20` that is not listed as fully validated is treated
+as an **unknown compatibility candidate**. Omazen allows setup to proceed and
+`omazen doctor` emits a warning, but the version must not be described as
+supported until it has been tested. After every package update, run:
+
+```bash
+omazen doctor
+omazen setup   # only if doctor reports owned loader files missing
+```
+
+An unknown build may keep the bridge working while changing Zen's private
+selectors or internal pages. Such changes can cause partial styling or a
+broken integration; they are compatibility issues to diagnose and validate,
+not a promise made by this release. A version below `1.20`, or a version that
+cannot be detected, is not a candidate and is rejected.
+
+### Explicit exclusions
+
+The following are outside the MVP and have no support commitment:
+
+- Zen Flatpak.
+- Firefox.
+- Zen AppImage, tarball, source builds, or other non-native package formats.
 
 ## Package updates
 

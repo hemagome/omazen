@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en" data-omazen-enabled="true">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Omazen visual smoke fixture</title>
+    <link rel="stylesheet" href="../../zen/Omazen/omazen-content-v1.0.0.css">
+    <style>
+      :root {
+        color-scheme: dark;
+        --omazen-accent: #ff7a18;
+        --omazen-background: #102030;
+        --omazen-background-dark: #081018;
+        --omazen-background-light: #203040;
+        --omazen-foreground: #f5eedd;
+        --omazen-foreground-muted: #a0b0c0;
+        --omazen-selection: #304050;
+        --omazen-border: #506070;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 1000px;
+        min-height: 900px;
+        font: 16px/1.4 system-ui, sans-serif;
+      }
+
+      main {
+        width: 1000px;
+        min-height: 900px;
+        padding: 32px;
+      }
+
+      header,
+      .card {
+        border: 1px solid var(--omazen-border);
+        border-radius: 10px;
+      }
+
+      header {
+        height: 92px;
+        padding: 20px 24px;
+        background: var(--omazen-background-light);
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .card {
+        height: 260px;
+        padding: 24px;
+      }
+
+      .card h2 {
+        margin-bottom: 12px;
+      }
+
+      #zenMarketplaceGroup button,
+      #searchInput,
+      select {
+        height: 44px;
+        margin-top: 20px;
+        padding: 0 14px;
+        border: 1px solid var(--omazen-border);
+        border-radius: 6px;
+        font: inherit;
+      }
+
+      #zenMarketplaceGroup button {
+        width: 180px;
+      }
+
+      #searchInput {
+        width: 260px;
+      }
+
+      select {
+        width: 180px;
+        background: var(--omazen-background-dark);
+        color: var(--omazen-foreground);
+      }
+
+      a {
+        display: inline-block;
+        margin-top: 18px;
+      }
+
+      #scroll-check {
+        width: 932px;
+        height: 210px;
+        margin-top: 20px;
+        overflow: scroll;
+        scrollbar-width: auto;
+      }
+
+      #scroll-content {
+        width: 1400px;
+        height: 500px;
+        padding: 20px;
+        background: var(--omazen-background-dark);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Omazen visual smoke test</h1>
+        <p>Pixels in this fixture are checked against the active palette.</p>
+      </header>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Actions</h2>
+          <div id="zenMarketplaceGroup">
+            <button type="button">Marketplace action</button>
+          </div>
+          <a href="#">Accent link</a>
+        </section>
+
+        <section class="card">
+          <h2>Controls</h2>
+          <input id="searchInput" type="text" value="Rendered input">
+          <select aria-label="Rendered select">
+            <option>Rendered select</option>
+          </select>
+        </section>
+      </div>
+
+      <div id="scroll-check" aria-label="Rendered scrollbar">
+        <div id="scroll-content">Both overflow axes are intentional.</div>
+      </div>
+    </main>
+  </body>
+</html>

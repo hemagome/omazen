@@ -2,7 +2,7 @@
 
 const STYLE_ID = "omazen-content-style";
 const SHADOW_LINK_STYLE_ID = "omazen-shadow-link-style";
-const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v0.1.11.css";
+const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.0.0.css";
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const COLOR_KEYS = Object.freeze([
   "accent",

@@ -6,14 +6,14 @@ The supported MVP is intentionally small at runtime: Bash reads Quattro's semant
 
 ## Current status
 
-The proof of concept and the packaged MVP were both verified on 22 August 2026 with:
+Omazen `1.0.0` passed a complete release validation on 24 August 2026 with:
 
 - Omarchy `4.0.0-1` (Quattro)
 - `zen-browser-bin 1.21.15b-1`
 - Zen build ID `20260818101929`, Gecko `154.0`
 - fx-autoconfig `0.10.16`, pinned to commit `dfdab5684faffc112b76ccb1d8cab7f75da0102c`
 
-The palette changed twice in an already-open Zen window, with the same process ID and no restart. See [the proof-of-concept report](docs/proof-of-concept.md).
+The current build passed dark and light themes, live changes in both directions, live disable/enable, a Zen restart, all visible Settings subsections, dialogs, Library, Passwords, Print, More Tools / Developer Tools, web scrollbars, and a real update/uninstall/clean-install cycle. See the [current validation report](docs/validation.md). The earlier [proof-of-concept report](docs/proof-of-concept.md) is retained as historical backend evidence.
 
 ## Install
 
@@ -53,7 +53,7 @@ Transitions default to 180 ms, respect reduced-motion settings, and can be disab
 
 ## Compatibility
 
-The MVP supports the native Arch package `zen-browser-bin` at `/opt/zen-browser-bin`. Flatpak is explicitly outside the MVP because its sandbox does not provide this privileged autoconfig path. Versions from Zen 1.20 onward are treated as compatibility candidates, but only 1.21.15b is marked as PoC-tested by this release. Run `omazen doctor` after every Zen update; package upgrades may replace the program-level loader files and `omazen setup` repairs an owned installation.
+The official MVP scope is **Omarchy Quattro plus the native Arch package `zen-browser-bin`** at `/opt/zen-browser-bin`. This release fully validates only Zen `1.21.15b` (`zen-browser-bin 1.21.15b-1`). Native Zen versions `>=1.20` are compatibility candidates: unknown newer versions may pass setup, but `omazen doctor` warns and they are not supported until tested. Flatpak, Firefox, AppImage, tarball, source-build, and other non-native Zen installations are outside the MVP. Run `omazen doctor` after every Zen update; package upgrades may replace the program-level loader files and `omazen setup` repairs an owned installation.
 
 See [compatibility details](docs/compatibility.md), [architecture](docs/architecture.md), and [research notes](docs/research.md).
 
@@ -65,9 +65,16 @@ The test suite uses only a disposable filesystem tree:
 tests/test.sh
 ```
 
-It covers palette mapping, idempotent setup, preservation of pre-existing user files, live enable/disable state, ownership-aware uninstall, and refusal to overwrite a foreign autoconfig.
+It covers palette mapping, idempotent setup, preservation of pre-existing user files, live enable/disable state, ownership-aware uninstall, refusal to overwrite a foreign autoconfig, and the top-level install/update/uninstall lifecycle.
+
+The rendered-pixel smoke test uses the installed Zen binary and a disposable profile:
+
+```bash
+tests/visual-smoke.sh
+```
+
+It loads the production content stylesheet in a real headless Zen window and checks pixels from the resulting screenshot. To keep the capture for inspection, set `OMAZEN_KEEP_VISUAL_OUTPUT=1` and `OMAZEN_VISUAL_OUTPUT_DIR` to an explicit directory.
 
 ## License
 
 Omazen is MIT licensed. The vendored fx-autoconfig files remain under MPL 2.0 and are kept in a separate directory with their upstream license, exact commit and checksums. See [third-party notices](THIRD_PARTY_LICENSES.md).
-

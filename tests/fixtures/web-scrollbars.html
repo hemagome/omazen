@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Omazen web scrollbar validation</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-width: 1800px;
+        min-height: 2400px;
+        background: Canvas;
+        color: CanvasText;
+      }
+
+      main {
+        width: 720px;
+        padding: 48px;
+      }
+
+      section {
+        margin-block: 36px;
+        padding: 24px;
+        border: 1px solid GrayText;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Omazen web scrollbar validation</h1>
+      <p>
+        This local fixture deliberately overflows in both directions. Omazen
+        may recolor only the browser-provided scrollbar thumb and track; the
+        document surface and content must retain their native colors.
+      </p>
+      <section><h2>One</h2><p>Vertical overflow checkpoint.</p></section>
+      <section><h2>Two</h2><p>Vertical overflow checkpoint.</p></section>
+      <section><h2>Three</h2><p>Vertical overflow checkpoint.</p></section>
+      <section><h2>Four</h2><p>Vertical overflow checkpoint.</p></section>
+      <section><h2>Five</h2><p>Vertical overflow checkpoint.</p></section>
+      <section><h2>Six</h2><p>Vertical overflow checkpoint.</p></section>
+    </main>
+  </body>
+</html>
