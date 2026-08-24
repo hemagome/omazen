@@ -4,6 +4,9 @@ Omazen hot-reloads the active Omarchy Quattro palette into Zen Browser without r
 
 The supported MVP is intentionally small at runtime: Bash reads Quattro's semantic `colors.toml` and atomically writes a normalized JSON file; a constrained privileged JavaScript bridge watches that fixed file; CSS variables restyle Zen chrome; and a `JSWindowActor` limited to an allowlist of `about:` pages updates relevant internal pages. There is no Node.js, Python, Rust, Go, Matugen, Sine, WebExtension, remote code download or local server in the runtime path.
 
+The canonical release number is stored in `VERSION`; CI checks every embedded
+bridge version and versioned stylesheet URI against it.
+
 ## Current status
 
 Omazen `1.0.0` passed a complete release validation on 24 August 2026 with:
@@ -45,9 +48,14 @@ omazen uninstall
 - `setup` installs or repairs the integration idempotently.
 - `sync` regenerates `~/.local/state/omazen/palette.json` from the active Quattro palette.
 - `set "Theme Name"` delegates to `omarchy theme set` and synchronizes.
-- `doctor` checks Zen, profiles, fx-autoconfig, preferences, hook, palette, bridge load, last error and known compatibility.
+- `doctor` checks Zen, profiles, fx-autoconfig, installed-file integrity and permissions,
+  palette freshness, bridge version and errors, and known compatibility.
 - `disable` and `enable` take effect on open windows at the next 250 ms poll.
 - `uninstall` removes only files recorded as Omazen-owned and refuses to delete modified files.
+
+Top-level installs and updates are assembled in a sibling staging directory.
+`setup` must succeed before an existing application copy is moved to a timestamped
+backup and the staged copy is activated, so removed release files cannot linger.
 
 Transitions default to 180 ms, respect reduced-motion settings, and can be disabled in `about:config` with `omazen.transitions.enabled=false`.
 
@@ -77,4 +85,6 @@ It loads the production content stylesheet in a real headless Zen window and che
 
 ## License
 
-Omazen is MIT licensed. The vendored fx-autoconfig files remain under MPL 2.0 and are kept in a separate directory with their upstream license, exact commit and checksums. See [third-party notices](THIRD_PARTY_LICENSES.md).
+Omazen source code is licensed under the GNU General Public License version 3.0 only (GPL-3.0-only), with the required attribution notice in [NOTICE](NOTICE). Distributed modified versions of Omazen must remain under the GPL and provide the corresponding source code.
+
+The vendored fx-autoconfig files remain under MPL 2.0 and are kept in a separate directory with their upstream license, exact commit and checksums. They are not relicensed under the GPL. See [third-party notices](THIRD_PARTY_LICENSES.md).

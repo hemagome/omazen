@@ -37,7 +37,8 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
 - No remote download, update or execution at runtime.
 - Dependencies are pinned by commit and SHA-256.
 - No `eval`, dynamic import path, local port, native-messaging host or page-exposed API.
-- Palette path and log path are fixed; JSON cannot select a path.
+- Palette and log paths are fixed; JSON cannot select a path. Logging is bounded
+  to the active `bridge.log` plus one rotated `bridge.log.1` archive.
 - JSON is size-limited and strictly validated before use.
 - Only normalized colors and mode cross the actor boundary.
 - The actor matches a fixed internal-page allowlist and the built-in DevTools chrome namespace, never ordinary web origins.
