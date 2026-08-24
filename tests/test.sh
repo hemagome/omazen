@@ -143,8 +143,10 @@ grep -Fq -- 'scrollbar-color: var(--omazen-scrollbar-thumb) var(--omazen-scrollb
   "$CONTENT_CSS" || fail "internal page scrollbar palette"
 grep -Fq -- 'scrollbar-color: var(--omazen-scrollbar-thumb) var(--omazen-scrollbar-track)' \
   "$CHROME_CSS" || fail "browser chrome scrollbar palette"
+# shellcheck disable=SC2016 # Backticks are literal documentation text.
 grep -Fq -- 'solely to set `scrollbar-color`' \
   "$PROJECT_ROOT/docs/architecture.md" || fail "web scrollbar architecture documentation"
+# shellcheck disable=SC2016 # Backticks are literal documentation text.
 grep -Fq -- 'can set only `scrollbar-color`' \
   "$PROJECT_ROOT/docs/security.md" || fail "web scrollbar security boundary documentation"
 grep -Fq -- 'only vertical and horizontal scrollbar colors' \

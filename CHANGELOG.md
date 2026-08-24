@@ -4,6 +4,21 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- CI now verifies the exact file set, SHA-256 hashes, upstream commit and loader
+  version of the vendored `fx-autoconfig` runtime.
+- Reproducible ShellCheck 0.11.0 and actionlint 1.7.12 gates use official
+  release artifacts pinned by SHA-256.
+
+### Changed
+
+- CI uses Node.js 24, `actions/checkout` 7.0.1 and `actions/setup-node` 7.0.0,
+  pins both actions to full commits, drops persisted checkout credentials and
+  disables the unused package-manager cache.
+- CI now cancels superseded runs, times out stalled validation, supports manual
+  dispatch and avoids duplicate runs when release tags are pushed.
+
 ## [1.1.0] - 2026-08-24
 
 ### Added

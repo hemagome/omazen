@@ -74,6 +74,14 @@ See [compatibility details](docs/compatibility.md), [architecture](docs/architec
 
 ## Development
 
+CI uses Node.js 24 plus pinned ShellCheck 0.11.0 and actionlint 1.7.12
+binaries. To reproduce static analysis locally on Linux x86-64:
+
+```bash
+tests/install-linters.sh /tmp/omazen-linters
+PATH=/tmp/omazen-linters:$PATH tests/lint.sh
+```
+
 The test suite uses only a disposable filesystem tree:
 
 ```bash

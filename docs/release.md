@@ -6,6 +6,8 @@ later release.
 ## Automated gate
 
 ```bash
+tests/install-linters.sh /tmp/omazen-release-linters
+PATH=/tmp/omazen-release-linters:$PATH tests/lint.sh
 tests/syntax.sh
 tests/test.sh
 tests/visual-smoke.sh
