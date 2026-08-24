@@ -41,14 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           version=$(<VERSION)
-          expected_tag="v$version"
-
-          [[ $RELEASE_REF == "$expected_tag" ]] || {
-            printf 'ERROR: ref %s does not match VERSION %s\n' "$RELEASE_REF" "$version" >&2
-            exit 1
-          }
-          git show-ref --verify --quiet "refs/tags/$RELEASE_REF"
-          [[ $(git rev-list -n 1 "$RELEASE_REF") == "$(git rev-parse HEAD)" ]]
+          tests/create-release-tag.sh --check "$RELEASE_REF"
 
           awk -v version="$version" '
             $0 ~ "^## \\[" version "\\]" { found = 1; next }

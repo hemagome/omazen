@@ -4,6 +4,11 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- A release tag helper derives `v<version>` from the canonical `VERSION` file
+  and shares its validation rules with the GitHub publication workflow.
+
 ## [1.1.1] - 2026-08-24
 
 ### Added

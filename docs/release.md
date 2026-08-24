@@ -33,13 +33,12 @@ activated update.
 
 ## Publication gate
 
-After the live validation report is updated and committed, create and push the
-version tag:
+After the live validation report is updated and committed, derive and create
+the tag from `VERSION`, then push both the commit and the derived tag:
 
 ```bash
-git tag -a v1.1.1 -m "Omazen 1.1.1"
-git push origin main
-git push origin v1.1.1
+RELEASE_TAG=$(tests/create-release-tag.sh)
+git push origin main "$RELEASE_TAG"
 ```
 
 The `Release` GitHub Actions workflow validates the tag against `VERSION`, runs

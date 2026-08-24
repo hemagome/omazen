@@ -107,6 +107,10 @@ functional tests, the visual smoke test and whitespace checks:
 tests/release-gate.sh
 ```
 
+The release tag is derived from `VERSION` by `tests/create-release-tag.sh`,
+which rejects dirty worktrees, mismatched embedded versions and missing
+changelog sections.
+
 Before publishing a release, follow the [release checklist](docs/release.md).
 
 ## License
