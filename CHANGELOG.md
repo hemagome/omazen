@@ -8,6 +8,9 @@ All notable changes to Omazen are documented here.
 
 - A release tag helper derives `v<version>` from the canonical `VERSION` file
   and shares its validation rules with the GitHub publication workflow.
+- External palette providers can set `OMAZEN_ACTIVE_COLORS` and opt out of the
+  Omarchy theme hook with `OMAZEN_SKIP_THEME_HOOK=1` while retaining the full
+  loader, validation, diagnostics, and ownership model.
 
 ### Changed
 

@@ -165,8 +165,12 @@ doctor_omazen() {
   done < <(zen_profiles)
   (( profile_count > 0 )) || doctor_fail "no Zen profiles detected"
 
-  hook=$(hook_destination)
-  doctor_exact_file "Omarchy theme-set hook" "$hook" "$OMAZEN_ROOT/hooks/theme-set" 1
+  if [[ $OMAZEN_SKIP_THEME_HOOK == 1 ]]; then
+    doctor_pass "external palette provider mode (Omarchy hook not required)"
+  else
+    hook=$(hook_destination)
+    doctor_exact_file "Omarchy theme-set hook" "$hook" "$OMAZEN_ROOT/hooks/theme-set" 1
+  fi
 
   if palette_matches_active_colors; then
     doctor_pass "normalized palette is valid, canonical, and current"

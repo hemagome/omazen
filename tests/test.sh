@@ -125,6 +125,10 @@ run_omazen_with_os_release() {
   "$PROJECT_ROOT/bin/omazen" "$@"
 }
 
+run_external_omazen() {
+  OMAZEN_SKIP_THEME_HOOK=1 run_omazen "$@"
+}
+
 run_omazen setup >/dev/null
 assert_file "$FAKE_STATE/palette.json"
 assert_file "$FAKE_ZEN/config.js"
@@ -308,6 +312,15 @@ grep -Fq -- '#commonDialog::part(omazen-primary-button)' \
 grep -Fq -- '--button-text-color-primary: var(--omazen-background-dark)' \
   "$CONTENT_CSS" || fail "Spotlight primary button contrast"
 pass "setup installs the isolated runtime and maps Quattro colors"
+
+rm -f -- "$FAKE_HOOKS/theme-set.d/theme-set"
+run_external_omazen setup >/dev/null
+assert_absent "$FAKE_HOOKS/theme-set.d/theme-set"
+run_external_omazen doctor >/dev/null
+if OMAZEN_SKIP_THEME_HOOK=invalid run_omazen status >/dev/null 2>&1; then
+  fail "invalid external palette mode was accepted"
+fi
+pass "external palette providers can skip the Omarchy theme hook"
 
 MISSING_FX_UTIL="$FAKE_PROFILE/chrome/utils/utils.sys.mjs"
 rm -f -- "$MISSING_FX_UTIL"
