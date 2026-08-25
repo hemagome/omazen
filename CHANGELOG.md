@@ -4,6 +4,28 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-25
+
+### Added
+
+- `omazen doctor --json` emits structured checks, provider metadata, palette
+  paths, bridge event age and summary counts for diagnostics and bug reports.
+- Provider mode and active palette source are persisted after successful setup,
+  so external palette integrations do not need to repeat their environment
+  variables for every command.
+
+### Changed
+
+- Bridge CSS diagnostics retry briefly before reporting a stylesheet failure.
+- `doctor` reports detailed palette mismatches, active palette source, bridge
+  event age, current palette application and CSS primary-color state.
+- Bridge events include a stable per-profile identifier without logging profile
+  paths.
+
+- `omazen doctor` now renders `[PASS]`, `[WARN]`, and `[FAIL]` status tags in
+  green, yellow, and red on interactive terminals, while preserving plain
+  output for redirected output, `TERM=dumb`, or `NO_COLOR`.
+
 ## [1.2.0] - 2026-08-25
 
 ### Added

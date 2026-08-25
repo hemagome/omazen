@@ -11,9 +11,10 @@ page-exposed API. See the [architecture](docs/architecture.md) and
 
 ## Current status
 
-Omazen `1.2.0` is the next feature release, adding an integration mode for
-external palette providers while retaining the existing Omarchy workflow. The
-current tested environment is Omarchy `4.0.1` (Quattro) with native
+Omazen `1.3.0` is the local release candidate, adding structured diagnostics,
+palette-provider persistence and bridge health checks while retaining the
+existing Omarchy workflow. The current tested environment is Omarchy `4.0.1`
+(Quattro) with native
 `zen-browser-bin 1.21.15b-1`.
 
 The historical live qualification and complete test results are recorded in
@@ -42,10 +43,11 @@ OMAZEN_SKIP_THEME_HOOK=1 \
 omazen setup
 ```
 
-Use the same two variables for later `sync`, `enable`, and `doctor` calls. This
-is an integration interface, not an expansion of Omazen's official support
-scope; the external provider owns triggering `omazen sync` after palette
-changes.
+Setup persists the provider mode and active palette source under Omazen's state
+directory. Explicit environment variables still take precedence for that
+invocation; later `sync` calls use the saved configuration. The external
+provider owns triggering `omazen sync` after palette changes. This is an
+integration interface, not an expansion of Omazen's official support scope.
 
 The installer writes only Omazen-owned files and never edits
 `userChrome.css`, `userContent.css` or `user.js`.
@@ -57,7 +59,7 @@ omazen setup
 omazen sync
 omazen set [theme]
 omazen status
-omazen doctor
+omazen doctor [--json]
 omazen disable
 omazen enable
 omazen uninstall
@@ -67,7 +69,8 @@ omazen uninstall
 - `sync` regenerates the normalized palette from the active Quattro theme.
 - `set "Theme Name"` delegates to `omarchy theme set` and synchronizes.
 - `doctor` checks compatibility, installation integrity, palette freshness and
-  bridge health.
+  bridge health. `doctor --json` emits the same checks as a structured report
+  for bug reports and automation.
 - `disable` and `enable` update open windows without restarting Zen.
 - `uninstall` removes only unchanged files recorded as Omazen-owned.
 
