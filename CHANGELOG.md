@@ -4,6 +4,11 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Context-menu item hover now uses the active Omazen selection and foreground
+  colors instead of Zen's native blue highlight.
+
 ## [1.3.0] - 2026-08-25
 
 ### Added

@@ -139,6 +139,13 @@
   border-color: var(--omazen-border) !important;
 }
 
+/* XUL menuitems use native system colors for the active row unless the
+ * internal _moz-menuactive state is themed explicitly. */
+:root[data-omazen-enabled="true"] :is(menupopup, panel) :is(menu, menuitem)[_moz-menuactive]:not([disabled]) {
+  background-color: var(--omazen-selection) !important;
+  color: var(--omazen-foreground) !important;
+}
+
 :root[data-omazen-enabled="true"] :is(
   notification-message,
   moz-message-bar

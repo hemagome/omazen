@@ -232,6 +232,14 @@ fi
 if sed -n '/:is(/,/)/p' "$CHROME_CSS" | grep -Fxq '  input'; then
   fail "generic input selector must not repaint the URL text field"
 fi
+grep -Fq -- ':is(menupopup, panel) :is(menu, menuitem)[_moz-menuactive]:not([disabled])' \
+  "$CHROME_CSS" || fail "context menu hover selector"
+grep -A3 -F -- ':is(menupopup, panel) :is(menu, menuitem)[_moz-menuactive]:not([disabled])' \
+  "$CHROME_CSS" | grep -Fq -- 'background-color: var(--omazen-selection)' || \
+  fail "context menu hover background palette"
+grep -A4 -F -- ':is(menupopup, panel) :is(menu, menuitem)[_moz-menuactive]:not([disabled])' \
+  "$CHROME_CSS" | grep -Fq -- 'color: var(--omazen-foreground)' || \
+  fail "context menu hover text palette"
 grep -Fq -- '--background-color-canvas: var(--omazen-background)' \
   "$CONTENT_CSS" || fail "Settings canvas palette"
 grep -Fq -- '--input-text-background-color: var(--omazen-background-dark)' \
