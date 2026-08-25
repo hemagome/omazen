@@ -18,8 +18,8 @@ chrome/utils/utils.sys.mjs
 chrome/JS/omazen-bridge.uc.js
 chrome/JS/Omazen/OmazenParent.sys.mjs
 chrome/JS/Omazen/OmazenChild.sys.mjs
-chrome/JS/Omazen/omazen-chrome-v1.2.0.css
-chrome/JS/Omazen/omazen-content-v1.2.0.css
+chrome/JS/Omazen/omazen-chrome-v1.3.0.css
+chrome/JS/Omazen/omazen-content-v1.3.0.css
 ```
 
 Program-level files for the supported Zen package:
@@ -43,7 +43,9 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
 - Only normalized colors and mode cross the actor boundary.
 - The actor matches a fixed internal-page allowlist and the built-in DevTools chrome namespace, never ordinary web origins.
 - Most CSS is static and shipped with Omazen. For isolated Passwords, Print and DevTools processes, the eight strictly validated hex colors and validated mode are inserted into fixed, URL-scoped internal-page rules. The same generated user sheet contains a separate fixed rule for `http:`, `https:` and `file:` documents that can set only `scrollbar-color`; it provides no script, DOM access or page-exposed API. JSON cannot supply selectors, property names or URLs in either scope.
-- Logs contain timestamps, fixed event names, mode, accent and validation errors—not URLs, page titles, profile paths or browsing data.
+- Logs contain timestamps, fixed event names, mode, accent, a stable opaque
+  profile identifier and validation errors—not URLs, page titles, profile paths
+  or browsing data.
 - Logs rotate at 128 KiB.
 - Disable is live and uninstall is ownership/hash aware.
 - External palette-provider mode can skip the Omarchy hook, but it does not

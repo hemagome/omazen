@@ -74,7 +74,16 @@ Passwords, Print and some Developer Tools documents can run in isolated processe
 Runtime diagnostics are bounded: before `bridge.log` would exceed 128 KiB, the
 bridge replaces `bridge.log.1` with the previous active log and starts a fresh
 file. `doctor` reads the archive before the active log so health state remains
-continuous across rotation.
+continuous across rotation. Bridge CSS probes retry for a short bounded window
+before recording an error, and successful palette/CSS events include a stable
+per-profile identifier without recording the profile path. `omazen doctor`
+compares those events with the current normalized palette and can emit a
+machine-readable report with `omazen doctor --json`.
+
+The provider mode and active colors source are persisted as private state files
+alongside `palette.json` after setup. This lets an external provider omit its
+environment variables on later commands while preserving explicit invocation
+overrides.
 
 ## Enable and disable
 

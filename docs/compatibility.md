@@ -13,6 +13,11 @@ Omarchy hook; all browser, palette, ownership and diagnostic checks remain in
 effect. Using that interface does not make the external desktop environment
 part of Omazen's official support contract.
 
+After a successful `setup`, Omazen persists the provider mode and active colors
+path under its state directory. Explicit environment variables override the
+persisted values for that invocation. External providers still own the timing
+of subsequent `omazen sync` calls.
+
 ## Compatibility contract
 
 | Target | Contract |

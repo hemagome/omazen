@@ -11,10 +11,11 @@ body:
       value: |
         Before submitting a bug report:
 
-        1. Run `omazen doctor`.
+        1. Run `omazen doctor --json` and include the complete report below.
         2. Run `omazen status`.
-        3. If `doctor` reports missing Omazen-owned loader files, run `omazen setup` and then run `omazen doctor` again.
-        4. Do not include passwords, tokens, or other sensitive information.
+        3. If `doctor` reports missing Omazen-owned loader files, run `omazen setup` and then run `omazen doctor --json` again.
+        4. The human-readable `omazen doctor` output is optional and useful when the issue concerns terminal formatting or colored statuses.
+        5. Do not include passwords, tokens, private profile contents, or other sensitive information. Redact personal home-directory paths if needed.
 
   - type: checkboxes
     id: checks
@@ -23,7 +24,9 @@ body:
       options:
         - label: "I searched for existing issues that describe the same problem."
           required: true
-        - label: "I ran `omazen doctor` and will include its output below."
+        - label: "I ran `omazen doctor` when relevant and will include its output below."
+          required: false
+        - label: "I ran `omazen doctor --json` and will include its output below."
           required: true
         - label: "I ran `omazen status` and will include its output below."
           required: true
@@ -32,9 +35,19 @@ body:
     id: doctor_output
     attributes:
       label: Output of omazen doctor
-      description: Paste the complete output of `omazen doctor`.
+      description: Optional; paste the complete output when the issue concerns human-readable diagnostics, terminal formatting, or colored statuses.
       placeholder: Paste the output of `omazen doctor` here.
       render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: doctor_json
+    attributes:
+      label: JSON output of omazen doctor
+      description: Paste the complete machine-readable output of `omazen doctor --json`; redact personal paths without removing diagnostic values.
+      placeholder: Paste the JSON output of omazen doctor --json here.
+      render: json
     validations:
       required: true
 
@@ -54,6 +67,18 @@ body:
       label: System and Zen version
       description: Include your Omarchy version and Zen package/version if known.
       placeholder: Omarchy 4.x / zen-browser-bin 1.x
+
+  - type: dropdown
+    id: palette_provider
+    attributes:
+      label: Palette provider
+      description: Select the provider reported by `omazen status` or `omazen doctor --json`.
+      options:
+        - Omarchy theme hook
+        - External provider (`OMAZEN_SKIP_THEME_HOOK=1`)
+        - Unknown
+    validations:
+      required: true
 
   - type: textarea
     id: problem
