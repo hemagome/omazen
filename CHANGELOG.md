@@ -4,6 +4,8 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-08-25
+
 ### Fixed
 
 - Context-menu item hover now uses the active Omazen selection and foreground

@@ -11,9 +11,10 @@ page-exposed API. See the [architecture](docs/architecture.md) and
 
 ## Current status
 
-Omazen `1.3.0` is the local release candidate, adding structured diagnostics,
-palette-provider persistence and bridge health checks while retaining the
-existing Omarchy workflow. The current tested environment is Omarchy `4.0.1`
+Omazen `1.3.1` is the current maintenance release, preserving the structured
+diagnostics, palette-provider persistence and bridge health checks from 1.3.0
+while correcting the context-menu hover palette. The current tested environment
+is Omarchy `4.0.1`
 (Quattro) with native
 `zen-browser-bin 1.21.15b-1`.
 
