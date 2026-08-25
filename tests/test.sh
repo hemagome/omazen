@@ -46,10 +46,26 @@ FAKE_PROFILE="$FAKE_CONFIG/abc.Test Profile"
 FAKE_STATE="$FAKE_HOME/.local/state/omazen"
 FAKE_HOOKS="$FAKE_HOME/.config/omarchy/hooks"
 FAKE_COLORS="$FAKE_HOME/.local/state/omarchy/current/theme/colors.toml"
+FAKE_OS_RELEASE="$TEST_ROOT/os-release"
+FAKE_OLD_OS_RELEASE="$TEST_ROOT/os-release-v3"
 
 mkdir -p "$FAKE_ZEN/defaults/pref" "$FAKE_PROFILE/chrome" "$(dirname -- "$FAKE_COLORS")"
 printf '[App]\nVersion=1.21.15b\n' >"$FAKE_ZEN/application.ini"
 printf '[Profile0]\nName=Test\nIsRelative=1\nPath=abc.Test Profile\nDefault=1\n' >"$FAKE_CONFIG/profiles.ini"
+cat >"$FAKE_OS_RELEASE" <<'EOF'
+NAME="Omarchy"
+PRETTY_NAME="Omarchy"
+ID=omarchy
+VERSION_ID="4.0.1"
+BUILD_ID="4.0.1"
+EOF
+cat >"$FAKE_OLD_OS_RELEASE" <<'EOF'
+NAME="Omarchy"
+PRETTY_NAME="Omarchy"
+ID=omarchy
+VERSION_ID="3.8.4"
+BUILD_ID="3.8.4"
+EOF
 printf 'keep-user-chrome\n' >"$FAKE_PROFILE/chrome/userChrome.css"
 printf 'keep-user-js\n' >"$FAKE_PROFILE/user.js"
 cp "$FAKE_PROFILE/chrome/userChrome.css" "$TEST_ROOT/userChrome.before"
@@ -90,6 +106,22 @@ run_omazen() {
   OMAZEN_ZEN_PROGRAM_DIR="$FAKE_ZEN" \
   OMAZEN_HOOKS_DIR="$FAKE_HOOKS" \
   OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" \
+  OMAZEN_OS_RELEASE_FILE="$FAKE_OS_RELEASE" \
+  "$PROJECT_ROOT/bin/omazen" "$@"
+}
+
+run_omazen_with_os_release() {
+  local os_release=$1
+  shift
+  OMAZEN_TESTING=1 \
+  OMAZEN_SKIP_PACKAGE_CHECK=1 \
+  OMAZEN_HOME_DIR="$FAKE_HOME" \
+  OMAZEN_STATE_DIR="$FAKE_STATE" \
+  OMAZEN_ZEN_CONFIG_DIR="$FAKE_CONFIG" \
+  OMAZEN_ZEN_PROGRAM_DIR="$FAKE_ZEN" \
+  OMAZEN_HOOKS_DIR="$FAKE_HOOKS" \
+  OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" \
+  OMAZEN_OS_RELEASE_FILE="$os_release" \
   "$PROJECT_ROOT/bin/omazen" "$@"
 }
 
@@ -104,7 +136,43 @@ assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenPalette.sys.mjs"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v${OMAZEN_VERSION}.css"
 assert_file "$FAKE_HOOKS/theme-set.d/theme-set"
-grep -Fq "Omazen: $OMAZEN_VERSION" <(run_omazen status) || fail "reported package version"
+status_output=$(run_omazen status)
+grep -Fq "Omazen: $OMAZEN_VERSION" <<<"$status_output" || fail "reported package version"
+grep -Fq 'OS: Omarchy 4.0.1 (omarchy)' <<<"$status_output" || fail "reported supported platform"
+doctor_output=$(run_omazen doctor)
+grep -Fq '[PASS] supported platform: Omarchy 4.0.1 (omarchy)' <<<"$doctor_output" || \
+  fail "doctor reported supported platform"
+pass "status and doctor report the supported platform"
+
+doctor_v3_output=$(run_omazen_with_os_release "$FAKE_OLD_OS_RELEASE" doctor 2>&1 || true)
+grep -Fq '[FAIL] unsupported platform: Omarchy 3.8.4 (omarchy); supported platform is Omarchy Quattro (4.x)' <<<"$doctor_v3_output" || \
+  fail "doctor did not reject Omarchy 3"
+
+V3_HOME="$TEST_ROOT/v3-home"
+V3_ZEN="$TEST_ROOT/v3-zen-program"
+V3_CONFIG="$V3_HOME/.config/zen"
+V3_PROFILE="$V3_CONFIG/abc.Test"
+V3_STATE="$V3_HOME/.local/state/omazen"
+V3_HOOKS="$V3_HOME/.config/omarchy/hooks"
+V3_COLORS="$V3_HOME/.config/omarchy/current/theme/colors.toml"
+mkdir -p "$V3_ZEN/defaults/pref" "$V3_PROFILE/chrome" "$(dirname -- "$V3_COLORS")"
+printf '[App]\nVersion=1.21.15b\n' >"$V3_ZEN/application.ini"
+printf '[Profile0]\nName=Test\nIsRelative=1\nPath=abc.Test\nDefault=1\n' >"$V3_CONFIG/profiles.ini"
+cp "$FAKE_COLORS" "$V3_COLORS"
+if OMAZEN_TESTING=1 OMAZEN_SKIP_PACKAGE_CHECK=1 \
+  OMAZEN_HOME_DIR="$V3_HOME" OMAZEN_STATE_DIR="$V3_STATE" \
+  OMAZEN_ZEN_CONFIG_DIR="$V3_CONFIG" OMAZEN_ZEN_PROGRAM_DIR="$V3_ZEN" \
+  OMAZEN_HOOKS_DIR="$V3_HOOKS" OMAZEN_ACTIVE_COLORS="$V3_COLORS" \
+  OMAZEN_OS_RELEASE_FILE="$FAKE_OLD_OS_RELEASE" \
+  "$PROJECT_ROOT/bin/omazen" setup >/dev/null 2>&1; then
+  fail "setup accepted Omarchy 3"
+fi
+assert_absent "$V3_ZEN/config.js"
+assert_absent "$V3_PROFILE/chrome/JS/omazen-bridge.uc.js"
+assert_absent "$V3_HOOKS/theme-set.d/theme-set"
+assert_absent "$V3_STATE"
+pass "Omarchy 3 is rejected before setup changes"
+
 grep -Fq '"mode": "light"' "$FAKE_STATE/palette.json" || fail "palette mode mapping"
 grep -Fq '"background_dark": "#eeeeee"' "$FAKE_STATE/palette.json" || fail "palette background mapping"
 grep -Fq -- '--zen-urlbar-background-base: var(--omazen-background-light)' \

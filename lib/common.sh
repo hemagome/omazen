@@ -24,6 +24,66 @@ OMAZEN_HOOKS_DIR=${OMAZEN_HOOKS_DIR:-"${XDG_CONFIG_HOME:-$OMAZEN_HOME_DIR/.confi
 OMAZEN_ACTIVE_COLORS=${OMAZEN_ACTIVE_COLORS:-"${XDG_STATE_HOME:-$OMAZEN_HOME_DIR/.local/state}/omarchy/current/theme/colors.toml"}
 OMAZEN_DATA_DIR=${OMAZEN_DATA_DIR:-"${XDG_DATA_HOME:-$OMAZEN_HOME_DIR/.local/share}/omazen"}
 OMAZEN_LOCAL_BIN_DIR=${OMAZEN_LOCAL_BIN_DIR:-"${XDG_BIN_HOME:-$OMAZEN_HOME_DIR/.local/bin}"}
+OMAZEN_OS_RELEASE_FILE=${OMAZEN_OS_RELEASE_FILE:-/etc/os-release}
+
+os_release_value() {
+  local key=$1
+  [[ -r $OMAZEN_OS_RELEASE_FILE ]] || return 1
+  awk -F= -v wanted="$key" '
+    $1 == wanted {
+      value = substr($0, index($0, "=") + 1)
+      sub(/^"/, "", value)
+      sub(/"$/, "", value)
+      sub(/^\047/, "", value)
+      sub(/\047$/, "", value)
+      print value
+      exit
+    }
+  ' "$OMAZEN_OS_RELEASE_FILE"
+}
+
+platform_id() {
+  os_release_value ID 2>/dev/null || printf 'unknown\n'
+}
+
+platform_name() {
+  local name
+  name=$(os_release_value PRETTY_NAME 2>/dev/null || true)
+  [[ -n $name ]] || name=$(os_release_value NAME 2>/dev/null || true)
+  printf '%s\n' "${name:-unknown}"
+}
+
+platform_version() {
+  local version
+  version=$(os_release_value VERSION_ID 2>/dev/null || true)
+  [[ -n $version ]] || version=$(os_release_value BUILD_ID 2>/dev/null || true)
+  printf '%s\n' "${version:-unknown}"
+}
+
+platform_major_version() {
+  local version
+  version=$(platform_version)
+  [[ $version =~ ^([0-9]+)([.]|$) ]] || return 1
+  printf '%s\n' "${BASH_REMATCH[1]}"
+}
+
+platform_summary() {
+  local id name version
+  id=$(platform_id)
+  name=$(platform_name)
+  version=$(platform_version)
+  if [[ $version != unknown && $name != *"$version"* ]]; then
+    name="$name $version"
+  fi
+  printf '%s (%s)\n' "$name" "$id"
+}
+
+platform_is_supported() {
+  local id major
+  id=$(platform_id)
+  major=$(platform_major_version) || return 1
+  [[ $id == omarchy && $major == 4 ]]
+}
 
 say() {
   printf '%s\n' "$*"

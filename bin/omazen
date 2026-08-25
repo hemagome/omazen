@@ -50,11 +50,12 @@ cmd_set() {
 }
 
 cmd_status() {
-  local zen_version="not detected"
+  local platform zen_version="not detected"
   local palette_state="missing"
   local enabled_state="enabled"
   local profile_count=0
 
+  platform=$(platform_summary)
   zen_version=$(detect_zen_version 2>/dev/null || printf 'not detected')
   if validate_palette_json "$OMAZEN_PALETTE_FILE"; then
     palette_state="valid ($OMAZEN_PALETTE_FILE)"
@@ -67,6 +68,7 @@ cmd_status() {
   done < <(zen_profiles)
 
   printf 'Omazen: %s\n' "$OMAZEN_VERSION"
+  printf 'OS: %s\n' "$platform"
   printf 'State: %s\n' "$enabled_state"
   printf 'Zen: %s\n' "$zen_version"
   printf 'Profiles detected: %d\n' "$profile_count"
