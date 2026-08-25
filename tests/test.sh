@@ -196,17 +196,18 @@ grep -Fq -- 'outline-color: var(--omazen-border)' \
 grep -Fq -- 'box-shadow: none' \
   "$CHROME_CSS" || fail "compact sidebar shadow removal"
 grep -Fq -- '#tabbrowser-tabpanels .browserSidebarContainer:not(.zen-glance-overlay)' \
-  "$CHROME_CSS" || fail "compact browser content divider"
-grep -Fq -- ':not([zen-right-side="true"])' \
-  "$CHROME_CSS" || fail "compact left-side layout selector"
-grep -Fq -- 'box-shadow: inset 1px 0 0 var(--omazen-border)' \
-  "$CHROME_CSS" || fail "compact left-side content divider"
-grep -Fq -- '[zen-right-side="true"]' \
-  "$CHROME_CSS" || fail "compact right-side layout selector"
-grep -Fq -- 'box-shadow: inset -1px 0 0 var(--omazen-border)' \
-  "$CHROME_CSS" || fail "compact right-side content divider"
-if grep -Fq -- 'box-shadow: inset 0 0 0 1px var(--omazen-border)' "$CHROME_CSS"; then
-  fail "compact content must not draw intersecting horizontal borders"
+  "$CHROME_CSS" || fail "compact browser content selector"
+if ! awk '
+  /#tabbrowser-tabpanels \.browserSidebarContainer:not\(\.zen-glance-overlay\)/ {
+    getline
+    if ($0 ~ /box-shadow: none !important/) found = 1
+  }
+  END { exit !found }
+' "$CHROME_CSS"; then
+  fail "compact browser content shadow removal"
+fi
+if grep -Eq -- 'box-shadow: inset (0 0 0 1px|1px 0 0|-1px 0 0)' "$CHROME_CSS"; then
+  fail "compact content must not draw a vertical divider"
 fi
 if grep -Fq -- '#urlbar-background' "$CHROME_CSS"; then
   fail "obsolete URL bar background ID selector"

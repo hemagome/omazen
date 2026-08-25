@@ -66,14 +66,9 @@
   box-shadow: none !important;
 }
 
-:root[data-omazen-enabled="true"][zen-compact-mode="true"]:not([zen-right-side="true"])
+:root[data-omazen-enabled="true"][zen-compact-mode="true"]
   #tabbrowser-tabpanels .browserSidebarContainer:not(.zen-glance-overlay) {
-  box-shadow: inset 1px 0 0 var(--omazen-border) !important;
-}
-
-:root[data-omazen-enabled="true"][zen-compact-mode="true"][zen-right-side="true"]
-  #tabbrowser-tabpanels .browserSidebarContainer:not(.zen-glance-overlay) {
-  box-shadow: inset -1px 0 0 var(--omazen-border) !important;
+  box-shadow: none !important;
 }
 
 :root[data-omazen-enabled="true"] :is(
