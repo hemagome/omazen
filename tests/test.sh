@@ -129,6 +129,18 @@ run_external_omazen() {
   OMAZEN_SKIP_THEME_HOOK=1 run_omazen "$@"
 }
 
+run_persisted_omazen() {
+  OMAZEN_TESTING=1 \
+  OMAZEN_SKIP_PACKAGE_CHECK=1 \
+  OMAZEN_HOME_DIR="$FAKE_HOME" \
+  OMAZEN_STATE_DIR="$FAKE_STATE" \
+  OMAZEN_ZEN_CONFIG_DIR="$FAKE_CONFIG" \
+  OMAZEN_ZEN_PROGRAM_DIR="$FAKE_ZEN" \
+  OMAZEN_HOOKS_DIR="$FAKE_HOOKS" \
+  OMAZEN_OS_RELEASE_FILE="$FAKE_OS_RELEASE" \
+  "$PROJECT_ROOT/bin/omazen" "$@"
+}
+
 run_omazen setup >/dev/null
 assert_file "$FAKE_STATE/palette.json"
 assert_file "$FAKE_ZEN/config.js"
@@ -147,6 +159,14 @@ doctor_output=$(run_omazen doctor)
 grep -Fq '[PASS] supported platform: Omarchy 4.0.1 (omarchy)' <<<"$doctor_output" || \
   fail "doctor reported supported platform"
 pass "status and doctor report the supported platform"
+
+doctor_json=$(run_omazen doctor --json)
+printf '%s\n' "$doctor_json" | node -e '
+  const fs = require("node:fs");
+  const report = JSON.parse(fs.readFileSync(0, "utf8"));
+  if (!report.ok || report.provider !== "omarchy-hook" || !Array.isArray(report.checks)) process.exit(1);
+' || fail "doctor JSON report shape"
+pass "doctor emits a structured JSON report"
 
 doctor_v3_output=$(run_omazen_with_os_release "$FAKE_OLD_OS_RELEASE" doctor 2>&1 || true)
 grep -Fq '[FAIL] unsupported platform: Omarchy 3.8.4 (omarchy); supported platform is Omarchy Quattro (4.x)' <<<"$doctor_v3_output" || \
@@ -330,6 +350,24 @@ rm -f -- "$FAKE_HOOKS/theme-set.d/theme-set"
 run_external_omazen setup >/dev/null
 assert_absent "$FAKE_HOOKS/theme-set.d/theme-set"
 run_external_omazen doctor >/dev/null
+assert_file "$FAKE_STATE/provider-mode"
+grep -Fqx '1' "$FAKE_STATE/provider-mode" || fail "external provider mode was not persisted"
+assert_file "$FAKE_STATE/active-colors"
+grep -Fqx "$FAKE_COLORS" "$FAKE_STATE/active-colors" || fail "external palette source was not persisted"
+persisted_external_doctor=$(run_persisted_omazen doctor)
+grep -Fq '[PASS] external palette provider mode (Omarchy hook not required)' <<<"$persisted_external_doctor" || \
+  fail "doctor did not restore the persisted external provider mode"
+grep -Fq "[PASS] active palette source: $FAKE_COLORS" <<<"$persisted_external_doctor" || \
+  fail "doctor did not restore the persisted external palette source"
+persisted_external_sync=$(run_persisted_omazen sync)
+grep -Fq 'Palette synchronized atomically' <<<"$persisted_external_sync" || \
+  fail "sync did not use the persisted external palette source"
+persisted_external_json=$(run_persisted_omazen doctor --json)
+printf '%s\n' "$persisted_external_json" | node -e '
+  const fs = require("node:fs");
+  const report = JSON.parse(fs.readFileSync(0, "utf8"));
+  if (!report.ok || report.provider !== "external") process.exit(1);
+' || fail "doctor JSON did not report the persisted external provider"
 if OMAZEN_SKIP_THEME_HOOK=invalid run_omazen status >/dev/null 2>&1; then
   fail "invalid external palette mode was accepted"
 fi
@@ -401,6 +439,14 @@ if doctor_output=$(run_omazen doctor 2>&1); then
 fi
 grep -Fq 'normalized palette is missing, invalid, or stale' <<<"$doctor_output" || \
   fail "doctor did not identify the stale normalized palette"
+grep -Fq 'accent mismatch:' <<<"$doctor_output" || \
+  fail "doctor did not explain the stale palette mismatch"
+doctor_json=$(run_omazen doctor --json || true)
+printf '%s\n' "$doctor_json" | node -e '
+  const fs = require("node:fs");
+  const report = JSON.parse(fs.readFileSync(0, "utf8"));
+  if (report.ok || report.failures < 1 || !report.checks.some(check => check.status === "FAIL" && check.message.includes("accent mismatch"))) process.exit(1);
+' || fail "doctor JSON did not preserve detailed failure diagnostics"
 cp "$TEST_ROOT/colors.doctor-before" "$FAKE_COLORS"
 
 printf '%s\n' '2026-08-24T09:59:00.000Z [INFO] BRIDGE_LOADED version=0.9.0' \

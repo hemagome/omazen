@@ -176,6 +176,9 @@ const document = {
   getElementById(id) {
     return links.get(id) ?? null;
   },
+  querySelector() {
+    return null;
+  },
   querySelectorAll(selector) {
     if (selector === "browser") browserQueries += 1;
     return selector === "browser" ? [browser] : [];
@@ -326,6 +329,8 @@ const Ci = {
   nsIStyleSheetService: {},
 };
 
+let computedPrimary = "#112233";
+
 const source = fs.readFileSync(new URL("../zen/omazen-bridge.uc.js", import.meta.url), "utf8");
 vm.runInNewContext(source, {
   Cc,
@@ -351,7 +356,10 @@ vm.runInNewContext(source, {
   console,
   document,
   encodeURIComponent,
-  getComputedStyle: () => ({ getPropertyValue: () => "#112233" }),
+  getComputedStyle: () => ({
+    backgroundColor: "rgb(17,34,51)",
+    getPropertyValue: name => (name === "--zen-primary-color" ? computedPrimary : "#112233"),
+  }),
   window,
 }, { filename: "omazen-bridge.uc.js" });
 
@@ -394,6 +402,11 @@ assert.deepEqual(
   ) } },
   "initial palette should be sent to matching internal actors",
 );
+const initialDiagnostic = timeouts.values().next().value;
+timeouts.clear();
+initialDiagnostic();
+assert.ok(logLines.some(line => line.includes("CHROME_CSS_APPLIED primary=#112233")), "initial CSS probe should pass");
+assert.ok(logLines.some(line => line.includes("profile=p")), "bridge diagnostics should identify the profile without logging its path");
 
 timeouts.clear();
 browserQueries = 0;
@@ -427,6 +440,16 @@ assert.equal(attributes.get("data-omazen-mode"), "light", "re-enable should appl
 assert.equal(styleValues.get("--omazen-accent"), "#abcdef", "re-enable should apply the new accent");
 assert.equal(prefs.get("omazen.enabled"), true, "re-enable should restore actor preferences");
 assert.equal(sentMessages.at(-1).payload.accent, "#abcdef", "updated palette should reach actors");
+computedPrimary = "#000000";
+let retryDiagnostic = [...timeouts.values()].at(-1);
+timeouts.clear();
+retryDiagnostic();
+assert.equal(timeouts.size, 1, "CSS diagnostic should retry after a transient mismatch");
+computedPrimary = "#abcdef";
+retryDiagnostic = timeouts.values().next().value;
+timeouts.clear();
+retryDiagnostic();
+assert.ok(logLines.some(line => line.includes("CHROME_CSS_APPLIED primary=#abcdef")), "CSS retry should recover after the stylesheet loads");
 
 paletteText = JSON.stringify({ ...updatedPalette, unexpected: true });
 files.set(`${stateRoot}/palette.json`, { size: paletteText.length, modified: 3 });
