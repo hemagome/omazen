@@ -187,8 +187,18 @@ grep -Fq -- '--zen-urlbar-background-transparent: var(--omazen-background-light)
   "$CHROME_CSS" || fail "expanded URL bar background"
 grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) .urlbar-background' \
   "$CHROME_CSS" || fail "focused URL bar outline"
-if grep -Fq -- '[zen-compact-mode="true"]' "$CHROME_CSS"; then
-  fail "compact mode must retain Zen's native translucent frame and shadows"
+grep -Fq -- ':not([zen-compact-mode="true"]) #navigator-toolbox' \
+  "$CHROME_CSS" || fail "non-compact toolbox palette"
+grep -Fq -- '[zen-compact-mode="true"] .zen-toolbar-background' \
+  "$CHROME_CSS" || fail "compact rounded background palette"
+grep -Fq -- '--zen-navigator-toolbox-background: transparent' \
+  "$CHROME_CSS" || fail "compact rectangular toolbox transparency"
+if grep -Fxq -- '  #navigator-toolbox,' "$CHROME_CSS"; then
+  fail "compact rectangular toolbox must remain transparent"
+fi
+if grep -A3 -F -- '[zen-compact-mode="true"] .zen-toolbar-background {' \
+  "$CHROME_CSS" | grep -Eq -- '(box-shadow|outline)'; then
+  fail "compact rounded background must retain Zen's native frame and shadow"
 fi
 if grep -Fq -- '#urlbar-background' "$CHROME_CSS"; then
   fail "obsolete URL bar background ID selector"

@@ -25,9 +25,9 @@ All notable changes to Omazen are documented here.
 
 ### Fixed
 
-- Compact Mode now preserves Zen's native translucent frame and rounded shadows
-  instead of replacing them with solid palette borders that produced corner
-  artifacts.
+- Compact Mode now applies the palette to Zen's rounded background layer instead
+  of the rectangular toolbox behind it, preserving the native translucent frame
+  and shadows without solid corner artifacts.
 
 ## [1.1.1] - 2026-08-24
 

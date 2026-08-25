@@ -46,7 +46,6 @@
 }
 
 :root[data-omazen-enabled="true"] :is(
-  #navigator-toolbox,
   #nav-bar,
   #TabsToolbar,
   #zen-sidebar-top-buttons,
@@ -55,6 +54,16 @@
 ) {
   background-color: var(--omazen-background) !important;
   color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"]:not([zen-compact-mode="true"]) #navigator-toolbox,
+:root[data-omazen-enabled="true"][zen-compact-mode="true"] .zen-toolbar-background {
+  background-color: var(--omazen-background) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"][zen-compact-mode="true"] {
+  --zen-navigator-toolbox-background: transparent !important;
 }
 
 :root[data-omazen-enabled="true"] :is(
