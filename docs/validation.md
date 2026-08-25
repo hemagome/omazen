@@ -57,6 +57,15 @@ Tools, web scrollbars, and real update/uninstall/clean-install exercises.
 | Light palette | Catppuccin Latte: `mode=light`, `accent=#1e66f5`, `background=#eff1f5` |
 | Zen profiles | 2 profiles from the active `profiles.ini` |
 
+## Current compatibility environment
+
+Updated: 2026-08-25
+
+The system used for current compatibility checks has been updated from Omarchy
+`4.0.0-1` to Omarchy `4.0.1` (Quattro). The full live qualification above is
+historical and remains labeled with the version on which it was executed; the
+Zen, fx-autoconfig and Omazen runtime versions are unchanged.
+
 ## Combined functional matrix
 
 | Area | Exercise and observation | Result |

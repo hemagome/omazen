@@ -108,6 +108,7 @@ cleanup_obsolete_profile_styles() {
 }
 
 check_supported_install() {
+  platform_is_supported || die "unsupported platform: $(platform_summary); Omazen requires Omarchy Quattro (4.x)"
   [[ -d $OMAZEN_ZEN_PROGRAM_DIR ]] || die "supported Zen program directory not found: $OMAZEN_ZEN_PROGRAM_DIR"
   [[ -f $OMAZEN_ZEN_PROGRAM_DIR/application.ini ]] || die "Zen application.ini not found in supported installation"
   if [[ ${OMAZEN_SKIP_PACKAGE_CHECK:-0} != 1 ]]; then
@@ -120,8 +121,8 @@ setup_omazen() {
   local profile version
   local profiles=()
 
-  ensure_state_dir
   check_supported_install
+  ensure_state_dir
   version=$(detect_zen_version) || die "could not determine Zen version"
   version_at_least "$version" "1.20" || die "Zen $version is older than the minimum candidate version 1.20"
   mapfile -t profiles < <(zen_profiles)

@@ -119,10 +119,17 @@ doctor_profile() {
 }
 
 doctor_omazen() {
-  local version profile_count=0 profile hook last_error bridge_version
+  local platform version profile_count=0 profile hook last_error bridge_version
   local bridge_logs=()
   doctor_failures=0
   doctor_warnings=0
+
+  platform=$(platform_summary)
+  if platform_is_supported; then
+    doctor_pass "supported platform: $platform"
+  else
+    doctor_fail "unsupported platform: $platform; supported platform is Omarchy Quattro (4.x)"
+  fi
 
   if [[ -d $OMAZEN_ZEN_PROGRAM_DIR && -f $OMAZEN_ZEN_PROGRAM_DIR/application.ini ]]; then
     doctor_pass "native Zen installation: $OMAZEN_ZEN_PROGRAM_DIR"
