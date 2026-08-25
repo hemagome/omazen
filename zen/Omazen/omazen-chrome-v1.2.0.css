@@ -57,6 +57,15 @@
   color: var(--omazen-foreground) !important;
 }
 
+:root[data-omazen-enabled="true"][zen-compact-mode="true"] .zen-toolbar-background::before,
+:root[data-omazen-enabled="true"][zen-compact-mode="true"] .zen-toolbar-background::after {
+  outline-color: var(--omazen-border) !important;
+}
+
+:root[data-omazen-enabled="true"][zen-compact-mode="true"] .zen-toolbar-background {
+  box-shadow: none !important;
+}
+
 :root[data-omazen-enabled="true"] :is(
   #customization-container,
   #customization-content-container,

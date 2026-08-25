@@ -23,6 +23,11 @@ All notable changes to Omazen are documented here.
 - Omarchy 3 and earlier are now rejected before setup changes are made because
   their generated theme state uses the pre-Quattro path layout.
 
+### Fixed
+
+- Compact Mode now maps the floating sidebar outline to the active palette and
+  removes Zen's native shadow outside that themed border.
+
 ## [1.1.1] - 2026-08-24
 
 ### Added

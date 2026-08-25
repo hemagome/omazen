@@ -187,6 +187,14 @@ grep -Fq -- '--zen-urlbar-background-transparent: var(--omazen-background-light)
   "$CHROME_CSS" || fail "expanded URL bar background"
 grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) .urlbar-background' \
   "$CHROME_CSS" || fail "focused URL bar outline"
+grep -Fq -- '[zen-compact-mode="true"] .zen-toolbar-background::before' \
+  "$CHROME_CSS" || fail "compact sidebar leading outline palette"
+grep -Fq -- '[zen-compact-mode="true"] .zen-toolbar-background::after' \
+  "$CHROME_CSS" || fail "compact sidebar trailing outline palette"
+grep -Fq -- 'outline-color: var(--omazen-border)' \
+  "$CHROME_CSS" || fail "compact sidebar outline color"
+grep -Fq -- 'box-shadow: none' \
+  "$CHROME_CSS" || fail "compact sidebar shadow removal"
 if grep -Fq -- '#urlbar-background' "$CHROME_CSS"; then
   fail "obsolete URL bar background ID selector"
 fi
