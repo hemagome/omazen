@@ -13,6 +13,8 @@ OMAZEN_PALETTE_FILE="$OMAZEN_STATE_DIR/palette.json"
 OMAZEN_DISABLED_FILE="$OMAZEN_STATE_DIR/disabled"
 OMAZEN_BRIDGE_LOG="$OMAZEN_STATE_DIR/bridge.log"
 OMAZEN_BRIDGE_LOG_ARCHIVE="$OMAZEN_STATE_DIR/bridge.log.1"
+OMAZEN_PROVIDER_MODE_FILE="$OMAZEN_STATE_DIR/provider-mode"
+OMAZEN_ACTIVE_COLORS_FILE="$OMAZEN_STATE_DIR/active-colors"
 OMAZEN_OWNED_DIR="$OMAZEN_STATE_DIR/owned"
 OMAZEN_BACKUP_DIR="$OMAZEN_STATE_DIR/backups"
 OMAZEN_PROFILE_MANIFEST="$OMAZEN_OWNED_DIR/profile-files"
@@ -21,8 +23,25 @@ OMAZEN_HOOK_MANIFEST="$OMAZEN_OWNED_DIR/hook-files"
 OMAZEN_ZEN_CONFIG_DIR=${OMAZEN_ZEN_CONFIG_DIR:-"${XDG_CONFIG_HOME:-$OMAZEN_HOME_DIR/.config}/zen"}
 OMAZEN_ZEN_PROGRAM_DIR=${OMAZEN_ZEN_PROGRAM_DIR:-/opt/zen-browser-bin}
 OMAZEN_HOOKS_DIR=${OMAZEN_HOOKS_DIR:-"${XDG_CONFIG_HOME:-$OMAZEN_HOME_DIR/.config}/omarchy/hooks"}
-OMAZEN_ACTIVE_COLORS=${OMAZEN_ACTIVE_COLORS:-"${XDG_STATE_HOME:-$OMAZEN_HOME_DIR/.local/state}/omarchy/current/theme/colors.toml"}
-OMAZEN_SKIP_THEME_HOOK=${OMAZEN_SKIP_THEME_HOOK-0}
+OMAZEN_OMARCHY_STATE_DIR="${XDG_STATE_HOME:-$OMAZEN_HOME_DIR/.local/state}/omarchy"
+OMAZEN_THEME_NAME_FILE="$OMAZEN_OMARCHY_STATE_DIR/current/theme.name"
+
+read_state_line() {
+  local source=$1
+  local value
+  [[ -f $source && ! -L $source ]] || return 1
+  IFS= read -r value <"$source" || true
+  [[ -n ${value:-} ]] || return 1
+  printf '%s\n' "$value"
+}
+
+if [[ ${OMAZEN_ACTIVE_COLORS+x} != x ]]; then
+  OMAZEN_ACTIVE_COLORS=$(read_state_line "$OMAZEN_ACTIVE_COLORS_FILE" 2>/dev/null || \
+    printf '%s\n' "$OMAZEN_OMARCHY_STATE_DIR/current/theme/colors.toml")
+fi
+if [[ ${OMAZEN_SKIP_THEME_HOOK+x} != x ]]; then
+  OMAZEN_SKIP_THEME_HOOK=$(read_state_line "$OMAZEN_PROVIDER_MODE_FILE" 2>/dev/null || printf '0\n')
+fi
 [[ $OMAZEN_SKIP_THEME_HOOK == 0 || $OMAZEN_SKIP_THEME_HOOK == 1 ]] || {
   printf 'ERROR: OMAZEN_SKIP_THEME_HOOK must be 0 or 1\n' >&2
   exit 1
@@ -115,6 +134,21 @@ ensure_state_dir() {
   umask 077
   mkdir -p -- "$OMAZEN_STATE_DIR" "$OMAZEN_OWNED_DIR" "$OMAZEN_BACKUP_DIR"
   chmod 700 "$OMAZEN_STATE_DIR" "$OMAZEN_OWNED_DIR" "$OMAZEN_BACKUP_DIR"
+}
+
+persist_provider_config() {
+  local temporary
+
+  ensure_state_dir
+  temporary=$(mktemp "$OMAZEN_STATE_DIR/.provider-mode.XXXXXX")
+  printf '%s\n' "$OMAZEN_SKIP_THEME_HOOK" >"$temporary"
+  chmod 600 "$temporary"
+  mv -f -- "$temporary" "$OMAZEN_PROVIDER_MODE_FILE"
+
+  temporary=$(mktemp "$OMAZEN_STATE_DIR/.active-colors.XXXXXX")
+  printf '%s\n' "$OMAZEN_ACTIVE_COLORS" >"$temporary"
+  chmod 600 "$temporary"
+  mv -f -- "$temporary" "$OMAZEN_ACTIVE_COLORS_FILE"
 }
 
 manifest_hash_for() {

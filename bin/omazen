@@ -30,7 +30,7 @@ Commands:
   sync              Regenerate the normalized palette from active colors.toml
   set [theme]       Set an Omarchy theme, or sync the current theme
   status            Show concise installation and runtime state
-  doctor            Run compatibility and installation diagnostics
+  doctor [--json]   Run compatibility and installation diagnostics
   disable           Disable Omazen live without removing it
   enable            Re-enable Omazen live
   uninstall         Remove only files owned by Omazen
@@ -54,6 +54,7 @@ cmd_status() {
   local palette_state="missing"
   local enabled_state="enabled"
   local profile_count=0
+  local provider="omarchy-hook"
 
   platform=$(platform_summary)
   zen_version=$(detect_zen_version 2>/dev/null || printf 'not detected')
@@ -66,10 +67,13 @@ cmd_status() {
   while IFS= read -r _profile; do
     ((profile_count += 1))
   done < <(zen_profiles)
+  [[ $OMAZEN_SKIP_THEME_HOOK == 1 ]] && provider="external"
 
   printf 'Omazen: %s\n' "$OMAZEN_VERSION"
   printf 'OS: %s\n' "$platform"
   printf 'State: %s\n' "$enabled_state"
+  printf 'Palette provider: %s\n' "$provider"
+  printf 'Palette source: %s\n' "$OMAZEN_ACTIVE_COLORS"
   printf 'Zen: %s\n' "$zen_version"
   printf 'Profiles detected: %d\n' "$profile_count"
   printf 'Palette: %s\n' "$palette_state"
@@ -93,6 +97,17 @@ cmd_enable() {
   say "Omazen enabled. Open Zen windows will update on the next poll."
 }
 
+cmd_doctor() {
+  if (( $# == 0 )); then
+    DOCTOR_JSON=0
+  elif (( $# == 1 )) && [[ $1 == --json ]]; then
+    DOCTOR_JSON=1
+  else
+    die "doctor accepts no arguments or --json"
+  fi
+  doctor_omazen
+}
+
 main() {
   local command=${1:-help}
   (( $# == 0 )) || shift
@@ -102,7 +117,7 @@ main() {
     sync) (( $# == 0 )) || die "sync takes no arguments"; sync_palette ;;
     set) cmd_set "$@" ;;
     status) (( $# == 0 )) || die "status takes no arguments"; cmd_status ;;
-    doctor) (( $# == 0 )) || die "doctor takes no arguments"; doctor_omazen ;;
+    doctor) cmd_doctor "$@" ;;
     disable) (( $# == 0 )) || die "disable takes no arguments"; cmd_disable ;;
     enable) (( $# == 0 )) || die "enable takes no arguments"; cmd_enable ;;
     uninstall)

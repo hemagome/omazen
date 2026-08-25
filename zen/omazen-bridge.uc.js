@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        1.2.0
+// @version        1.3.0
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
@@ -15,15 +15,16 @@
   "use strict";
 
   const POLL_MS = 250;
+  const CSS_DIAGNOSTIC_DELAYS = Object.freeze([100, 250, 500, 1000]);
   const MAX_PALETTE_BYTES = 2048;
   const MAX_LOG_BYTES = 131072;
   const LOG_LEAF = "bridge.log";
   const LOG_ARCHIVE_LEAF = "bridge.log.1";
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
-  const VERSION = "1.2.0";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v1.2.0.css";
-  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.2.0.css";
+  const VERSION = "1.3.0";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v1.3.0.css";
+  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.3.0.css";
   const {
     COLOR_KEYS,
     actorPayload,
@@ -58,6 +59,22 @@
   let internalPageObserver = null;
   let pollTimer = 0;
   const diagnosticTimers = new Set();
+
+  function stableProfileId() {
+    try {
+      const path = Services.dirsvc.get("ProfD", Ci.nsIFile).path;
+      let hash = 2166136261;
+      for (let index = 0; index < path.length; index += 1) {
+        hash ^= path.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+      }
+      return `p${(hash >>> 0).toString(16).padStart(8, "0")}`;
+    } catch (_error) {
+      return "unknown";
+    }
+  }
+
+  const PROFILE_ID = stableProfileId();
 
   function stateDirectory() {
     const configured = Services.env.get("XDG_STATE_HOME");
@@ -325,6 +342,45 @@
     diagnosticTimers.add(timer);
   }
 
+  function appendChromeStyleProbe() {
+    const styleProbe = (selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return `${selector}=missing`;
+      const style = getComputedStyle(element);
+      const background = style.backgroundColor.replaceAll(" ", "");
+      const toolbar = style.getPropertyValue("--zen-toolbar-element-bg").trim().replaceAll(" ", "");
+      const base = style.getPropertyValue("--zen-urlbar-background-base").trim().replaceAll(" ", "");
+      return `${selector}=${background}|toolbar:${toolbar}|base:${base}`;
+    };
+    appendLog(
+      "INFO",
+      `CHROME_STYLE_PROBE ${styleProbe(".urlbar-background")} ${styleProbe(".urlbar-input-container")} ${styleProbe("#urlbar")} profile=${PROFILE_ID}`,
+    );
+  }
+
+  function scheduleChromeDiagnostic(palette, attempt = 0) {
+    const delay = CSS_DIAGNOSTIC_DELAYS[Math.min(attempt, CSS_DIAGNOSTIC_DELAYS.length - 1)];
+    scheduleDiagnostic(() => {
+      const primary = getComputedStyle(document.documentElement)
+        .getPropertyValue("--zen-primary-color")
+        .trim();
+      if (primary === palette.accent) {
+        appendLog("INFO", `CHROME_CSS_APPLIED primary=${primary} profile=${PROFILE_ID}`);
+        appendChromeStyleProbe();
+        return;
+      }
+      if (attempt + 1 < CSS_DIAGNOSTIC_DELAYS.length) {
+        scheduleChromeDiagnostic(palette, attempt + 1);
+        return;
+      }
+      appendLog(
+        "ERROR",
+        `chrome stylesheet did not expose the expected primary color expected=${palette.accent} observed=${primary || "missing"} profile=${PROFILE_ID}`,
+      );
+      appendChromeStyleProbe();
+    }, delay);
+  }
+
   function isActorInternalUri(uri) {
     return uri?.startsWith("about:") || ACTOR_CHROME_PREFIXES.some((prefix) => uri?.startsWith(prefix));
   }
@@ -436,26 +492,8 @@
     syncContentPaletteSheet(palette, true);
     writePalettePrefs(palette, true);
     broadcastToInternalPages(palette, true);
-    appendLog("INFO", `PALETTE_APPLIED accent=${palette.accent} mode=${palette.mode}`);
-    scheduleDiagnostic(() => {
-      const primary = getComputedStyle(root).getPropertyValue("--zen-primary-color").trim();
-      if (primary === palette.accent) appendLog("INFO", `CHROME_CSS_APPLIED primary=${primary}`);
-      else appendLog("ERROR", "chrome stylesheet did not expose the expected primary color");
-
-      const styleProbe = (selector) => {
-        const element = document.querySelector(selector);
-        if (!element) return `${selector}=missing`;
-        const style = getComputedStyle(element);
-        const background = style.backgroundColor.replaceAll(" ", "");
-        const toolbar = style.getPropertyValue("--zen-toolbar-element-bg").trim().replaceAll(" ", "");
-        const base = style.getPropertyValue("--zen-urlbar-background-base").trim().replaceAll(" ", "");
-        return `${selector}=${background}|toolbar:${toolbar}|base:${base}`;
-      };
-      appendLog(
-        "INFO",
-        `CHROME_STYLE_PROBE ${styleProbe(".urlbar-background")} ${styleProbe(".urlbar-input-container")} ${styleProbe("#urlbar")}`,
-      );
-    }, 100);
+    appendLog("INFO", `PALETTE_APPLIED accent=${palette.accent} mode=${palette.mode} profile=${PROFILE_ID}`);
+    scheduleChromeDiagnostic(palette);
   }
 
   function disablePalette() {
@@ -528,7 +566,7 @@
     childList: true,
     subtree: true,
   });
-  appendLog("INFO", `BRIDGE_LOADED version=${VERSION}`);
+  appendLog("INFO", `BRIDGE_LOADED version=${VERSION} profile=${PROFILE_ID}`);
   sync();
   pollTimer = window.setInterval(sync, POLL_MS);
 })();

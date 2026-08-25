@@ -142,6 +142,7 @@ setup_omazen() {
     install_theme_hook
   fi
   sync_palette
+  persist_provider_config
   rm -f -- "$OMAZEN_DISABLED_FILE"
 
   say "Omazen setup complete for $profile_count profile(s)."
@@ -215,7 +216,9 @@ uninstall_omazen() {
     "$OMAZEN_DISABLED_FILE" \
     "$OMAZEN_PALETTE_FILE" \
     "$OMAZEN_BRIDGE_LOG" \
-    "$OMAZEN_BRIDGE_LOG_ARCHIVE"
+    "$OMAZEN_BRIDGE_LOG_ARCHIVE" \
+    "$OMAZEN_PROVIDER_MODE_FILE" \
+    "$OMAZEN_ACTIVE_COLORS_FILE"
   if (( leftovers == 0 )); then
     rm -f -- "$OMAZEN_HOOK_MANIFEST" "$OMAZEN_PROFILE_MANIFEST" "$OMAZEN_PROGRAM_MANIFEST"
     rmdir -- "$OMAZEN_OWNED_DIR" 2>/dev/null || true
