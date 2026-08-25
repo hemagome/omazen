@@ -25,9 +25,9 @@ All notable changes to Omazen are documented here.
 
 ### Fixed
 
-- Compact Mode now maps the floating sidebar frame to the active palette,
-  preserves Zen's rounded floating-panel shadow, and removes only the browser
-  content shadow that previously overlapped it.
+- Compact Mode now preserves Zen's native translucent frame and rounded shadows
+  instead of replacing them with solid palette borders that produced corner
+  artifacts.
 
 ## [1.1.1] - 2026-08-24
 

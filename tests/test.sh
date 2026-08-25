@@ -187,34 +187,8 @@ grep -Fq -- '--zen-urlbar-background-transparent: var(--omazen-background-light)
   "$CHROME_CSS" || fail "expanded URL bar background"
 grep -Fq -- '#urlbar:is([focused="true"], [breakout-extend]) .urlbar-background' \
   "$CHROME_CSS" || fail "focused URL bar outline"
-grep -Fq -- '[zen-compact-mode="true"] .zen-toolbar-background::before' \
-  "$CHROME_CSS" || fail "compact sidebar leading outline palette"
-grep -Fq -- '[zen-compact-mode="true"] .zen-toolbar-background::after' \
-  "$CHROME_CSS" || fail "compact sidebar trailing outline palette"
-grep -Fq -- 'outline-color: var(--omazen-border)' \
-  "$CHROME_CSS" || fail "compact sidebar outline color"
-if awk '
-  /\[zen-compact-mode="true"\] \.zen-toolbar-background \{/ {
-    getline
-    if ($0 ~ /box-shadow: none !important/) found = 1
-  }
-  END { exit !found }
-' "$CHROME_CSS"; then
-  fail "compact sidebar must retain Zen's rounded shadow"
-fi
-grep -Fq -- '#tabbrowser-tabpanels .browserSidebarContainer:not(.zen-glance-overlay)' \
-  "$CHROME_CSS" || fail "compact browser content selector"
-if ! awk '
-  /#tabbrowser-tabpanels \.browserSidebarContainer:not\(\.zen-glance-overlay\)/ {
-    getline
-    if ($0 ~ /box-shadow: none !important/) found = 1
-  }
-  END { exit !found }
-' "$CHROME_CSS"; then
-  fail "compact browser content shadow removal"
-fi
-if grep -Eq -- 'box-shadow: inset (0 0 0 1px|1px 0 0|-1px 0 0)' "$CHROME_CSS"; then
-  fail "compact content must not draw a vertical divider"
+if grep -Fq -- '[zen-compact-mode="true"]' "$CHROME_CSS"; then
+  fail "compact mode must retain Zen's native translucent frame and shadows"
 fi
 if grep -Fq -- '#urlbar-background' "$CHROME_CSS"; then
   fail "obsolete URL bar background ID selector"
