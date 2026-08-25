@@ -1,6 +1,6 @@
 # Release checklist
 
-Use this checklist from a clean `main` worktree. Replace `1.1.1` when preparing a
+Use this checklist from a clean `main` worktree. Replace `1.2.0` when preparing a
 later release.
 
 ## Automated gate
@@ -20,7 +20,7 @@ deployment.
 2. Run `./install.sh` from the release commit.
 3. Reopen Zen once so fx-autoconfig loads the new bridge and shared module.
 4. Run `omazen doctor` and require zero failures and zero warnings.
-5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.1.1`, a successful
+5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.2.0`, a successful
    `PALETTE_APPLIED`, and no current error.
 6. Exercise dark/light theme changes, disable/enable, Settings, a common dialog,
    Library, Passwords, Print and Developer Tools without destructive actions.

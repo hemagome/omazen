@@ -11,7 +11,7 @@ import {
 
 const STYLE_ID = "omazen-content-style";
 const SHADOW_LINK_STYLE_ID = "omazen-shadow-link-style";
-const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.1.1.css";
+const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.2.0.css";
 const shadowObservers = new WeakMap();
 
 function readPrefs() {

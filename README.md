@@ -11,9 +11,10 @@ page-exposed API. See the [architecture](docs/architecture.md) and
 
 ## Current status
 
-Omazen `1.1.1` is a maintenance release; its runtime is unchanged from the
-qualified `1.1.0` build. The current tested environment is Omarchy `4.0.1`
-(Quattro) with native `zen-browser-bin 1.21.15b-1`.
+Omazen `1.2.0` is the next feature release, adding an integration mode for
+external palette providers while retaining the existing Omarchy workflow. The
+current tested environment is Omarchy `4.0.1` (Quattro) with native
+`zen-browser-bin 1.21.15b-1`.
 
 The historical live qualification and complete test results are recorded in
 the [validation report](docs/validation.md). Compatibility boundaries and

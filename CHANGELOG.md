@@ -4,6 +4,8 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-25
+
 ### Added
 
 - A release tag helper derives `v<version>` from the canonical `VERSION` file
