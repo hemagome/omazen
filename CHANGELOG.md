@@ -10,7 +10,9 @@ All notable changes to Omazen are documented here.
   and shares its validation rules with the GitHub publication workflow.
 - External palette providers can set `OMAZEN_ACTIVE_COLORS` and opt out of the
   Omarchy theme hook with `OMAZEN_SKIP_THEME_HOOK=1` while retaining the full
-  loader, validation, diagnostics, and ownership model.
+  loader, validation, diagnostics, and ownership model. This interface was
+  contributed in [#1](https://github.com/hemagome/omazen/pull/1) by
+  [@nerdislb](https://github.com/nerdislb). Thanks for the contribution!
 
 ### Changed
 
