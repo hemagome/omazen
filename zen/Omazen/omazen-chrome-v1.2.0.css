@@ -62,10 +62,6 @@
   outline-color: var(--omazen-border) !important;
 }
 
-:root[data-omazen-enabled="true"][zen-compact-mode="true"] .zen-toolbar-background {
-  box-shadow: none !important;
-}
-
 :root[data-omazen-enabled="true"][zen-compact-mode="true"]
   #tabbrowser-tabpanels .browserSidebarContainer:not(.zen-glance-overlay) {
   box-shadow: none !important;

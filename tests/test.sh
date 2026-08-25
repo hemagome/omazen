@@ -193,8 +193,15 @@ grep -Fq -- '[zen-compact-mode="true"] .zen-toolbar-background::after' \
   "$CHROME_CSS" || fail "compact sidebar trailing outline palette"
 grep -Fq -- 'outline-color: var(--omazen-border)' \
   "$CHROME_CSS" || fail "compact sidebar outline color"
-grep -Fq -- 'box-shadow: none' \
-  "$CHROME_CSS" || fail "compact sidebar shadow removal"
+if awk '
+  /\[zen-compact-mode="true"\] \.zen-toolbar-background \{/ {
+    getline
+    if ($0 ~ /box-shadow: none !important/) found = 1
+  }
+  END { exit !found }
+' "$CHROME_CSS"; then
+  fail "compact sidebar must retain Zen's rounded shadow"
+fi
 grep -Fq -- '#tabbrowser-tabpanels .browserSidebarContainer:not(.zen-glance-overlay)' \
   "$CHROME_CSS" || fail "compact browser content selector"
 if ! awk '
