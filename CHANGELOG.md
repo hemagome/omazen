@@ -9,6 +9,13 @@ All notable changes to Omazen are documented here.
 - A release tag helper derives `v<version>` from the canonical `VERSION` file
   and shares its validation rules with the GitHub publication workflow.
 
+### Changed
+
+- Compatibility documentation now records Omarchy 4.0.1 as the current tested
+  Quattro environment while preserving the historical 4.0.0-1 qualification.
+- Omarchy 3 and earlier are now rejected before setup changes are made because
+  their generated theme state uses the pre-Quattro path layout.
+
 ## [1.1.1] - 2026-08-24
 
 ### Added

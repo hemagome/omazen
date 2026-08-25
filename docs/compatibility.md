@@ -11,10 +11,16 @@ other Zen packaging formats or for Firefox.
 
 | Target | Contract |
 |---|---|
-| Omarchy 4.0.0 / Quattro | Supported; full validation 2026-08-24 |
+| Omarchy 4.0.1 / Quattro | Supported; current tested environment 2026-08-25 |
+| Omarchy 3.x and earlier | Incompatible; rejected by `omazen setup` and `omazen doctor` |
 | `zen-browser-bin 1.21.15b-1` | Supported; full validation 2026-08-24 |
 | Native `zen-browser-bin` Zen >= 1.20 | Compatibility candidate; `omazen doctor` warns unless it is the fully validated version above |
 | Native Zen < 1.20 | Rejected by `omazen setup` and `omazen doctor` |
+
+The full live qualification recorded below was performed on Omarchy `4.0.0-1`.
+After the system update, Omarchy `4.0.1` is the current tested Quattro
+environment; the validated Zen, fx-autoconfig and Omazen runtime versions are
+unchanged.
 
 The only fully validated Zen version in this release is `1.21.15b` (package
 `1.21.15b-1`). The candidate range is native `zen-browser-bin` Zen `>=1.20`;
