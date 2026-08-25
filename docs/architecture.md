@@ -2,9 +2,14 @@
 
 ```text
 omarchy theme set
+  -> stage ~/.local/state/omarchy/current/next-theme/colors.toml
+  -> generate templates
+  -> publish ~/.local/state/omarchy/current/theme/colors.toml
+  -> update the running shell
+  -> wait for parallel application integrations
+  -> run ~/.config/omarchy/hooks/theme-set.d/* sequentially
   -> ~/.config/omarchy/hooks/theme-set.d/theme-set
   -> omazen sync
-  -> ~/.local/state/omarchy/current/theme/colors.toml
   -> same-directory temporary JSON + atomic rename
   -> ~/.local/state/omazen/palette.json
   -> privileged bridge in every Zen chrome window (250 ms fixed-file poll)
@@ -13,6 +18,23 @@ omarchy theme set
   -> allowlisted Omazen JSWindowActor
   -> allowlisted about: pages and internal dialog documents
 ```
+
+## Theme-change latency
+
+Live theme changes do not require restarting Zen, but they are not necessarily
+instantaneous. Omarchy first stages the new theme, generates its templates,
+updates the running shell, and waits for its parallel application integrations
+to finish. It then executes the scripts in
+`~/.config/omarchy/hooks/theme-set.d/` sequentially and in lexicographic order.
+
+Omazen can generate `palette.json` only when its hook is reached. Other hooks
+ordered before Omazen may therefore add to the visible delay. Once the palette
+has been written, the Zen bridge detects it through a 250 ms fixed-file poll and
+applies the validated colors.
+
+Observed latency depends on the installed hooks, active applications, theme
+complexity, and whether an integration performs first-run work. It should not
+be treated as a fixed Omazen performance guarantee.
 
 ## State contract
 
