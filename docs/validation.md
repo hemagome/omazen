@@ -1,5 +1,22 @@
 # Release validation report
 
+## 1.3.1 maintenance release
+
+Date: 2026-08-25
+Release: Omazen `1.3.1`
+
+This maintenance release fixes the native XUL context-menu active-row state so
+its hover background and text use the Omazen selection and foreground palette
+instead of Zen's native blue highlight.
+
+The complete `tests/release-gate.sh` passed: static analysis, release
+consistency, all 12 disposable lifecycle scenarios, rendered-pixel smoke and
+whitespace checks. The real installation updated both detected Zen profiles,
+removed the owned `1.3.0` styles, retained the timestamped application backup,
+and synchronized the active palette. After a normal Zen restart, `omazen
+doctor --json` reported bridge `1.3.1` loaded with zero failures and zero
+warnings.
+
 ## 1.1.1 maintenance release
 
 Omazen `1.1.1` contains release automation, test and documentation updates,
