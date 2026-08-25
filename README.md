@@ -39,6 +39,21 @@ The installer copies Omazen to `~/.local/share/omazen`, creates `~/.local/bin/om
 
 Close Zen normally and open it once after initial setup. Theme changes after that are live and do not require a restart.
 
+External desktop integrations that provide an Omazen-compatible `colors.toml`
+may opt out of installing the Omarchy hook while retaining Omazen's loader,
+palette validation, diagnostics and ownership tracking:
+
+```bash
+OMAZEN_ACTIVE_COLORS=/absolute/path/to/colors.toml \
+OMAZEN_SKIP_THEME_HOOK=1 \
+omazen setup
+```
+
+Use the same two variables for later `sync`, `enable`, and `doctor` calls. This
+is an integration interface, not an expansion of Omazen's official support
+scope; the external provider owns triggering `omazen sync` after palette
+changes.
+
 Omazen never edits `userChrome.css`, `userContent.css` or `user.js`. It stops on an unowned autoconfig conflict instead of merging privileged startup code automatically.
 
 ## Commands

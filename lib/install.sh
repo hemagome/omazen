@@ -135,7 +135,11 @@ setup_omazen() {
     cleanup_obsolete_profile_styles "$profile"
   done
 
-  install_theme_hook
+  if [[ $OMAZEN_SKIP_THEME_HOOK == 1 ]]; then
+    say "Skipping the Omarchy theme hook for an external palette provider."
+  else
+    install_theme_hook
+  fi
   sync_palette
   rm -f -- "$OMAZEN_DISABLED_FILE"
 

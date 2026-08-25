@@ -46,6 +46,10 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
 - Logs contain timestamps, fixed event names, mode, accent and validation errors—not URLs, page titles, profile paths or browsing data.
 - Logs rotate at 128 KiB.
 - Disable is live and uninstall is ownership/hash aware.
+- External palette-provider mode can skip the Omarchy hook, but it does not
+  bypass palette validation, fixed paths, loader integrity, or ownership
+  checks. The external provider must supply a trusted local `colors.toml` path
+  and invoke synchronization itself.
 
 ## Updates
 

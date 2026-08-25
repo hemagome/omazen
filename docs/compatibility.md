@@ -7,6 +7,12 @@ The official Omazen compatibility contract is **Omarchy Quattro + the native Arc
 claims below apply only to that combination. Omazen does not claim support for
 other Zen packaging formats or for Firefox.
 
+`OMAZEN_ACTIVE_COLORS` together with `OMAZEN_SKIP_THEME_HOOK=1` is a narrow
+integration interface for external palette providers. It skips only the
+Omarchy hook; all browser, palette, ownership and diagnostic checks remain in
+effect. Using that interface does not make the external desktop environment
+part of Omazen's official support contract.
+
 ## Compatibility contract
 
 | Target | Contract |
