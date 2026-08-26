@@ -415,3 +415,23 @@
   background-color: var(--omazen-selection) !important;
   color: var(--omazen-foreground) !important;
 }
+
+/* A web page's <select> dropdown is content UI, not chrome.
+ *
+ * Firefox builds it as a chrome menupopup (#ContentSelectDropdown > menupopup)
+ * but deliberately mirrors the *page's* color-scheme onto it and leaves
+ * --panel-text-color as the system MenuText. Zen maps --panel-background-color
+ * to --arrowpanel-background (zen-popup.css), which Omazen themes on :root, so
+ * the popup takes the palette background while its text stays MenuText --
+ * resolving dark under a light-scheme page. The result is near-black text on
+ * the near-black palette background.
+ *
+ * Restore Zen's stock --arrowpanel-background (zen-theme.css) for this popup
+ * only, so Firefox's native page-matched styling applies. This also honours
+ * Omazen's documented boundary that ordinary website content is not recolored.
+ */
+:root[data-omazen-enabled="true"] #ContentSelectDropdown > menupopup {
+  --arrowpanel-background: light-dark(rgb(244, 244, 244), rgb(31, 31, 31)) !important;
+  --arrowpanel-color: MenuText !important;
+  background-color: transparent !important;
+}

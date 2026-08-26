@@ -90,5 +90,6 @@ Zen-specific selectors and `--zen-*` variables are not a stable public API. The 
 
 - Browser chrome, URL bar, tabs, sidebar, workspace controls, popups, split containers, Glance containers and relevant internal pages are targeted.
 - Ordinary website content is deliberately not recolored; only vertical and horizontal scrollbar colors are mapped to the active palette.
+- A web page's `<select>` dropdown is content UI even though Firefox renders it as a chrome `menupopup`. It keeps Zen's stock palette so it continues to follow the page's own color scheme.
 - Zen Boost storage is deliberately not mutated.
 - No WebExtension/native-messaging alternative is shipped because the privileged backend has proven reliable and the alternate backend has not demonstrated equivalent Zen-specific coverage.

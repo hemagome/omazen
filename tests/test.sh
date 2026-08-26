@@ -677,4 +677,15 @@ assert_absent "$FAKE_APP_DATA"
 assert_absent "$FAKE_APP_BIN/omazen"
 pass "staged install, failed-update recovery, backup, and uninstall are reversible"
 
-printf '1..12\n'
+CONTENT_SELECT_RULE=$(
+  awk '/#ContentSelectDropdown > menupopup \{/{flag=1} flag{print; if (/^\}/) exit}' "$CHROME_CSS"
+)
+[[ -n $CONTENT_SELECT_RULE ]] || \
+  fail "chrome stylesheet must scope the content select dropdown back to stock styling"
+grep -Fq -- '--arrowpanel-background:' <<<"$CONTENT_SELECT_RULE" || \
+  fail "content select dropdown must restore Zen's stock arrowpanel background"
+grep -Fq -- 'background-color: transparent !important;' <<<"$CONTENT_SELECT_RULE" || \
+  fail "content select dropdown host must not carry a palette background"
+pass "chrome stylesheet leaves web-page select dropdowns on Zen's stock palette"
+
+printf '1..13\n'

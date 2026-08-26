@@ -4,6 +4,18 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Web-page `<select>` dropdowns are no longer recolored. Firefox renders a
+  content select popup as a chrome `menupopup` (`#ContentSelectDropdown`) but
+  mirrors the page's `color-scheme` onto it and keeps `--panel-text-color` as
+  the system `MenuText`. Zen maps `--panel-background-color` to
+  `--arrowpanel-background`, which Omazen themes on `:root`, so the popup took
+  the palette background while its text stayed `MenuText` -- rendering
+  near-black on near-black for any page in a light color scheme. That popup now
+  keeps Zen's stock values, restoring the documented boundary that ordinary
+  website content is not recolored.
+
 ## [1.4.1] - 2026-08-26
 
 ### Changed
