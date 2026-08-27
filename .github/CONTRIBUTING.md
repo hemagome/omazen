@@ -54,7 +54,10 @@ machine-specific secrets in issues, logs, screenshots, or commits.
   page-exposed APIs without first documenting and reviewing the security impact.
 - Update documentation, compatibility notes, tests, and the changelog when the
   behavior or support contract changes.
-- Keep versioned bridge and stylesheet references consistent with `VERSION`.
+- Modify the canonical `zen/Omazen/omazen-chrome.css` and
+  `zen/Omazen/omazen-content.css` sources. Do not add versioned stylesheet
+  copies to the repository; installation derives their cache-busting names
+  from `VERSION`.
 - Use clear commit messages that describe the change and its reason.
 
 ## Pull requests

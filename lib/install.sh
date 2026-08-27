@@ -8,8 +8,6 @@ OMAZEN_PROFILE_FILES=(
   Omazen/OmazenChild.sys.mjs
   Omazen/OmazenPalette.sys.mjs
   Omazen/OmazenWatcher.sys.mjs
-  "Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
-  "Omazen/omazen-content-v${OMAZEN_VERSION}.css"
 )
 
 # Releases before program-file ownership was fully recorded may leave this
@@ -112,6 +110,15 @@ install_omazen_profile_files() {
   for relative in "${OMAZEN_PROFILE_FILES[@]}"; do
     install_user_file "$OMAZEN_ROOT/zen/$relative" "$profile/chrome/JS/$relative"
   done
+  # Keep one stable source path in the repository so contributions survive
+  # releases, while retaining versioned installed URIs to defeat chrome://
+  # stylesheet caches after upgrades.
+  install_user_file \
+    "$OMAZEN_ROOT/zen/Omazen/omazen-chrome.css" \
+    "$profile/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
+  install_user_file \
+    "$OMAZEN_ROOT/zen/Omazen/omazen-content.css" \
+    "$profile/chrome/JS/Omazen/omazen-content-v${OMAZEN_VERSION}.css"
 }
 
 cleanup_obsolete_profile_styles() {

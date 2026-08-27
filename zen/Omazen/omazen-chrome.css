@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* See NOTICE for the required Omazen project attribution terms. */
 
-/* Versioned filename prevents stale chrome:// stylesheet caches after upgrades. */
+/* Canonical source; installation adds the release version to prevent stale chrome:// caches. */
 :root[data-omazen-enabled="true"] {
   --zen-primary-color: var(--omazen-accent) !important;
   --zen-colors-primary: var(--omazen-background) !important;
@@ -10,6 +10,7 @@
   --zen-colors-primary-foreground: var(--omazen-foreground) !important;
   --zen-colors-border: var(--omazen-border) !important;
   --zen-colors-border-contrast: var(--omazen-accent) !important;
+  --omazen-accent-foreground: var(--omazen-background-dark);
   --zen-colors-input-bg: var(--omazen-background-light) !important;
   --zen-colors-hover-bg: color-mix(in srgb, var(--omazen-background-light) 82%, var(--omazen-accent)) !important;
   --zen-main-browser-background: var(--omazen-background-dark) !important;
@@ -46,7 +47,6 @@
 }
 
 :root[data-omazen-enabled="true"] :is(
-  #navigator-toolbox,
   #nav-bar,
   #TabsToolbar,
   #zen-sidebar-top-buttons,
@@ -55,6 +55,16 @@
 ) {
   background-color: var(--omazen-background) !important;
   color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"]:not([zen-compact-mode="true"]) #navigator-toolbox,
+:root[data-omazen-enabled="true"][zen-compact-mode="true"] .zen-toolbar-background {
+  background-color: var(--omazen-background) !important;
+  color: var(--omazen-foreground) !important;
+}
+
+:root[data-omazen-enabled="true"][zen-compact-mode="true"] {
+  --zen-navigator-toolbox-background: transparent !important;
 }
 
 :root[data-omazen-enabled="true"] :is(
@@ -128,6 +138,13 @@
   background-color: var(--omazen-background-dark) !important;
   color: var(--omazen-foreground) !important;
   border-color: var(--omazen-border) !important;
+}
+
+/* XUL menuitems use native system colors for the active row unless the
+ * internal _moz-menuactive state is themed explicitly. */
+:root[data-omazen-enabled="true"] :is(menupopup, panel) :is(menu, menuitem)[_moz-menuactive]:not([disabled]) {
+  background-color: var(--omazen-selection) !important;
+  color: var(--omazen-foreground) !important;
 }
 
 :root[data-omazen-enabled="true"] :is(
@@ -360,13 +377,13 @@
 
 :root[data-omazen-enabled="true"] notification-message .notification-button.primary {
   background-color: var(--omazen-accent) !important;
-  color: var(--omazen-background-dark) !important;
+  color: var(--omazen-accent-foreground) !important;
   border-color: var(--omazen-accent) !important;
 }
 
 :root[data-omazen-enabled="true"] notification-message .notification-button.primary:is(:hover, :focus-visible) {
   background-color: color-mix(in srgb, var(--omazen-accent) 82%, var(--omazen-foreground)) !important;
-  color: var(--omazen-background-dark) !important;
+  color: var(--omazen-accent-foreground) !important;
 }
 
 :root[data-omazen-enabled="true"] notification-message :is(
@@ -397,23 +414,4 @@
 :root[data-omazen-enabled="true"] ::selection {
   background-color: var(--omazen-selection) !important;
   color: var(--omazen-foreground) !important;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  :root[data-omazen-enabled="true"]:not([customizing]) :is(
-    #navigator-toolbox,
-    #nav-bar,
-    #TabsToolbar,
-    .urlbar-background,
-    .tab-background,
-    .browserSidebarContainer,
-    panel,
-    menupopup
-  ) {
-    transition:
-      background-color var(--omazen-transition-duration) ease,
-      color var(--omazen-transition-duration) ease,
-      border-color var(--omazen-transition-duration) ease,
-      outline-color var(--omazen-transition-duration) ease !important;
-  }
 }
