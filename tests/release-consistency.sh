@@ -39,13 +39,13 @@ if find "$PROJECT_ROOT/zen/Omazen" -maxdepth 1 -type f \
 fi
 grep -Fq -- "omazen-content.css" \
   "$PROJECT_ROOT/tests/fixtures/visual-smoke.html" || fail "visual fixture stylesheet version"
-grep -Fq -- '"$PROJECT_ROOT/zen/Omazen/omazen-chrome.css"' \
+grep -Fq -- "\"\$PROJECT_ROOT/zen/Omazen/omazen-chrome.css\"" \
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration chrome stylesheet source"
-grep -Fq -- '"$PROFILE/chrome/JS/Omazen/omazen-chrome-v${RELEASE_VERSION}.css"' \
+grep -Fq -- "\"\$PROFILE/chrome/JS/Omazen/omazen-chrome-v\${RELEASE_VERSION}.css\"" \
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration chrome stylesheet destination"
-grep -Fq -- '"$PROJECT_ROOT/zen/Omazen/omazen-content.css"' \
+grep -Fq -- "\"\$PROJECT_ROOT/zen/Omazen/omazen-content.css\"" \
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration content stylesheet source"
-grep -Fq -- '"$PROFILE/chrome/JS/Omazen/omazen-content-v${RELEASE_VERSION}.css"' \
+grep -Fq -- "\"\$PROFILE/chrome/JS/Omazen/omazen-content-v\${RELEASE_VERSION}.css\"" \
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration content stylesheet destination"
 [[ -f $PROJECT_ROOT/tests/contrast.mjs ]] || fail "contrast validation test is missing"
 [[ -d $PROJECT_ROOT/tests/fixtures/contrast-palettes ]] || fail "contrast fallback fixtures are missing"
