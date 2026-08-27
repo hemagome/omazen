@@ -6,8 +6,8 @@ set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 OMAZEN_VERSION=$(<"$PROJECT_ROOT/VERSION")
-CHROME_CSS="$PROJECT_ROOT/zen/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
-CONTENT_CSS="$PROJECT_ROOT/zen/Omazen/omazen-content-v${OMAZEN_VERSION}.css"
+CHROME_CSS="$PROJECT_ROOT/zen/Omazen/omazen-chrome.css"
+CONTENT_CSS="$PROJECT_ROOT/zen/Omazen/omazen-content.css"
 TEST_ROOT=$(mktemp -d /tmp/omazen-tests.XXXXXX)
 
 cleanup() {
@@ -152,6 +152,12 @@ assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenPalette.sys.mjs"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenWatcher.sys.mjs"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v${OMAZEN_VERSION}.css"
+assert_same_hash \
+  "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css" \
+  "$CHROME_CSS"
+assert_same_hash \
+  "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v${OMAZEN_VERSION}.css" \
+  "$CONTENT_CSS"
 assert_file "$FAKE_HOOKS/theme-set.d/theme-set"
 status_output=$(run_omazen status)
 grep -Fq "Omazen: $OMAZEN_VERSION" <<<"$status_output" || fail "reported package version"

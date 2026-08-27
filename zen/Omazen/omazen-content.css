@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* See NOTICE for the required Omazen project attribution terms. */
 
+/* Canonical source; installation adds the release version to prevent stale chrome:// caches. */
+
 :root[data-omazen-enabled="true"] {
   /* Semantic text roles. Firefox's moz-box-link maps enabled row actions
    * through the menu/ghost button chain, so raw muted text must not be used

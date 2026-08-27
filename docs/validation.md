@@ -1,5 +1,28 @@
 # Release validation report
 
+## 1.4.1 maintenance release
+
+Omazen `1.4.1` separates stable repository stylesheet sources from their
+release-versioned installed paths. The repository contains only
+`omazen-chrome.css` and `omazen-content.css`; setup copied them to the two
+detected Zen profiles as `omazen-chrome-v1.4.1.css` and
+`omazen-content-v1.4.1.css`, then removed the owned `v1.4.0` profile copies.
+SHA-256 checks confirmed that both installed files were byte-identical to their
+canonical sources.
+
+The complete `tests/release-gate.sh` passed for `1.4.1`: pinned static analysis,
+release consistency, syntax, the 12-scenario disposable lifecycle suite,
+critical palette contrast checks, rendered-pixel smoke coverage and the real
+Zen integration sequence for dark/light palettes plus live disable/enable. The
+contrast checker retained its seven documented advisory warning groups and
+reported no critical failure.
+
+The local update was installed over `1.4.0` on Omarchy `4.0.1-1` with
+`zen-browser-bin 1.21.15b-1`. After a complete Zen restart, the bridge logged
+`BRIDGE_LOADED version=1.4.1`, `PALETTE_APPLIED`, `CHROME_CSS_APPLIED` and
+`WATCHER_READY backend=inotify` with no current error or watcher fallback.
+Both `omazen doctor` formats reported zero failures and zero warnings.
+
 ## 1.3.1 maintenance release
 
 Date: 2026-08-25

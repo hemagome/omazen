@@ -111,7 +111,11 @@ the destination and runs `setup` from that staged tree. A failed setup removes
 the staging directory and leaves the active application copy unchanged. After a
 successful setup, the old directory is renamed to a timestamped backup and the
 staged directory is renamed into place on the same filesystem. This replacement
-prevents files removed by newer releases from surviving an update.
+prevents files removed by newer releases from surviving an update. Stylesheets
+have stable canonical source names in the repository, while installation copies
+them to release-versioned profile paths. This keeps contributions applicable
+across releases without giving up the `chrome://` cache busting required at
+runtime.
 
 ## Installation ownership
 

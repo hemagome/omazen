@@ -103,9 +103,11 @@ cp -- "$PROJECT_ROOT/zen/Omazen/OmazenParent.sys.mjs" \
   "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" \
   "$PROJECT_ROOT/zen/Omazen/OmazenPalette.sys.mjs" \
   "$PROJECT_ROOT/zen/Omazen/OmazenWatcher.sys.mjs" \
-  "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v${RELEASE_VERSION}.css" \
-  "$PROJECT_ROOT/zen/Omazen/omazen-content-v${RELEASE_VERSION}.css" \
   "$PROFILE/chrome/JS/Omazen/"
+cp -- "$PROJECT_ROOT/zen/Omazen/omazen-chrome.css" \
+  "$PROFILE/chrome/JS/Omazen/omazen-chrome-v${RELEASE_VERSION}.css"
+cp -- "$PROJECT_ROOT/zen/Omazen/omazen-content.css" \
+  "$PROFILE/chrome/JS/Omazen/omazen-content-v${RELEASE_VERSION}.css"
 cat >"$PROFILE/chrome/JS/visual-control.uc.js" <<'EOF'
 // ==UserScript==
 // @name Omazen visual integration control
