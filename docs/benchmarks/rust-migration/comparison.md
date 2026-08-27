@@ -3,7 +3,9 @@
 All supported CLI commands have native Rust implementations: `setup`, `sync`,
 `set`, `status`, `doctor`, `disable`, `enable`, `uninstall` and `help`. The
 installed shell entry point immediately uses `exec` to enter the bundled binary
-and retains the Bash implementation as a rollback fallback.
+and contains no alternate command implementation. The qualified Bash fallback
+was removed after the final mixed-mode and live gates passed; its raw benchmark
+artifacts remain here as the historical control.
 
 ## Disposable `sync` results
 

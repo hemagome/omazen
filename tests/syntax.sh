@@ -11,7 +11,6 @@ shell_files=(
   "$PROJECT_ROOT/install.sh"
   "$PROJECT_ROOT/uninstall.sh"
   "$PROJECT_ROOT/hooks/theme-set"
-  "$PROJECT_ROOT"/lib/*.sh
   "$PROJECT_ROOT"/tests/*.sh
 )
 for shell_file in "${shell_files[@]}"; do
@@ -36,6 +35,5 @@ for javascript_file in "${javascript_files[@]}"; do
 done
 
 "$PROJECT_ROOT/tests/release-consistency.sh"
-"$PROJECT_ROOT/tests/sync-contract.sh"
 
 printf 'Syntax checks passed.\n'

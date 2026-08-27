@@ -69,7 +69,7 @@ fi
 
 mkdir -p -- "$(dirname -- "$DESTINATION")" "$BIN_DIRECTORY"
 STAGING=$(mktemp -d "${DESTINATION}.staging.XXXXXX")
-for item in bin lib zen hooks vendor docs tests README.md CHANGELOG.md LICENSE NOTICE THIRD_PARTY_LICENSES.md VERSION install.sh uninstall.sh; do
+for item in bin zen hooks vendor docs tests README.md CHANGELOG.md LICENSE NOTICE THIRD_PARTY_LICENSES.md VERSION install.sh uninstall.sh; do
   [[ -e $SOURCE_ROOT/$item ]] || continue
   cp -a -- "$SOURCE_ROOT/$item" "$STAGING/"
 done

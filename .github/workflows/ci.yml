@@ -43,14 +43,14 @@ jobs:
       - name: Run static analysis
         run: tests/lint.sh
 
-      - name: Validate Bash and JavaScript syntax
+      - name: Validate shell tooling and JavaScript syntax
         run: tests/syntax.sh
+
+      - name: Validate Rust CLI
+        run: tests/rust.sh
 
       - name: Run test suite
         run: tests/test.sh
-
-      - name: Validate Rust migration
-        run: tests/rust.sh
 
       - name: Run WCAG palette contrast checks
         run: node tests/contrast.mjs

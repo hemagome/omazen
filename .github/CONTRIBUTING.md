@@ -15,9 +15,9 @@ security and compatibility boundaries documented in the repository.
 
 ## Development environment
 
-Omazen's CLI is implemented in Rust while its rollback dispatcher and theme
-hook remain shell; Gecko integration remains JavaScript and CSS. Rust 1.98.0 is
-required for the Rust gates. The supported runtime and fully validated
+Omazen's CLI is implemented in Rust while its minimal launcher, installer and
+theme hook remain shell; Gecko integration remains JavaScript and CSS. Rust
+1.98.0 is required for the Rust gates. The supported runtime and fully validated
 compatibility target are documented in the README and compatibility guide.
 
 To run the local checks on Linux x86-64:

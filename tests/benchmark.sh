@@ -33,7 +33,7 @@ Options:
   -h, --help        Show this help
 
 The atomic mode rewrites the existing palette with identical contents using
-the same atomic rename pattern as lib/palette.sh. It changes file metadata,
+the same atomic rename pattern as the Rust palette writer. It changes file metadata,
 but not the visible colors.
 EOF
 }

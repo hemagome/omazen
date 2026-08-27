@@ -8,143 +8,18 @@ OMAZEN_ENTRYPOINT=$(readlink -f -- "${BASH_SOURCE[0]}")
 OMAZEN_ROOT=$(cd -- "$(dirname -- "$OMAZEN_ENTRYPOINT")/.." && pwd -P)
 export OMAZEN_ROOT
 
-# During the incremental migration, dispatch migrated commands before sourcing
-# the Bash implementation. `exec` prevents the shell from remaining resident.
+# Resolve the packaged binary first and the source-build output second. This
+# launcher contains no command implementation and fails closed if Rust is
+# unavailable.
 OMAZEN_RUST_CANDIDATE=${OMAZEN_RUST_BIN:-"$OMAZEN_ROOT/libexec/omazen-rust"}
-if [[ -x $OMAZEN_RUST_CANDIDATE ]]; then
-  exec "$OMAZEN_RUST_CANDIDATE" "$@"
+if [[ ! -x $OMAZEN_RUST_CANDIDATE && -z ${OMAZEN_RUST_BIN:-} && \
+      -x $OMAZEN_ROOT/target/release/omazen-rust ]]; then
+  OMAZEN_RUST_CANDIDATE="$OMAZEN_ROOT/target/release/omazen-rust"
 fi
-
-# shellcheck source=../lib/common.sh
-source "$OMAZEN_ROOT/lib/common.sh"
-# shellcheck source=../lib/palette.sh
-source "$OMAZEN_ROOT/lib/palette.sh"
-
-# Keep the latency-sensitive Bash fallback small: sync needs only the common
-# runtime paths/helpers and palette implementation. Other commands load their
-# modules below.
-if [[ ${1:-help} == sync ]]; then
-  (( $# == 1 )) || die "sync takes no arguments"
-  sync_palette
-  exit 0
-fi
-
-# shellcheck source=../lib/profile.sh
-source "$OMAZEN_ROOT/lib/profile.sh"
-# shellcheck source=../lib/hook.sh
-source "$OMAZEN_ROOT/lib/hook.sh"
-# shellcheck source=../lib/install.sh
-source "$OMAZEN_ROOT/lib/install.sh"
-# shellcheck source=../lib/doctor.sh
-source "$OMAZEN_ROOT/lib/doctor.sh"
-
-usage() {
-  cat <<'EOF'
-Usage: omazen <command> [arguments]
-
-Commands:
-  setup             Install or repair the Zen integration
-  sync              Regenerate the normalized palette from active colors.toml
-  set [theme]       Set an Omarchy theme, or sync the current theme
-  status            Show concise installation and runtime state
-  doctor [--json]   Run compatibility and installation diagnostics
-  disable           Disable Omazen live without removing it
-  enable            Re-enable Omazen live
-  uninstall         Remove only files owned by Omazen
-  help              Show this help
-EOF
+[[ -x $OMAZEN_RUST_CANDIDATE ]] || {
+  printf 'ERROR: Omazen Rust CLI is missing or not executable: %s\n' \
+    "$OMAZEN_RUST_CANDIDATE" >&2
+  exit 1
 }
 
-cmd_set() {
-  if (( $# > 1 )); then
-    die "set accepts zero arguments or one quoted theme name"
-  fi
-  if (( $# == 1 )); then
-    require_command omarchy
-    omarchy theme set "$1"
-  fi
-  sync_palette
-}
-
-cmd_status() {
-  local platform zen_version="not detected"
-  local palette_state="missing"
-  local enabled_state="enabled"
-  local profile_count=0
-  local provider="omarchy-hook"
-
-  platform=$(platform_summary)
-  zen_version=$(detect_zen_version 2>/dev/null || printf 'not detected')
-  if validate_palette_json "$OMAZEN_PALETTE_FILE"; then
-    palette_state="valid ($OMAZEN_PALETTE_FILE)"
-  elif [[ -f $OMAZEN_PALETTE_FILE ]]; then
-    palette_state="invalid ($OMAZEN_PALETTE_FILE)"
-  fi
-  [[ -e $OMAZEN_DISABLED_FILE ]] && enabled_state="disabled"
-  while IFS= read -r _profile; do
-    ((profile_count += 1))
-  done < <(zen_profiles)
-  [[ $OMAZEN_SKIP_THEME_HOOK == 1 ]] && provider="external"
-
-  printf 'Omazen: %s\n' "$OMAZEN_VERSION"
-  printf 'OS: %s\n' "$platform"
-  printf 'State: %s\n' "$enabled_state"
-  printf 'Palette provider: %s\n' "$provider"
-  printf 'Palette source: %s\n' "$OMAZEN_ACTIVE_COLORS"
-  printf 'Zen: %s\n' "$zen_version"
-  printf 'Profiles detected: %d\n' "$profile_count"
-  printf 'Palette: %s\n' "$palette_state"
-  if [[ -f $OMAZEN_BRIDGE_LOG ]]; then
-    printf 'Bridge: %s\n' "$(tail -n 1 "$OMAZEN_BRIDGE_LOG")"
-  else
-    printf 'Bridge: no runtime log yet\n'
-  fi
-}
-
-cmd_disable() {
-  ensure_state_dir
-  : >"$OMAZEN_DISABLED_FILE"
-  chmod 600 "$OMAZEN_DISABLED_FILE"
-  say "Omazen disabled. Open Zen windows will revert automatically."
-}
-
-cmd_enable() {
-  sync_palette
-  rm -f -- "$OMAZEN_DISABLED_FILE"
-  say "Omazen enabled. Open Zen windows will update automatically."
-}
-
-cmd_doctor() {
-  if (( $# == 0 )); then
-    DOCTOR_JSON=0
-  elif (( $# == 1 )) && [[ $1 == --json ]]; then
-    DOCTOR_JSON=1
-  else
-    die "doctor accepts no arguments or --json"
-  fi
-  doctor_omazen
-}
-
-main() {
-  local command=${1:-help}
-  (( $# == 0 )) || shift
-
-  case "$command" in
-    setup) (( $# == 0 )) || die "setup takes no arguments"; setup_omazen ;;
-    sync) (( $# == 0 )) || die "sync takes no arguments"; sync_palette ;;
-    set) cmd_set "$@" ;;
-    status) (( $# == 0 )) || die "status takes no arguments"; cmd_status ;;
-    doctor) cmd_doctor "$@" ;;
-    disable) (( $# == 0 )) || die "disable takes no arguments"; cmd_disable ;;
-    enable) (( $# == 0 )) || die "enable takes no arguments"; cmd_enable ;;
-    uninstall)
-      (( $# == 0 )) || die "uninstall takes no arguments"
-      uninstall_omazen
-      remove_installed_application_copy
-      ;;
-    help|-h|--help) usage ;;
-    *) usage >&2; die "unknown command: $command" ;;
-  esac
-}
-
-main "$@"
+exec "$OMAZEN_RUST_CANDIDATE" "$@"

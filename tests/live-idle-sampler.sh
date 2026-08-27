@@ -103,7 +103,7 @@ watcher_pids() {
 }
 
 process_totals() {
-  local pid status_line stat_fields stat_rest
+  local pid stat_fields stat_rest
   local rss_kib=0 pss_kib=0 pss_processes=0 cpu_ticks=0
   local voluntary=0 involuntary=0 processes=0
   local key value _unit

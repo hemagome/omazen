@@ -22,12 +22,13 @@ omarchy theme set
   -> allowlisted about: pages and internal dialog documents
 ```
 
-The installed command enters through a minimal shell dispatcher and immediately
-`exec`s the Rust CLI from `libexec`. The Bash implementation remains available
-as a rollback fallback when that binary is absent; it does not remain resident
-on the Rust path. Rust owns command parsing, palette normalization, diagnostics,
-state changes, setup ownership and uninstall. The Gecko bridge, WindowActors,
-CSS and shared `inotifywait` watcher remain JavaScript/CSS.
+The installed command enters through a minimal shell launcher and immediately
+`exec`s the Rust CLI from `libexec`. The launcher contains no command logic and
+fails explicitly if the binary is missing or not executable. Rust owns command
+parsing, palette normalization, diagnostics, state changes, setup ownership and
+uninstall. The Gecko bridge, WindowActors, CSS and shared `inotifywait` watcher
+remain JavaScript/CSS. Release tags and staged installation backups provide
+rollback without maintaining a second CLI implementation.
 
 ## Theme-change latency
 
