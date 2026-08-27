@@ -1,0 +1,13 @@
+[package]
+name = "omazen-cli"
+version = "1.4.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "omazen-rust"
+path = "src/main.rs"
+
+[dependencies]

@@ -26,6 +26,10 @@ const child = spawn(command, args, {
   env: process.env,
   stdio: ["ignore", "ignore", "ignore"],
 });
+const completion = new Promise((resolve) => {
+  child.once("error", (error) => resolve({ error, code: null, signal: null }));
+  child.once("exit", (code, signal) => resolve({ error: null, code, signal }));
+});
 
 const seen = new Map();
 let maxAggregateRssBytes = 0;
@@ -102,10 +106,7 @@ async function sampleTree() {
 
 await sampleTree();
 const interval = setInterval(sampleTree, 1);
-const result = await new Promise((resolve) => {
-  child.once("error", (error) => resolve({ error, code: null, signal: null }));
-  child.once("exit", (code, signal) => resolve({ error: null, code, signal }));
-});
+const result = await completion;
 const ended = process.hrtime.bigint();
 clearInterval(interval);
 await sampleTree();
@@ -132,7 +133,12 @@ const report = {
   observed_processes: seen.size,
   max_concurrent_processes: maxProcessCount,
   samples: sampleCount,
-  warnings: sampleCount < 2 ? ["process tree completed before two samples were captured"] : [],
+  warnings:
+    seen.size === 0
+      ? ["process tree completed before /proc captured the root process"]
+      : sampleCount < 2
+        ? ["process tree completed before two samples were captured"]
+        : [],
 };
 
 process.stdout.write(`${JSON.stringify(report)}\n`);

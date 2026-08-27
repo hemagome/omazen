@@ -62,8 +62,8 @@ const successful = latency.filter((row) => row.outcome === "ok");
 const wall = summarize(successful.map((row) => row.wall_ns));
 const userCpu = summarize(cpu.map((row) => row.user_cpu_ns));
 const systemCpu = summarize(cpu.map((row) => row.system_cpu_ns));
-const rss = summarize(memory.map((row) => row.max_process_tree_rss_bytes));
-const pss = summarize(memory.map((row) => row.max_process_tree_pss_bytes));
+const rss = summarize(memory.map((row) => row.max_process_tree_rss_bytes).filter((value) => Number(value) > 0));
+const pss = summarize(memory.map((row) => row.max_process_tree_pss_bytes).filter((value) => Number(value) > 0));
 const warnings = latency.filter((row) => row.warnings !== "");
 
 const rows = [

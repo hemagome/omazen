@@ -32,6 +32,9 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt,clippy
+
       - name: Install pinned static analyzers
         run: |
           tests/install-linters.sh "$RUNNER_TEMP/omazen-linters"
@@ -45,6 +48,9 @@ jobs:
 
       - name: Run test suite
         run: tests/test.sh
+
+      - name: Validate Rust migration
+        run: tests/rust.sh
 
       - name: Run WCAG palette contrast checks
         run: node tests/contrast.mjs

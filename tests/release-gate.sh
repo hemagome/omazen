@@ -23,6 +23,9 @@ PATH="$LINTER_DIRECTORY:$PATH" "$PROJECT_ROOT/tests/lint.sh"
 printf '%s\n' '==> Validating Bash, JavaScript, and release consistency'
 "$PROJECT_ROOT/tests/syntax.sh"
 
+printf '%s\n' '==> Validating Rust toolchain, formatting, lint, tests, and sync parity'
+"$PROJECT_ROOT/tests/rust.sh"
+
 printf '%s\n' '==> Running disposable lifecycle and regression tests'
 "$PROJECT_ROOT/tests/test.sh"
 
