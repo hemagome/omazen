@@ -5,8 +5,9 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
-REFERENCE_BIN=${OMAZEN_REFERENCE_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
-CANDIDATE_BIN=${OMAZEN_CANDIDATE_BIN:-$REFERENCE_BIN}
+CANDIDATE_BIN=${OMAZEN_CANDIDATE_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
+MANIFEST="$PROJECT_ROOT/tests/fixtures/cli-contract/v1.4.1/sync.sha256"
+UPDATE_MANIFEST=${OMAZEN_UPDATE_CONTRACT_MANIFEST:-0}
 TEST_ROOT=$(mktemp -d /tmp/omazen-sync-contract.XXXXXX)
 
 cleanup() {
@@ -51,23 +52,39 @@ run_one() {
   printf '%s\n' "$case_name" >"$output_root/case"
 }
 
-compare_case() {
+expected_hash() {
+  local key=$1
+  awk -v key="$key" '$2 == key { print $1; found = 1 } END { if (!found) exit 1 }' "$MANIFEST"
+}
+
+manifest_line() {
+  local key=$1
+  local path=$2
+  if [[ -e $path ]]; then
+    printf '%s %s\n' "$(sha256sum "$path" | awk '{ print $1 }')" "$key"
+  else
+    printf 'MISSING %s\n' "$key"
+  fi
+}
+
+verify_artifact() {
+  local key=$1
+  local path=$2
+  local expected actual=MISSING
+  expected=$(expected_hash "$key") || fail "missing manifest entry: $key"
+  [[ -e $path ]] && actual=$(sha256sum "$path" | awk '{ print $1 }')
+  [[ $actual == "$expected" ]] || fail "$key differs from the v1.4.1 contract"
+}
+
+contract_case() {
   local case_name=$1
   local colors=$2
-  local reference="$TEST_ROOT/reference-$case_name"
-  local candidate="$TEST_ROOT/candidate-$case_name"
-  run_one "$REFERENCE_BIN" "$case_name" "$colors" "$reference"
+  local candidate="$TEST_ROOT/$case_name"
   run_one "$CANDIDATE_BIN" "$case_name" "$colors" "$candidate"
-  for artifact in status stdout stderr state-mode palette-mode; do
-    if [[ -e $reference/$artifact || -e $candidate/$artifact ]]; then
-      cmp -s "$reference/$artifact" "$candidate/$artifact" || \
-        fail "$case_name differs in $artifact"
-    fi
+  (( UPDATE_MANIFEST == 1 )) && return
+  for artifact in status stdout stderr state-mode palette-mode state/palette.json; do
+    verify_artifact "$case_name/$artifact" "$candidate/$artifact"
   done
-  if [[ -e $reference/state/palette.json || -e $candidate/state/palette.json ]]; then
-    cmp -s "$reference/state/palette.json" "$candidate/state/palette.json" || \
-      fail "$case_name differs in canonical palette bytes"
-  fi
   printf 'ok - sync parity: %s\n' "$case_name"
 }
 
@@ -83,10 +100,19 @@ write_case "$INVALID_MODE" $'mode = "sepia"\naccent = "#112233"\nselection = "#2
 INVALID_COLOR="$TEST_ROOT/invalid-color.toml"
 write_case "$INVALID_COLOR" $'mode = "light"\naccent = "#12345"\nselection = "#223344"\nmuted = "#334455"\nbackground = "#fefefe"\ndark_background = "#eeeeee"\nlighter_background = "#ffffff"\nforeground = "#101010"\n'
 
-compare_case valid "$VALID"
-compare_case valid-border "$VALID_BORDER"
-compare_case invalid-mode "$INVALID_MODE"
-compare_case invalid-color "$INVALID_COLOR"
-compare_case missing "$TEST_ROOT/missing.toml"
+contract_case valid "$VALID"
+contract_case valid-border "$VALID_BORDER"
+contract_case invalid-mode "$INVALID_MODE"
+contract_case invalid-color "$INVALID_COLOR"
+contract_case missing "$TEST_ROOT/missing.toml"
+
+if (( UPDATE_MANIFEST == 1 )); then
+  for case_name in valid valid-border invalid-mode invalid-color missing; do
+    for artifact in status stdout stderr state-mode palette-mode state/palette.json; do
+      manifest_line "$case_name/$artifact" "$TEST_ROOT/$case_name/$artifact"
+    done
+  done
+  exit 0
+fi
 
 printf '1..5\n'

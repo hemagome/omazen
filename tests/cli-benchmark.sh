@@ -78,7 +78,7 @@ printf 'implementation,scenario,run,iteration,outcome,wall_ns,warnings\n' >"$LAT
 printf 'implementation,scenario,run,iteration,user_cpu_ns,system_cpu_ns,observed_processes,max_concurrent_processes\n' >"$CPU"
 printf 'implementation,scenario,run,iteration,max_process_tree_rss_bytes,max_process_tree_pss_bytes,samples\n' >"$MEMORY"
 
-implementation=${OMAZEN_IMPLEMENTATION:-bash}
+implementation=${OMAZEN_IMPLEMENTATION:-$(basename -- "$OMAZEN_BIN")}
 git_commit=$(git -C "$PROJECT_ROOT" rev-parse HEAD)
 kernel=$(uname -srmo)
 cpu_model=$(awk -F: '/^model name/ { sub(/^[[:space:]]+/, "", $2); print $2; exit }' /proc/cpuinfo)

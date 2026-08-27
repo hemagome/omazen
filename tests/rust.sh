@@ -26,13 +26,10 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 cargo build --release --locked
 
-OMAZEN_REFERENCE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
 OMAZEN_CANDIDATE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
   "$PROJECT_ROOT/tests/sync-contract.sh"
-OMAZEN_REFERENCE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
 OMAZEN_CANDIDATE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
   "$PROJECT_ROOT/tests/read-only-contract.sh"
-OMAZEN_REFERENCE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
 OMAZEN_CANDIDATE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
   "$PROJECT_ROOT/tests/state-contract.sh"
 OMAZEN_BIN="$PROJECT_ROOT/target/release/omazen-rust" \

@@ -69,7 +69,10 @@ jobs:
           git archive "$RELEASE_REF" | tar -x -C "$package_root"
           install -m 0755 target/release/omazen-rust "$package_root/libexec/omazen-rust"
           tar -czf "$archive" -C "$RUNNER_TEMP" "$package_name"
-          sha256sum "$archive" >"$archive.sha256"
+          (
+            cd "$RUNNER_TEMP"
+            sha256sum "$(basename "$archive")" >"$(basename "$archive").sha256"
+          )
 
       - name: Create GitHub Release
         run: |

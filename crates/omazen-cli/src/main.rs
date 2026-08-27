@@ -877,6 +877,11 @@ fn json_escape(value: &str) -> String {
             '\n' => escaped.push_str("\\n"),
             '\r' => escaped.push_str("\\r"),
             '\t' => escaped.push_str("\\t"),
+            character if character < '\u{20}' => {
+                use std::fmt::Write as _;
+                write!(escaped, "\\u{:04x}", character as u32)
+                    .expect("writing to a String cannot fail");
+            }
             _ => escaped.push(character),
         }
     }
@@ -2199,7 +2204,7 @@ fn write_palette_atomic(destination: &Path, palette: &Palette) -> io::Result<()>
 
 #[cfg(test)]
 mod tests {
-    use super::{Palette, canonical_palette, is_color, parse_assignment};
+    use super::{Palette, canonical_palette, is_color, json_escape, parse_assignment};
 
     #[test]
     fn assignment_contract() {
@@ -2217,6 +2222,14 @@ mod tests {
         assert!(is_color("#Aa01fF"));
         assert!(!is_color("#12345"));
         assert!(!is_color("112233"));
+    }
+
+    #[test]
+    fn json_escape_covers_all_control_characters() {
+        assert_eq!(
+            json_escape("\0\u{1f}\\\"\n\r\t"),
+            "\\u0000\\u001f\\\\\\\"\\n\\r\\t"
+        );
     }
 
     #[test]

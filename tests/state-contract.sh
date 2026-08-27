@@ -5,8 +5,9 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
-REFERENCE_BIN=${OMAZEN_REFERENCE_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
-CANDIDATE_BIN=${OMAZEN_CANDIDATE_BIN:-$REFERENCE_BIN}
+CANDIDATE_BIN=${OMAZEN_CANDIDATE_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
+MANIFEST="$PROJECT_ROOT/tests/fixtures/cli-contract/v1.4.1/state.sha256"
+UPDATE_MANIFEST=${OMAZEN_UPDATE_CONTRACT_MANIFEST:-0}
 TEST_ROOT=$(mktemp -d /tmp/omazen-state-contract.XXXXXX)
 
 cleanup() {
@@ -55,54 +56,60 @@ run_one() {
     "$binary" "$@" >"$root/stdout" 2>"$root/stderr" || status=$?
   sed -i "s|$root|<ROOT>|g" "$root/stdout" "$root/stderr"
   printf '%s\n' "$status" >"$root/status"
+  if [[ -f $root/state/palette.json ]]; then
+    stat -c '%a' "$root/state/palette.json" >"$root/palette-mode"
+  fi
 }
 
-compare_artifacts() {
-  local name=$1
-  local reference=$2
-  local candidate=$3
-  for artifact in stdout stderr status; do
-    cmp -s "$reference/$artifact" "$candidate/$artifact" || fail "$name differs in $artifact"
-  done
-  for artifact in state/palette.json state/disabled omarchy.log; do
-    if [[ -e $reference/$artifact || -e $candidate/$artifact ]]; then
-      cmp -s "$reference/$artifact" "$candidate/$artifact" || fail "$name differs in $artifact"
-    fi
-  done
-  if [[ -f $reference/state/palette.json || -f $candidate/state/palette.json ]]; then
-    [[ $(stat -c '%a' "$reference/state/palette.json") == \
-       $(stat -c '%a' "$candidate/state/palette.json") ]] || fail "$name palette mode differs"
+expected_hash() {
+  local key=$1
+  awk -v key="$key" '$2 == key { print $1; found = 1 } END { if (!found) exit 1 }' "$MANIFEST"
+}
+
+manifest_line() {
+  local key=$1
+  local path=$2
+  if [[ -e $path ]]; then
+    printf '%s %s\n' "$(sha256sum "$path" | awk '{ print $1 }')" "$key"
+  else
+    printf 'MISSING %s\n' "$key"
   fi
-  printf 'ok - state parity: %s\n' "$name"
+}
+
+verify_artifact() {
+  local key=$1
+  local path=$2
+  local expected actual=MISSING
+  expected=$(expected_hash "$key") || fail "missing manifest entry: $key"
+  [[ -e $path ]] && actual=$(sha256sum "$path" | awk '{ print $1 }')
+  [[ $actual == "$expected" ]] || fail "$key differs from the v1.4.1 contract"
 }
 
 run_case() {
   local name=$1
   local preparation=$2
   shift 2
-  local reference="$TEST_ROOT/reference-$name"
-  local candidate="$TEST_ROOT/candidate-$name"
-  mkdir -p "$reference" "$candidate"
-  write_valid_colors "$reference/colors.toml"
+  local candidate="$TEST_ROOT/$name"
+  mkdir -p "$candidate"
   write_valid_colors "$candidate/colors.toml"
   case $preparation in
     disabled)
-      mkdir -p "$reference/state" "$candidate/state"
-      : >"$reference/state/disabled"
+      mkdir -p "$candidate/state"
       : >"$candidate/state/disabled"
-      chmod 600 "$reference/state/disabled" "$candidate/state/disabled"
+      chmod 600 "$candidate/state/disabled"
       ;;
     invalid-disabled)
-      mkdir -p "$reference/state" "$candidate/state"
-      : >"$reference/state/disabled"
+      mkdir -p "$candidate/state"
       : >"$candidate/state/disabled"
-      printf 'mode = "invalid"\n' >"$reference/colors.toml"
       printf 'mode = "invalid"\n' >"$candidate/colors.toml"
       ;;
   esac
-  run_one "$REFERENCE_BIN" "$reference" "$@"
   run_one "$CANDIDATE_BIN" "$candidate" "$@"
-  compare_artifacts "$name" "$reference" "$candidate"
+  (( UPDATE_MANIFEST == 1 )) && return
+  for artifact in stdout stderr status state/palette.json state/disabled omarchy.log palette-mode; do
+    verify_artifact "$name/$artifact" "$candidate/$artifact"
+  done
+  printf 'ok - state parity: %s\n' "$name"
 }
 
 run_case disable clean disable
@@ -113,5 +120,14 @@ run_case enable-arity disabled enable unexpected
 run_case set-sync clean set
 run_case set-theme clean set 'Theme With Spaces'
 run_case set-arity clean set one two
+
+if (( UPDATE_MANIFEST == 1 )); then
+  for name in disable disable-arity enable enable-invalid enable-arity set-sync set-theme set-arity; do
+    for artifact in stdout stderr status state/palette.json state/disabled omarchy.log palette-mode; do
+      manifest_line "$name/$artifact" "$TEST_ROOT/$name/$artifact"
+    done
+  done
+  exit 0
+fi
 
 printf '1..8\n'

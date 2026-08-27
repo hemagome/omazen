@@ -59,11 +59,15 @@ const latency = parseCsv(await readFile(path.join(outputDir, "latency.csv"), "ut
 const cpu = parseCsv(await readFile(path.join(outputDir, "cpu.csv"), "utf8"));
 const memory = parseCsv(await readFile(path.join(outputDir, "memory.csv"), "utf8"));
 const successful = latency.filter((row) => row.outcome === "ok");
+const successfulKeys = new Set(successful.map((row) => `${row.scenario}/${row.run}/${row.iteration}`));
+const isSuccessful = (row) => successfulKeys.has(`${row.scenario}/${row.run}/${row.iteration}`);
 const wall = summarize(successful.map((row) => row.wall_ns));
-const userCpu = summarize(cpu.map((row) => row.user_cpu_ns));
-const systemCpu = summarize(cpu.map((row) => row.system_cpu_ns));
-const rss = summarize(memory.map((row) => row.max_process_tree_rss_bytes).filter((value) => Number(value) > 0));
-const pss = summarize(memory.map((row) => row.max_process_tree_pss_bytes).filter((value) => Number(value) > 0));
+const successfulCpu = cpu.filter(isSuccessful);
+const successfulMemory = memory.filter(isSuccessful);
+const userCpu = summarize(successfulCpu.map((row) => row.user_cpu_ns));
+const systemCpu = summarize(successfulCpu.map((row) => row.system_cpu_ns));
+const rss = summarize(successfulMemory.map((row) => row.max_process_tree_rss_bytes).filter((value) => Number(value) > 0));
+const pss = summarize(successfulMemory.map((row) => row.max_process_tree_pss_bytes).filter((value) => Number(value) > 0));
 const warnings = latency.filter((row) => row.warnings !== "");
 
 const rows = [
