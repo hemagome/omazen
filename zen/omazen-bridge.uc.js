@@ -15,6 +15,7 @@
   "use strict";
 
   const POLL_MS = 250;
+  const WATCHER_SAFETY_POLL_MS = 5000;
   const CSS_DIAGNOSTIC_DELAYS = Object.freeze([100, 250, 500, 1000]);
   const MAX_PALETTE_BYTES = 2048;
   const MAX_LOG_BYTES = 131072;
@@ -33,6 +34,9 @@
     validatePalette,
   } = ChromeUtils.importESModule(
     "chrome://userscripts/content/Omazen/OmazenPalette.sys.mjs",
+  );
+  const { subscribePaletteWatcher } = ChromeUtils.importESModule(
+    "chrome://userscripts/content/Omazen/OmazenWatcher.sys.mjs",
   );
   const SPOTLIGHT_URI = "chrome://browser/content/spotlight.html";
   const COMMON_DIALOG_URI = "chrome://global/content/commonDialog.xhtml";
@@ -59,6 +63,9 @@
   let broadcastTimer = 0;
   let internalPageObserver = null;
   let pollTimer = 0;
+  let watcherSyncTimer = 0;
+  let watcherUnsubscribe = null;
+  let watcherReady = false;
   const diagnosticTimers = new Set();
 
   function stableProfileId() {
@@ -509,27 +516,76 @@
   function sync() {
     const disabledFile = stateFile("disabled");
     const nextDisabled = disabledFile.exists();
+    let shouldReapplyCurrentPalette = false;
     if (nextDisabled !== disabledState) {
       disabledState = nextDisabled;
       if (disabledState) {
         disablePalette();
         appendLog("INFO", "DISABLED");
       } else if (currentPalette) {
-        applyPalette(currentPalette);
+        shouldReapplyCurrentPalette = true;
       }
     }
     if (disabledState) return;
 
     try {
       const file = stateFile("palette.json");
-      if (!file.exists() || !file.isFile()) return;
+      if (!file.exists() || !file.isFile()) {
+        if (shouldReapplyCurrentPalette) applyPalette(currentPalette);
+        return;
+      }
       const signature = `${file.lastModifiedTime}:${file.fileSize}`;
-      if (signature === paletteSignature) return;
+      if (signature === paletteSignature) {
+        if (shouldReapplyCurrentPalette) applyPalette(currentPalette);
+        return;
+      }
       paletteSignature = signature;
       const palette = validatePalette(JSON.parse(readText(file)));
       applyPalette(palette);
     } catch (error) {
       appendLog("ERROR", error.message);
+    }
+  }
+
+  function setPollInterval(delay) {
+    if (pollTimer) window.clearInterval(pollTimer);
+    pollTimer = window.setInterval(sync, delay);
+  }
+
+  function scheduleWatcherSync() {
+    if (watcherSyncTimer) return;
+    watcherSyncTimer = window.setTimeout(() => {
+      watcherSyncTimer = 0;
+      sync();
+    }, 0);
+  }
+
+  function handleWatcherEvent(event) {
+    if (event?.type === "ready") {
+      watcherReady = true;
+      setPollInterval(WATCHER_SAFETY_POLL_MS);
+      appendLog(
+        "INFO",
+        `WATCHER_READY backend=${event.backend} safety_poll_ms=${WATCHER_SAFETY_POLL_MS} profile=${PROFILE_ID}`,
+      );
+      sync();
+      return;
+    }
+    if (event?.type === "change") {
+      appendLog(
+        "INFO",
+        `WATCHER_EVENT leaf=${event.leaf} events=${event.events} profile=${PROFILE_ID}`,
+      );
+      scheduleWatcherSync();
+      return;
+    }
+    if (event?.type === "error") {
+      if (watcherReady) watcherReady = false;
+      setPollInterval(POLL_MS);
+      appendLog(
+        "WARN",
+        `WATCHER_FALLBACK reason=${event.reason || "unknown"} poll_ms=${POLL_MS} profile=${PROFILE_ID}`,
+      );
     }
   }
 
@@ -553,6 +609,10 @@
       internalPageObserver = null;
       if (broadcastTimer) window.clearTimeout(broadcastTimer);
       broadcastTimer = 0;
+      if (watcherSyncTimer) window.clearTimeout(watcherSyncTimer);
+      watcherSyncTimer = 0;
+      watcherUnsubscribe?.();
+      watcherUnsubscribe = null;
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = 0;
       for (const timer of diagnosticTimers) window.clearTimeout(timer);
@@ -569,5 +629,6 @@
   });
   appendLog("INFO", `BRIDGE_LOADED version=${VERSION} profile=${PROFILE_ID}`);
   sync();
-  pollTimer = window.setInterval(sync, POLL_MS);
+  setPollInterval(POLL_MS);
+  watcherUnsubscribe = subscribePaletteWatcher(handleWatcherEvent);
 })();

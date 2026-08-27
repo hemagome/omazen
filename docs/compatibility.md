@@ -18,6 +18,13 @@ path under its state directory. Explicit environment variables override the
 persisted values for that invocation. External providers still own the timing
 of subsequent `omazen sync` calls.
 
+The event-driven path uses the fixed `/usr/bin/inotifywait` binary supplied by
+`inotify-tools`. Its absence does not break palette synchronization: the bridge
+logs `WATCHER_FALLBACK` and retains the previous 250 ms polling path. This
+watcher behavior is independent of `OMAZEN_SKIP_THEME_HOOK`; an external
+provider that invokes `omazen sync` produces the same atomic event as the
+Omarchy hook.
+
 ## Compatibility contract
 
 | Target | Contract |

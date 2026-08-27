@@ -18,6 +18,8 @@ chrome/utils/utils.sys.mjs
 chrome/JS/omazen-bridge.uc.js
 chrome/JS/Omazen/OmazenParent.sys.mjs
 chrome/JS/Omazen/OmazenChild.sys.mjs
+chrome/JS/Omazen/OmazenPalette.sys.mjs
+chrome/JS/Omazen/OmazenWatcher.sys.mjs
 chrome/JS/Omazen/omazen-chrome-v1.3.2.css
 chrome/JS/Omazen/omazen-content-v1.3.2.css
 ```
@@ -40,6 +42,9 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
   extraction or execution; the archive's version metadata remains a separate
   defense-in-depth check.
 - No `eval`, dynamic import path, local port, native-messaging host or page-exposed API.
+- The event watcher launches only the fixed `/usr/bin/inotifywait` executable
+  with fixed arguments and the private Omazen state directory. It does not use
+  a shell, listen on a local port or accept commands from page content.
 - Palette and log paths are fixed; JSON cannot select a path. Logging is bounded
   to the active `bridge.log` plus one rotated `bridge.log.1` archive.
 - JSON is size-limited and strictly validated before use.

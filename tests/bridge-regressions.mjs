@@ -211,6 +211,7 @@ const document = {
 let nextTimer = 1;
 const timeouts = new Map();
 const intervals = new Map();
+const intervalDelays = new Map();
 let unloadHandler;
 const window = {
   addEventListener(name, callback) {
@@ -218,13 +219,15 @@ const window = {
   },
   clearInterval(id) {
     intervals.delete(id);
+    intervalDelays.delete(id);
   },
   clearTimeout(id) {
     timeouts.delete(id);
   },
-  setInterval(callback) {
+  setInterval(callback, delay) {
     const id = nextTimer++;
     intervals.set(id, callback);
+    intervalDelays.set(id, delay);
     return id;
   },
   setTimeout(callback) {
@@ -353,6 +356,8 @@ const Ci = {
 };
 
 let computedPrimary = "#112233";
+let watcherCallback = null;
+let watcherUnsubscribed = false;
 
 const source = fs.readFileSync(new URL("../zen/omazen-bridge.uc.js", import.meta.url), "utf8");
 vm.runInNewContext(source, {
@@ -360,12 +365,20 @@ vm.runInNewContext(source, {
   Ci,
   ChromeUtils: {
     importESModule(uri) {
-      assert.equal(
-        uri,
-        "chrome://userscripts/content/Omazen/OmazenPalette.sys.mjs",
-        "bridge should import only the shared palette module",
-      );
-      return paletteModule;
+      if (uri === "chrome://userscripts/content/Omazen/OmazenPalette.sys.mjs") {
+        return paletteModule;
+      }
+      if (uri === "chrome://userscripts/content/Omazen/OmazenWatcher.sys.mjs") {
+        return {
+          subscribePaletteWatcher(callback) {
+            watcherCallback = callback;
+            return () => {
+              watcherUnsubscribed = true;
+            };
+          },
+        };
+      }
+      assert.fail(`unexpected bridge module import: ${uri}`);
     },
   },
   Date,
@@ -390,6 +403,12 @@ assert.ok(files.has(`${stateRoot}/bridge.log.1`), "oversized log should rotate t
 assert.ok(files.has(`${stateRoot}/bridge.log`), "logging should continue in a fresh bridge.log");
 assert.equal(observers.length, 1, "bridge should install one internal-page observer");
 assert.equal(intervals.size, 1, "bridge should install one palette poll timer");
+assert.equal([...intervalDelays.values()][0], 250, "bridge should poll quickly until the watcher is ready");
+assert.equal(typeof watcherCallback, "function", "bridge should subscribe to palette watcher events");
+watcherCallback({ type: "ready", backend: "inotify" });
+assert.equal(intervals.size, 1, "watcher readiness should retain one fallback poll timer");
+assert.equal([...intervalDelays.values()][0], 5000, "ready watcher should reduce fallback polling frequency");
+assert.ok(logLines.some(line => line.includes("WATCHER_READY backend=inotify")), "watcher readiness should be logged");
 assert.equal(attributes.get("data-omazen-enabled"), "true", "initial palette should enable chrome");
 assert.equal(styleValues.get("--omazen-accent"), initialPalette.accent, "initial palette should style chrome");
 assert.equal(
@@ -467,7 +486,10 @@ assert.equal(browserQueries, 1, "scheduled broadcast should scan browser element
 
 const poll = intervals.values().next().value;
 files.set(`${stateRoot}/disabled`, { size: 0 });
-poll();
+watcherCallback({ type: "change", leaf: "disabled", events: "CREATE" });
+let watcherSync = [...timeouts.values()].at(-1);
+timeouts.clear();
+watcherSync();
 assert.equal(attributes.has("data-omazen-enabled"), false, "disabled marker should clear chrome state");
 assert.equal(styleValues.has("--omazen-accent"), false, "disabled marker should clear palette variables");
 assert.equal(
@@ -483,7 +505,11 @@ const updatedPalette = { ...initialPalette, mode: "light", accent: "#abcdef" };
 paletteText = JSON.stringify(updatedPalette);
 files.set(`${stateRoot}/palette.json`, { size: paletteText.length, modified: 2 });
 files.delete(`${stateRoot}/disabled`);
-poll();
+const applicationsBeforeEnable = logLines.filter(line => line.includes("PALETTE_APPLIED")).length;
+watcherCallback({ type: "change", leaf: "palette.json", events: "MOVED_TO" });
+watcherSync = [...timeouts.values()].at(-1);
+timeouts.clear();
+watcherSync();
 assert.equal(attributes.get("data-omazen-mode"), "light", "re-enable should apply the new mode");
 assert.equal(styleValues.get("--omazen-accent"), "#abcdef", "re-enable should apply the new accent");
 assert.equal(
@@ -493,6 +519,11 @@ assert.equal(
 );
 assert.equal(prefs.get("omazen.enabled"), true, "re-enable should restore actor preferences");
 assert.equal(sentMessages.at(-1).payload.accent, "#abcdef", "updated palette should reach actors");
+assert.equal(
+  logLines.filter(line => line.includes("PALETTE_APPLIED")).length,
+  applicationsBeforeEnable + 1,
+  "re-enable with a regenerated palette should apply only the new palette",
+);
 computedPrimary = "#000000";
 let retryDiagnostic = [...timeouts.values()].at(-1);
 timeouts.clear();
@@ -506,15 +537,23 @@ assert.ok(logLines.some(line => line.includes("CHROME_CSS_APPLIED primary=#abcde
 
 paletteText = JSON.stringify({ ...updatedPalette, unexpected: true });
 files.set(`${stateRoot}/palette.json`, { size: paletteText.length, modified: 3 });
-poll();
+watcherCallback({ type: "change", leaf: "palette.json", events: "MOVED_TO" });
+watcherSync = [...timeouts.values()].at(-1);
+timeouts.clear();
+watcherSync();
 assert.equal(styleValues.get("--omazen-accent"), "#abcdef", "invalid updates should preserve the last palette");
 assert.ok(
   logLines.some(line => line.includes("[ERROR] palette contains missing or unknown keys")),
   "invalid updates should be logged",
 );
 
+watcherCallback({ type: "error", reason: "process-exited-1" });
+assert.equal([...intervalDelays.values()][0], 250, "watcher failure should restore the fast polling fallback");
+poll();
+
 unloadHandler();
 assert.equal(observers[0].disconnected, true, "unload should disconnect the observer");
 assert.equal(auxiliaryObserverRemoved, true, "unload should remove the auxiliary-window observer");
+assert.equal(watcherUnsubscribed, true, "unload should unsubscribe from the shared watcher");
 assert.equal(intervals.size, 0, "unload should clear the palette poll timer");
 assert.equal(timeouts.size, 0, "unload should clear pending broadcasts and diagnostic probes");

@@ -102,6 +102,7 @@ cp -- "$PROJECT_ROOT/zen/omazen-bridge.uc.js" "$PROFILE/chrome/JS/"
 cp -- "$PROJECT_ROOT/zen/Omazen/OmazenParent.sys.mjs" \
   "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs" \
   "$PROJECT_ROOT/zen/Omazen/OmazenPalette.sys.mjs" \
+  "$PROJECT_ROOT/zen/Omazen/OmazenWatcher.sys.mjs" \
   "$PROJECT_ROOT/zen/Omazen/omazen-chrome-v${RELEASE_VERSION}.css" \
   "$PROJECT_ROOT/zen/Omazen/omazen-content-v${RELEASE_VERSION}.css" \
   "$PROFILE/chrome/JS/Omazen/"
@@ -348,6 +349,7 @@ for _ in $(seq 1 120); do
 done
 [[ -n $BROWSER_PID ]] || fail "Zen did not create a window for the disposable profile"
 wait_for_log "BRIDGE_LOADED version=$RELEASE_VERSION" 0
+wait_for_log 'WATCHER_READY backend=inotify' 0
 wait_for_log 'PALETTE_APPLIED accent=#ff7a18 mode=dark' 0
 wait_for_log 'CHROME_CSS_APPLIED primary=#ff7a18' 0
 for _ in $(seq 1 120); do
@@ -364,6 +366,7 @@ pass "real loader, bridge and dark Settings/chrome capture"
 before=$(log_lines)
 write_colors light '#7a18ff' '#c9b4ff' '#6a5845' '#efe4d2' '#d6c5ad' '#fff7ea' '#241b12' '#8b7355'
 sync_provider
+wait_for_log 'WATCHER_EVENT leaf=palette.json events=MOVED_TO' "$before"
 wait_for_log 'PALETTE_APPLIED accent=#7a18ff mode=light' "$before"
 wait_for_log 'CHROME_CSS_APPLIED primary=#7a18ff' "$before"
 sleep 0.5
@@ -379,6 +382,7 @@ OMAZEN_HOME_DIR="$TEST_ROOT/home" \
 OMAZEN_STATE_DIR="$STATE_DIR" \
 OMAZEN_ACTIVE_COLORS="$COLORS_FILE" \
   "$PROJECT_ROOT/bin/omazen" disable >/dev/null
+wait_for_log 'WATCHER_EVENT leaf=disabled events=' "$before"
 wait_for_log 'DISABLED' "$before"
 sleep 0.5
 capture_window disabled
@@ -390,6 +394,7 @@ OMAZEN_HOME_DIR="$TEST_ROOT/home" \
 OMAZEN_STATE_DIR="$STATE_DIR" \
 OMAZEN_ACTIVE_COLORS="$COLORS_FILE" \
   "$PROJECT_ROOT/bin/omazen" enable >/dev/null
+wait_for_log 'WATCHER_EVENT leaf=disabled events=DELETE' "$before"
 wait_for_log 'PALETTE_APPLIED accent=#7a18ff mode=light' "$before"
 sleep 0.5
 capture_window reenabled

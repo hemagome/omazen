@@ -88,13 +88,13 @@ cmd_disable() {
   ensure_state_dir
   : >"$OMAZEN_DISABLED_FILE"
   chmod 600 "$OMAZEN_DISABLED_FILE"
-  say "Omazen disabled. Open Zen windows will revert on the next poll."
+  say "Omazen disabled. Open Zen windows will revert automatically."
 }
 
 cmd_enable() {
   sync_palette
   rm -f -- "$OMAZEN_DISABLED_FILE"
-  say "Omazen enabled. Open Zen windows will update on the next poll."
+  say "Omazen enabled. Open Zen windows will update automatically."
 }
 
 cmd_doctor() {

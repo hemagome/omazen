@@ -7,6 +7,7 @@ OMAZEN_PROFILE_FILES=(
   Omazen/OmazenParent.sys.mjs
   Omazen/OmazenChild.sys.mjs
   Omazen/OmazenPalette.sys.mjs
+  Omazen/OmazenWatcher.sys.mjs
   "Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
   "Omazen/omazen-content-v${OMAZEN_VERSION}.css"
 )
@@ -122,6 +123,9 @@ setup_omazen() {
   local profiles=()
 
   check_supported_install
+  if [[ ! -x /usr/bin/inotifywait ]]; then
+    warn "inotifywait is unavailable; Zen will retain the 250 ms polling fallback"
+  fi
   ensure_state_dir
   version=$(detect_zen_version) || die "could not determine Zen version"
   version_at_least "$version" "1.20" || die "Zen $version is older than the minimum candidate version 1.20"

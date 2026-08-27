@@ -4,6 +4,28 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- A process-wide `inotifywait` watcher now wakes every open Zen bridge after
+  atomic palette and enable/disable state changes. Healthy watchers reduce the
+  safety poll to five seconds; startup or runtime watcher failures restore the
+  previous 250 ms polling behavior automatically.
+- A repeatable live-update benchmark records raw samples and reports minimum,
+  p50, mean, p95, p99 and maximum latency for full `omazen sync` and isolated
+  atomic-replacement scenarios.
+
+### Changed
+
+- Omarchy-hook and external-provider modes now share the same event-driven
+  palette application path. `OMAZEN_SKIP_THEME_HOOK=1` still skips only hook
+  installation and continues to rely on explicit `omazen sync` calls.
+
+### Fixed
+
+- Re-enabling Omazen while regenerating the palette no longer applies the same
+  palette twice when the atomic replacement and disabled-marker removal events
+  arrive together.
+
 ## [1.3.2] - 2026-08-26
 
 ### Added

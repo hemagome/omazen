@@ -149,6 +149,7 @@ assert_file "$FAKE_ZEN/defaults/pref/omazen-prefs.js"
 assert_file "$FAKE_PROFILE/chrome/JS/omazen-bridge.uc.js"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenChild.sys.mjs"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenPalette.sys.mjs"
+assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenWatcher.sys.mjs"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v${OMAZEN_VERSION}.css"
 assert_file "$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v${OMAZEN_VERSION}.css"
 assert_file "$FAKE_HOOKS/theme-set.d/theme-set"
@@ -369,6 +370,7 @@ pass "setup installs the isolated runtime and maps Quattro colors"
 rm -f -- "$FAKE_HOOKS/theme-set.d/theme-set"
 run_external_omazen setup >/dev/null
 assert_absent "$FAKE_HOOKS/theme-set.d/theme-set"
+assert_file "$FAKE_PROFILE/chrome/JS/Omazen/OmazenWatcher.sys.mjs"
 run_external_omazen doctor >/dev/null
 assert_file "$FAKE_STATE/provider-mode"
 grep -Fqx '1' "$FAKE_STATE/provider-mode" || fail "external provider mode was not persisted"
@@ -522,6 +524,9 @@ pass "disable removes Shadow DOM styles and observers"
 node "$PROJECT_ROOT/tests/bridge-regressions.mjs" || fail "JavaScript bridge regression"
 pass "bridge filters mutations, rotates logs, and cleans up runtime resources"
 
+node "$PROJECT_ROOT/tests/watcher-regressions.mjs" || fail "JavaScript watcher regression"
+pass "shared inotify watcher filters events and broadcasts updates"
+
 FOREIGN_PROFILE="$TEST_ROOT/foreign-profile"
 FOREIGN_PROFILE_STATE="$TEST_ROOT/foreign-profile-state"
 mkdir -p "$FOREIGN_PROFILE/chrome/utils"
@@ -540,6 +545,7 @@ pass "setup rejects an unowned partial fx-autoconfig profile runtime"
 
 run_omazen uninstall >/dev/null
 assert_absent "$FAKE_PROFILE/chrome/JS/omazen-bridge.uc.js"
+assert_absent "$FAKE_PROFILE/chrome/JS/Omazen/OmazenWatcher.sys.mjs"
 assert_absent "$FAKE_STATE/bridge.log.1"
 assert_absent "$FAKE_ZEN/defaults/pref/omazen-prefs.js"
 assert_same_hash "$FAKE_PROFILE/chrome/userChrome.css" "$TEST_ROOT/userChrome.before"

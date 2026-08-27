@@ -12,7 +12,9 @@ omarchy theme set
   -> omazen sync
   -> same-directory temporary JSON + atomic rename
   -> ~/.local/state/omazen/palette.json
-  -> privileged bridge in every Zen chrome window (250 ms fixed-file poll)
+  -> shared inotify watcher wakes every privileged Zen chrome bridge
+  -> 5 s safety poll while the watcher is healthy
+  -> 250 ms fixed-file poll only when the watcher is unavailable
   -> strict schema and color validation
   -> derived accent foreground for primary controls
   -> CSS variables + Omazen-scoped chrome stylesheet
@@ -30,8 +32,11 @@ to finish. It then executes the scripts in
 
 Omazen can generate `palette.json` only when its hook is reached. Other hooks
 ordered before Omazen may therefore add to the visible delay. Once the palette
-has been written, the Zen bridge detects it through a 250 ms fixed-file poll and
-applies the validated colors.
+has been written, a shared `inotifywait` subprocess observes the same-directory
+atomic rename and immediately wakes every open Zen chrome bridge. A 5-second
+safety poll covers lost events while the watcher is healthy. If the watcher
+cannot start or exits, every bridge automatically returns to the previous
+250 ms polling behavior.
 
 Observed latency depends on the installed hooks, active applications, theme
 complexity, and whether an integration performs first-run work. It should not
@@ -58,7 +63,14 @@ The bridge rejects missing keys, unknown keys, wrong schema versions, non-object
 
 ## Window behavior
 
-fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome document. Every browser window therefore owns a small watcher and applies the current palette to itself. The bridge observes only the exact `Browser:About`, `Places:Organizer` and `devtools:toolbox` window types and applies the same validated palette to existing or later-created About Zen, Library and Developer Tools windows; other auxiliary windows are ignored. A later-created browser window reads the existing JSON during initial injection.
+fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome
+document. `OmazenWatcher.sys.mjs` is a process-wide singleton, so all browser
+windows share one fixed-command `inotifywait` subprocess while applying the
+current palette independently. The bridge observes only the exact
+`Browser:About`, `Places:Organizer` and `devtools:toolbox` window types and
+applies the same validated palette to existing or later-created About Zen,
+Library and Developer Tools windows; other auxiliary windows are ignored. A
+later-created browser window reads the existing JSON during initial injection.
 
 `OmazenPalette.sys.mjs` owns the shared color keys, strict palette and payload
 validation, WCAG contrast calculation, derived accent foreground selection,

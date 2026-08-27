@@ -5,8 +5,10 @@ restarting Zen after the one-time privileged-loader setup.
 
 The runtime normalizes Quattro colors into a fixed JSON file, applies them to
 Zen chrome through a privileged bridge, and uses allowlisted WindowActors for
-supported internal pages. It has no runtime downloads, local server or
-page-exposed API. See the [architecture](docs/architecture.md) and
+supported internal pages. A shared `inotifywait` subprocess wakes every open
+Zen window after atomic palette updates; fixed-file polling remains only as a
+failure fallback and a low-frequency safety check. It has no runtime downloads,
+local server or page-exposed API. See the [architecture](docs/architecture.md) and
 [security model](docs/security.md) for details.
 
 ## Current status
@@ -75,6 +77,10 @@ omazen uninstall
 - `disable` and `enable` update open windows without restarting Zen.
 - `uninstall` removes only unchanged files recorded as Omazen-owned.
 
+The event-driven fast path uses `/usr/bin/inotifywait` from `inotify-tools`.
+When it is unavailable or exits unexpectedly, the bridge automatically returns
+to the previous 250 ms polling behavior.
+
 ## Compatibility
 
 The official support scope is **Omarchy Quattro plus the native Arch package
@@ -124,6 +130,13 @@ the rendered-pixel smoke test and whitespace checks, with:
 
 ```bash
 tests/release-gate.sh
+```
+
+To measure the current live-update latency with Zen open, see the
+[benchmark guide](docs/benchmark.md) and run:
+
+```bash
+tests/benchmark.sh --mode all --iterations 20
 ```
 
 See the [release checklist](docs/release.md) for deployment and publication.

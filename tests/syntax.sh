@@ -23,9 +23,11 @@ javascript_files=(
   "$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs"
   "$PROJECT_ROOT/zen/Omazen/OmazenPalette.sys.mjs"
   "$PROJECT_ROOT/zen/Omazen/OmazenParent.sys.mjs"
+  "$PROJECT_ROOT/zen/Omazen/OmazenWatcher.sys.mjs"
   "$PROJECT_ROOT/tests/bridge-regressions.mjs"
   "$PROJECT_ROOT/tests/contrast.mjs"
   "$PROJECT_ROOT/tests/js-regressions.mjs"
+  "$PROJECT_ROOT/tests/watcher-regressions.mjs"
 )
 for javascript_file in "${javascript_files[@]}"; do
   node --check "$javascript_file"
