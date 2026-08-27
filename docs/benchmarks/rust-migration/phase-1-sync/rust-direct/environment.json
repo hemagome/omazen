@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "implementation": "rust-sync",
+  "git_commit": "24921b5922e6ebd968b3c8cd8699d2f7fac3cf36",
+  "omazen_version": "1.4.1",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)",
+  "kernel": "Linux 7.1.9-arch1-2 x86_64 GNU/Linux",
+  "cpu_model": "Intel(R) Core(TM) Ultra 7 255H",
+  "logical_cpus": 16,
+  "memory_bytes": 32972914688,
+  "filesystem": "btrfs",
+  "cpu_governor": "powersave",
+  "load_average_at_start": "2.54 2.98 2.54",
+  "node": "v26.7.0",
+  "jq": "jq-1.8.2",
+  "binary_sha256": "54fd20211773e1647223458ec3f3c0729d1405d8c74d6d61ddd9565e0e46f232",
+  "scenario": "cli-sync-disposable",
+  "watcher_backend": "not-applicable",
+  "zen_windows": 0,
+  "runs": 3,
+  "measured_iterations_per_run": 200,
+  "warmups_per_run": 10,
+  "timeout_seconds": null,
+  "warnings": [
+    "CPU ticks have the kernel CLK_TCK resolution.",
+    "Transient descendants can exit between /proc samples and remain visible through sampler warnings."
+  ]
+}

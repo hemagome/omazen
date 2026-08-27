@@ -58,9 +58,8 @@ zen_hash_line=$(grep -nF -- 'sha256sum --check --status' "$CI_WORKFLOW" | cut -d
 zen_extract_line=$(grep -nF -- 'tar --strip-components=1 -xf' "$CI_WORKFLOW" | cut -d: -f1) || \
   fail "CI Zen archive extraction is missing"
 (( zen_hash_line < zen_extract_line )) || fail "CI verifies Zen after extraction"
-# shellcheck disable=SC2016 # Match the literal shell source, not expanded values.
-grep -Fq -- 'OMAZEN_VERSION=$(<"$OMAZEN_ROOT/VERSION")' "$PROJECT_ROOT/lib/common.sh" || \
-  fail "shell runtime does not read VERSION"
+grep -Fq -- 'const VERSION: &str = include_str!("../../../VERSION");' \
+  "$PROJECT_ROOT/crates/omazen-cli/src/main.rs" || fail "Rust runtime does not embed VERSION"
 # shellcheck disable=SC2016 # Match the literal shell source, not expanded values.
 grep -Fq -- 'printf '\''%s\n'\'' "$OMAZEN_VERSION" >"$STAGING/.omazen-installed"' \
   "$PROJECT_ROOT/install.sh" || fail "installer marker does not use VERSION"

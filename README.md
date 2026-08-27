@@ -34,6 +34,13 @@ Review [the security model](docs/security.md), then run:
 ./install.sh
 ```
 
+The installer uses a bundled `libexec/omazen-rust` release payload when present
+and installs it directly as `bin/omazen`; there is no shell launcher on the
+command path. A source checkout without the prebuilt payload requires the
+pinned Rust 1.98.0 toolchain once at build time; installed users do not need
+Rust or Cargo at runtime. Published Linux x86-64 release archives include the
+prebuilt binary and a SHA-256 sidecar.
+
 Close Zen normally and open it once after initial setup. Theme changes after
 that are live and do not require a restart.
 

@@ -7,11 +7,9 @@ set -euo pipefail
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 
 shell_files=(
-  "$PROJECT_ROOT/bin/omazen"
   "$PROJECT_ROOT/install.sh"
   "$PROJECT_ROOT/uninstall.sh"
   "$PROJECT_ROOT/hooks/theme-set"
-  "$PROJECT_ROOT"/lib/*.sh
   "$PROJECT_ROOT"/tests/*.sh
 )
 for shell_file in "${shell_files[@]}"; do
@@ -27,6 +25,8 @@ javascript_files=(
   "$PROJECT_ROOT/tests/bridge-regressions.mjs"
   "$PROJECT_ROOT/tests/contrast.mjs"
   "$PROJECT_ROOT/tests/js-regressions.mjs"
+  "$PROJECT_ROOT/tests/generate-benchmark-report.mjs"
+  "$PROJECT_ROOT/tests/process-tree-metrics.mjs"
   "$PROJECT_ROOT/tests/watcher-regressions.mjs"
 )
 for javascript_file in "${javascript_files[@]}"; do

@@ -5,6 +5,7 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
+OMAZEN_BIN=${OMAZEN_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
 RELEASE_VERSION=$(<"$PROJECT_ROOT/VERSION")
 TEST_ROOT=$(mktemp -d /tmp/omazen-visual-integration.XXXXXX)
 OUTPUT_DIR=${OMAZEN_VISUAL_OUTPUT_DIR:-"$TEST_ROOT/output"}
@@ -199,7 +200,7 @@ sync_provider() {
   OMAZEN_HOME_DIR="$TEST_ROOT/home" \
   OMAZEN_STATE_DIR="$STATE_DIR" \
   OMAZEN_ACTIVE_COLORS="$COLORS_FILE" \
-    "$PROJECT_ROOT/bin/omazen" sync >/dev/null
+    "$OMAZEN_BIN" sync >/dev/null
 }
 
 log_lines() {
@@ -383,7 +384,7 @@ before=$(log_lines)
 OMAZEN_HOME_DIR="$TEST_ROOT/home" \
 OMAZEN_STATE_DIR="$STATE_DIR" \
 OMAZEN_ACTIVE_COLORS="$COLORS_FILE" \
-  "$PROJECT_ROOT/bin/omazen" disable >/dev/null
+  "$OMAZEN_BIN" disable >/dev/null
 wait_for_log 'WATCHER_EVENT leaf=disabled events=' "$before"
 wait_for_log 'DISABLED' "$before"
 sleep 0.5
@@ -395,7 +396,7 @@ before=$(log_lines)
 OMAZEN_HOME_DIR="$TEST_ROOT/home" \
 OMAZEN_STATE_DIR="$STATE_DIR" \
 OMAZEN_ACTIVE_COLORS="$COLORS_FILE" \
-  "$PROJECT_ROOT/bin/omazen" enable >/dev/null
+  "$OMAZEN_BIN" enable >/dev/null
 wait_for_log 'WATCHER_EVENT leaf=disabled events=DELETE' "$before"
 wait_for_log 'PALETTE_APPLIED accent=#7a18ff mode=light' "$before"
 sleep 0.5

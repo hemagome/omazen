@@ -4,6 +4,11 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- The Rust executable is now installed directly as `bin/omazen`, removing the
+  shell launcher and its process-start overhead from every CLI invocation.
+
 ### Fixed
 
 - Web-page `<select>` dropdowns are no longer recolored. Firefox renders a
@@ -15,6 +20,12 @@ All notable changes to Omazen are documented here.
   near-black on near-black for any page in a light color scheme. That popup now
   keeps Zen's stock values, restoring the documented boundary that ordinary
   website content is not recolored.
+
+### Removed
+
+- The obsolete Bash CLI implementation was removed after the Rust CLI passed
+  differential, lifecycle, performance and live multi-window qualification.
+  The Omarchy hook and the bridge's watcher-failure polling fallback remain.
 
 ## [1.4.1] - 2026-08-26
 

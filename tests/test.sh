@@ -5,6 +5,7 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
+OMAZEN_BIN=${OMAZEN_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
 OMAZEN_VERSION=$(<"$PROJECT_ROOT/VERSION")
 CHROME_CSS="$PROJECT_ROOT/zen/Omazen/omazen-chrome.css"
 CONTENT_CSS="$PROJECT_ROOT/zen/Omazen/omazen-content.css"
@@ -107,7 +108,7 @@ run_omazen() {
   OMAZEN_HOOKS_DIR="$FAKE_HOOKS" \
   OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" \
   OMAZEN_OS_RELEASE_FILE="$FAKE_OS_RELEASE" \
-  "$PROJECT_ROOT/bin/omazen" "$@"
+  "$OMAZEN_BIN" "$@"
 }
 
 run_omazen_with_os_release() {
@@ -122,7 +123,7 @@ run_omazen_with_os_release() {
   OMAZEN_HOOKS_DIR="$FAKE_HOOKS" \
   OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" \
   OMAZEN_OS_RELEASE_FILE="$os_release" \
-  "$PROJECT_ROOT/bin/omazen" "$@"
+  "$OMAZEN_BIN" "$@"
 }
 
 run_external_omazen() {
@@ -138,7 +139,7 @@ run_persisted_omazen() {
   OMAZEN_ZEN_PROGRAM_DIR="$FAKE_ZEN" \
   OMAZEN_HOOKS_DIR="$FAKE_HOOKS" \
   OMAZEN_OS_RELEASE_FILE="$FAKE_OS_RELEASE" \
-  "$PROJECT_ROOT/bin/omazen" "$@"
+  "$OMAZEN_BIN" "$@"
 }
 
 run_omazen setup >/dev/null
@@ -195,7 +196,7 @@ if OMAZEN_TESTING=1 OMAZEN_SKIP_PACKAGE_CHECK=1 \
   OMAZEN_ZEN_CONFIG_DIR="$V3_CONFIG" OMAZEN_ZEN_PROGRAM_DIR="$V3_ZEN" \
   OMAZEN_HOOKS_DIR="$V3_HOOKS" OMAZEN_ACTIVE_COLORS="$V3_COLORS" \
   OMAZEN_OS_RELEASE_FILE="$FAKE_OLD_OS_RELEASE" \
-  "$PROJECT_ROOT/bin/omazen" setup >/dev/null 2>&1; then
+  "$OMAZEN_BIN" setup >/dev/null 2>&1; then
   fail "setup accepted Omarchy 3"
 fi
 assert_absent "$V3_ZEN/config.js"
@@ -404,7 +405,7 @@ if OMAZEN_TESTING=1 OMAZEN_SKIP_PACKAGE_CHECK=1 OMAZEN_HOME_DIR="$FAKE_HOME" \
   OMAZEN_ZEN_CONFIG_DIR="$FAKE_CONFIG" OMAZEN_ZEN_PROGRAM_DIR="$UNKNOWN_PREF_ROOT" \
   OMAZEN_HOOKS_DIR="$FAKE_HOOKS" OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" \
   OMAZEN_OS_RELEASE_FILE="$FAKE_OS_RELEASE" \
-  "$PROJECT_ROOT/bin/omazen" setup >/dev/null 2>&1; then
+  "$OMAZEN_BIN" setup >/dev/null 2>&1; then
   fail "setup adopted an unknown unowned preference file"
 fi
 grep -Fqx 'foreign preference file' "$UNKNOWN_PREF_ROOT/defaults/pref/omazen-prefs.js" || \
@@ -455,6 +456,8 @@ pass "setup repairs an owned partial fx-autoconfig profile runtime"
 
 LEGACY_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome.css"
 LEGACY_CONTENT_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-content.css"
+V140_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v1.4.0.css"
+V140_CONTENT_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v1.4.0.css"
 FOREIGN_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v9.9.9.css"
 printf 'owned legacy style\n' >"$LEGACY_STYLE"
 printf '%s|%s\n' "$LEGACY_STYLE" "$(sha256sum "$LEGACY_STYLE" | awk '{print $1}')" \
@@ -462,10 +465,18 @@ printf '%s|%s\n' "$LEGACY_STYLE" "$(sha256sum "$LEGACY_STYLE" | awk '{print $1}'
 printf 'owned legacy content style\n' >"$LEGACY_CONTENT_STYLE"
 printf '%s|%s\n' "$LEGACY_CONTENT_STYLE" "$(sha256sum "$LEGACY_CONTENT_STYLE" | awk '{print $1}')" \
   >>"$FAKE_STATE/owned/profile-files"
+printf 'owned v1.4.0 chrome style\n' >"$V140_STYLE"
+printf '%s|%s\n' "$V140_STYLE" "$(sha256sum "$V140_STYLE" | awk '{print $1}')" \
+  >>"$FAKE_STATE/owned/profile-files"
+printf 'owned v1.4.0 content style\n' >"$V140_CONTENT_STYLE"
+printf '%s|%s\n' "$V140_CONTENT_STYLE" "$(sha256sum "$V140_CONTENT_STYLE" | awk '{print $1}')" \
+  >>"$FAKE_STATE/owned/profile-files"
 printf 'foreign style\n' >"$FOREIGN_STYLE"
 run_omazen setup >/dev/null
 assert_absent "$LEGACY_STYLE"
 assert_absent "$LEGACY_CONTENT_STYLE"
+assert_absent "$V140_STYLE"
+assert_absent "$V140_CONTENT_STYLE"
 assert_file "$FOREIGN_STYLE"
 assert_same_hash "$FAKE_PROFILE/chrome/userChrome.css" "$TEST_ROOT/userChrome.before"
 assert_same_hash "$FAKE_PROFILE/user.js" "$TEST_ROOT/user.before"
@@ -581,7 +592,7 @@ if OMAZEN_TESTING=1 OMAZEN_SKIP_PACKAGE_CHECK=1 OMAZEN_HOME_DIR="$FAKE_HOME" \
   OMAZEN_STATE_DIR="$FOREIGN_PROFILE_STATE" OMAZEN_PROFILE="$FOREIGN_PROFILE" \
   OMAZEN_ZEN_CONFIG_DIR="$FAKE_CONFIG" OMAZEN_ZEN_PROGRAM_DIR="$FAKE_ZEN" \
   OMAZEN_HOOKS_DIR="$FAKE_HOOKS" OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" \
-  "$PROJECT_ROOT/bin/omazen" setup >/dev/null 2>&1; then
+  "$OMAZEN_BIN" setup >/dev/null 2>&1; then
   fail "setup repaired an unowned partial fx-autoconfig profile runtime"
 fi
 grep -Fq 'foreign boot' "$FOREIGN_PROFILE/chrome/utils/boot.sys.mjs" || \
@@ -604,7 +615,7 @@ printf 'foreign autoconfig\n' >"$CONFLICT_ROOT/config.js"
 if OMAZEN_TESTING=1 OMAZEN_SKIP_PACKAGE_CHECK=1 OMAZEN_HOME_DIR="$FAKE_HOME" \
   OMAZEN_STATE_DIR="$TEST_ROOT/conflict-state" OMAZEN_ZEN_CONFIG_DIR="$FAKE_CONFIG" \
   OMAZEN_ZEN_PROGRAM_DIR="$CONFLICT_ROOT" OMAZEN_HOOKS_DIR="$FAKE_HOOKS" \
-  OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" "$PROJECT_ROOT/bin/omazen" setup >/dev/null 2>&1; then
+  OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" "$OMAZEN_BIN" setup >/dev/null 2>&1; then
   fail "foreign autoconfig conflict was overwritten"
 fi
 grep -Fq 'foreign autoconfig' "$CONFLICT_ROOT/config.js" || fail "foreign config changed"
@@ -618,6 +629,9 @@ OMAZEN_LOCAL_BIN_DIR="$FAKE_APP_BIN" \
 OMAZEN_INSTALL_NO_SETUP=1 \
   "$PROJECT_ROOT/install.sh" >/dev/null
 assert_file "$FAKE_APP_DATA/.omazen-installed"
+assert_file "$FAKE_APP_DATA/bin/omazen"
+assert_same_hash "$FAKE_APP_DATA/bin/omazen" "$OMAZEN_BIN"
+assert_absent "$FAKE_APP_DATA/libexec"
 assert_same_hash "$FAKE_APP_DATA/VERSION" "$PROJECT_ROOT/VERSION"
 assert_same_hash "$FAKE_APP_DATA/CHANGELOG.md" "$PROJECT_ROOT/CHANGELOG.md"
 [[ -L $FAKE_APP_BIN/omazen ]] || fail "top-level installer command symlink"

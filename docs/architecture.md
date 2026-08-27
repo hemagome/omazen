@@ -22,6 +22,13 @@ omarchy theme set
   -> allowlisted about: pages and internal dialog documents
 ```
 
+The installed `bin/omazen` command is the Rust executable itself; there is no
+shell process or launcher on the CLI path. Rust owns command parsing, palette
+normalization, diagnostics, state changes, setup ownership and uninstall. The
+Gecko bridge, WindowActors, CSS and shared `inotifywait` watcher remain
+JavaScript/CSS. Release tags and staged installation backups provide rollback
+without maintaining a second CLI implementation.
+
 ## Theme-change latency
 
 Live theme changes do not require restarting Zen, but they are not necessarily

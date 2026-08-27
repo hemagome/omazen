@@ -53,6 +53,27 @@ jobs:
             exit 1
           }
 
+      - name: Build pinned Rust CLI
+        run: |
+          rustup toolchain install 1.98.0 --profile minimal
+          cargo build --release --locked
+
+      - name: Build release archive
+        run: |
+          set -euo pipefail
+          version=$(<VERSION)
+          package_name="omazen-$version-linux-x86_64"
+          package_root="$RUNNER_TEMP/$package_name"
+          archive="$RUNNER_TEMP/$package_name.tar.gz"
+          mkdir -p "$package_root/libexec"
+          git archive "$RELEASE_REF" | tar -x -C "$package_root"
+          install -m 0755 target/release/omazen-rust "$package_root/libexec/omazen-rust"
+          tar -czf "$archive" -C "$RUNNER_TEMP" "$package_name"
+          (
+            cd "$RUNNER_TEMP"
+            sha256sum "$(basename "$archive")" >"$(basename "$archive").sha256"
+          )
+
       - name: Create GitHub Release
         run: |
           set -euo pipefail
@@ -60,4 +81,6 @@ jobs:
           gh release create "$RELEASE_REF" \
             --verify-tag \
             --title "Omazen $version" \
-            --notes-file "$RUNNER_TEMP/release-notes.md"
+            --notes-file "$RUNNER_TEMP/release-notes.md" \
+            "$RUNNER_TEMP/omazen-$version-linux-x86_64.tar.gz" \
+            "$RUNNER_TEMP/omazen-$version-linux-x86_64.tar.gz.sha256"

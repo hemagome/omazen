@@ -9,7 +9,8 @@ BENCH_HOME_DIR=${OMAZEN_HOME_DIR:-$HOME}
 STATE_DIR=${OMAZEN_STATE_DIR:-"${XDG_STATE_HOME:-$BENCH_HOME_DIR/.local/state}/omazen"}
 PALETTE_FILE="$STATE_DIR/palette.json"
 BRIDGE_LOG="$STATE_DIR/bridge.log"
-OMAZEN_BIN=${OMAZEN_BIN:-"$PROJECT_ROOT/bin/omazen"}
+BRIDGE_LOG_ARCHIVE="$STATE_DIR/bridge.log.1"
+OMAZEN_BIN=${OMAZEN_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
 ITERATIONS=20
 TIMEOUT_SECONDS=5
 SETTLE_SECONDS=1
@@ -32,7 +33,7 @@ Options:
   -h, --help        Show this help
 
 The atomic mode rewrites the existing palette with identical contents using
-the same atomic rename pattern as lib/palette.sh. It changes file metadata,
+the same atomic rename pattern as the Rust palette writer. It changes file metadata,
 but not the visible colors.
 EOF
 }
@@ -63,7 +64,8 @@ log_size() {
 }
 
 watcher_backend() {
-  awk '
+  local backend pid command_line
+  backend=$(awk '
     /\[INFO\] BRIDGE_LOADED / { backend = "starting" }
     /\[INFO\] WATCHER_READY backend=/ {
       backend = "inotify"
@@ -73,7 +75,34 @@ watcher_backend() {
     }
     /\[WARN\] WATCHER_FALLBACK / { backend = "polling-fallback" }
     END { print backend == "" ? "unknown" : backend }
-  ' "$BRIDGE_LOG"
+  ' "$BRIDGE_LOG_ARCHIVE" "$BRIDGE_LOG" 2>/dev/null || true)
+  if [[ $backend == unknown || $backend == starting ]]; then
+    while IFS= read -r pid; do
+      [[ -r /proc/$pid/cmdline ]] || continue
+      command_line=$(tr '\0' ' ' <"/proc/$pid/cmdline")
+      if [[ $command_line == *"$STATE_DIR"* && $command_line == *close_write,create,delete,moved_to* ]]; then
+        printf 'inotify\n'
+        return
+      fi
+    done < <(pgrep -x inotifywait || true)
+    printf 'polling-fallback\n'
+    return
+  fi
+  printf '%s\n' "$backend"
+}
+
+read_log_since() {
+  local before_bytes=$1
+  local current_bytes=$2
+  local destination=$3
+
+  if (( current_bytes >= before_bytes )); then
+    tail -c "+$((before_bytes + 1))" "$BRIDGE_LOG" >"$destination"
+  else
+    [[ -f $BRIDGE_LOG_ARCHIVE ]] || return 1
+    tail -c "+$((before_bytes + 1))" "$BRIDGE_LOG_ARCHIVE" >"$destination"
+    cat "$BRIDGE_LOG" >>"$destination"
+  fi
 }
 
 wait_for_events() {
@@ -88,21 +117,16 @@ wait_for_events() {
   while (( SECONDS < deadline )); do
     if [[ -f $BRIDGE_LOG ]]; then
       current_bytes=$(log_size)
-      if (( current_bytes < before_bytes )); then
-        return 2
-      fi
-      if (( current_bytes > before_bytes )); then
-        tail -c "+$((before_bytes + 1))" "$BRIDGE_LOG" >"$lines_file"
+      if (( current_bytes != before_bytes )); then
+        read_log_since "$before_bytes" "$current_bytes" "$lines_file" || return 2
         WAIT_PALETTE_LINE=$(grep -m1 -F 'PALETTE_APPLIED ' "$lines_file" || true)
         WAIT_CSS_LINE=$(grep -m1 -F 'CHROME_CSS_APPLIED ' "$lines_file" || true)
         if [[ -n $WAIT_PALETTE_LINE && -n $WAIT_CSS_LINE ]]; then
           sleep "$SETTLE_SECONDS"
           current_bytes=$(log_size)
-          if (( current_bytes >= before_bytes )); then
-            tail -c "+$((before_bytes + 1))" "$BRIDGE_LOG" >"$lines_file"
-            WAIT_PALETTE_LINE=$(grep -m1 -F 'PALETTE_APPLIED ' "$lines_file" || true)
-            WAIT_CSS_LINE=$(grep -m1 -F 'CHROME_CSS_APPLIED ' "$lines_file" || true)
-          fi
+          read_log_since "$before_bytes" "$current_bytes" "$lines_file" || return 2
+          WAIT_PALETTE_LINE=$(grep -m1 -F 'PALETTE_APPLIED ' "$lines_file" || true)
+          WAIT_CSS_LINE=$(grep -m1 -F 'CHROME_CSS_APPLIED ' "$lines_file" || true)
           return 0
         fi
       fi

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "implementation": "rust-direct-installed",
+  "git_commit": "f8cbe851ad30df54fa0f36af687a6904658bd87c",
+  "omazen_version": "1.4.1",
+  "rustc": null,
+  "cargo": null,
+  "kernel": "Linux 7.1.9-arch1-2 x86_64 GNU/Linux",
+  "cpu_model": "Intel(R) Core(TM) Ultra 7 255H",
+  "logical_cpus": 16,
+  "memory_bytes": 32972926976,
+  "filesystem": "btrfs",
+  "cpu_governor": "powersave",
+  "load_average_at_start": "2.27 1.44 1.16",
+  "node": "v26.7.0",
+  "jq": "jq-1.8.2",
+  "binary_sha256": "f888a0a5611f8f58427541a3c96ca40fdc295a9e293af5831d20a3d4f97163a0",
+  "scenario": "cli-sync-disposable",
+  "watcher_backend": "not-applicable",
+  "zen_windows": 0,
+  "runs": 3,
+  "measured_iterations_per_run": 200,
+  "warmups_per_run": 10,
+  "timeout_seconds": null,
+  "warnings": [
+    "CPU ticks have the kernel CLK_TCK resolution.",
+    "Transient descendants can exit between /proc samples and remain visible through sampler warnings."
+  ]
+}
