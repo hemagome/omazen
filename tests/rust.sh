@@ -29,5 +29,8 @@ cargo build --release --locked
 OMAZEN_REFERENCE_BIN="$PROJECT_ROOT/bin/omazen" \
 OMAZEN_CANDIDATE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
   "$PROJECT_ROOT/tests/sync-contract.sh"
+OMAZEN_REFERENCE_BIN="$PROJECT_ROOT/bin/omazen" \
+OMAZEN_CANDIDATE_BIN="$PROJECT_ROOT/target/release/omazen-rust" \
+  "$PROJECT_ROOT/tests/read-only-contract.sh"
 
 printf 'Rust checks passed.\n'

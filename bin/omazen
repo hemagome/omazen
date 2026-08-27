@@ -12,9 +12,13 @@ export OMAZEN_ROOT
 # the Bash implementation. `exec` prevents the shell from remaining resident.
 OMAZEN_COMMAND=${1:-help}
 OMAZEN_RUST_CANDIDATE=${OMAZEN_RUST_BIN:-"$OMAZEN_ROOT/libexec/omazen-rust"}
-if [[ $OMAZEN_COMMAND == sync && -x $OMAZEN_RUST_CANDIDATE ]]; then
-  exec "$OMAZEN_RUST_CANDIDATE" "$@"
-fi
+case "$OMAZEN_COMMAND" in
+  sync|status|doctor|help|-h|--help)
+    if [[ -x $OMAZEN_RUST_CANDIDATE ]]; then
+      exec "$OMAZEN_RUST_CANDIDATE" "$@"
+    fi
+    ;;
+esac
 
 # shellcheck source=../lib/common.sh
 source "$OMAZEN_ROOT/lib/common.sh"
