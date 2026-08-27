@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        1.3.1
+// @version        1.3.2
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
@@ -22,12 +22,13 @@
   const LOG_ARCHIVE_LEAF = "bridge.log.1";
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
-  const VERSION = "1.3.1";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v1.3.1.css";
-  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.3.1.css";
+  const VERSION = "1.3.2";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v1.3.2.css";
+  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.3.2.css";
   const {
     COLOR_KEYS,
     actorPayload,
+    deriveAccentForeground,
     setRootPalette,
     validatePalette,
   } = ChromeUtils.importESModule(
@@ -154,6 +155,7 @@
   }
 
   function contentPaletteCss(palette) {
+    const accentForeground = deriveAccentForeground(palette);
     const hover = `color-mix(in srgb, ${palette.background_light} 82%, ${palette.accent})`;
     const accentHover = `color-mix(in srgb, ${palette.accent} 82%, ${palette.foreground})`;
     return `
@@ -169,6 +171,7 @@
     --omazen-background-light: ${palette.background_light} !important;
     --omazen-foreground: ${palette.foreground} !important;
     --omazen-foreground-muted: ${palette.foreground_muted} !important;
+    --omazen-accent-foreground: ${accentForeground} !important;
     --omazen-action-text: var(--omazen-foreground) !important;
     --omazen-secondary-text: color-mix(in srgb, var(--omazen-foreground-muted) 40%, var(--omazen-foreground)) !important;
     --omazen-disabled-text: var(--omazen-foreground-muted) !important;
@@ -185,7 +188,10 @@
     --button-background-color-ghost-hover: ${palette.background_light} !important;
     --button-text-color: ${palette.foreground} !important;
     --button-text-color-hover: ${palette.foreground} !important;
-    --button-text-color-primary: ${palette.background_dark} !important;
+    --button-text-color-primary: ${accentForeground} !important;
+    --button-text-color-primary-active: ${accentForeground} !important;
+    --button-text-color-primary-hover: ${accentForeground} !important;
+    --in-content-primary-button-text-color: ${accentForeground} !important;
     --button-text-color-ghost: var(--omazen-action-text) !important;
     --button-text-color-ghost-hover: var(--omazen-action-text) !important;
     --button-text-color-ghost-active: var(--omazen-action-text) !important;
@@ -279,7 +285,7 @@
   }
   .toggle-group-input:checked + .toggle-group-label {
     background-color: ${palette.accent} !important;
-    color: ${palette.background_dark} !important;
+    color: ${accentForeground} !important;
     border-color: ${palette.accent} !important;
   }
   #print :is(input[type="radio"], input[type="checkbox"]) {
@@ -484,10 +490,6 @@
     ensureChromeStyle();
     const root = document.documentElement;
     setRootPalette(root, palette, true);
-    root.style.setProperty(
-      "--omazen-transition-duration",
-      Services.prefs.getBoolPref("omazen.transitions.enabled", true) ? "180ms" : "0ms",
-    );
     currentPalette = palette;
     syncContentPaletteSheet(palette, true);
     writePalettePrefs(palette, true);
@@ -499,7 +501,6 @@
   function disablePalette() {
     const root = document.documentElement;
     setRootPalette(root, currentPalette, false);
-    root.style.removeProperty("--omazen-transition-duration");
     syncContentPaletteSheet(currentPalette, false);
     writePalettePrefs(currentPalette, false);
     broadcastToInternalPages(currentPalette, false);

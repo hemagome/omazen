@@ -24,6 +24,7 @@ javascript_files=(
   "$PROJECT_ROOT/zen/Omazen/OmazenPalette.sys.mjs"
   "$PROJECT_ROOT/zen/Omazen/OmazenParent.sys.mjs"
   "$PROJECT_ROOT/tests/bridge-regressions.mjs"
+  "$PROJECT_ROOT/tests/contrast.mjs"
   "$PROJECT_ROOT/tests/js-regressions.mjs"
 )
 for javascript_file in "${javascript_files[@]}"; do

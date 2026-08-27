@@ -41,6 +41,29 @@ assert.equal(
   null,
   "shared actor validation should reject invalid colors",
 );
+assert.equal(
+  paletteModule.contrastRatio("#000000", "#ffffff"),
+  21,
+  "shared contrast calculation should use the WCAG black/white ratio",
+);
+assert.equal(
+  paletteModule.deriveAccentForeground({
+    accent: "#56949f",
+    background_dark: "#ede7e1",
+    foreground: "#575279",
+  }),
+  "#000000",
+  "accent foreground should fall back to black for a light mid-tone accent",
+);
+assert.equal(
+  paletteModule.deriveAccentForeground({
+    accent: "#1e66f5",
+    background_dark: "#e3e4e8",
+    foreground: "#4c4f69",
+  }),
+  "#ffffff",
+  "accent foreground should fall back to white when black is insufficient",
+);
 
 class FakeFile {
   constructor(path = "") {
@@ -293,7 +316,7 @@ const Services = {
     },
   },
   prefs: {
-    getBoolPref: (name, fallback) => prefs.get(name) ?? (name === "omazen.transitions.enabled" ? true : fallback),
+    getBoolPref: (name, fallback) => prefs.get(name) ?? fallback,
     setBoolPref(name, value) {
       prefs.set(name, value);
     },
@@ -369,6 +392,11 @@ assert.equal(observers.length, 1, "bridge should install one internal-page obser
 assert.equal(intervals.size, 1, "bridge should install one palette poll timer");
 assert.equal(attributes.get("data-omazen-enabled"), "true", "initial palette should enable chrome");
 assert.equal(styleValues.get("--omazen-accent"), initialPalette.accent, "initial palette should style chrome");
+assert.equal(
+  styleValues.get("--omazen-accent-foreground"),
+  paletteModule.deriveAccentForeground(initialPalette),
+  "initial palette should derive an accessible accent foreground",
+);
 assert.equal(prefs.get("omazen.enabled"), true, "initial palette should enable actor preferences");
 assert.equal(styleSheetService.registered.size, 1, "initial palette should register the content sheet");
 assert.equal(
@@ -392,6 +420,21 @@ const generatedCss = decodeURIComponent(registeredSheet.slice(registeredSheet.in
 assert.match(generatedCss, /@-moz-document url\("about:logins"\)/, "sheet should scope internal pages");
 assert.match(generatedCss, /url-prefix\("https:\/\/"\)/, "sheet should scope web scrollbars");
 assert.match(generatedCss, /scrollbar-color: #aabbcc #334455/, "sheet should map scrollbar colors");
+assert.match(
+  generatedCss,
+  new RegExp(`--omazen-accent-foreground: ${paletteModule.deriveAccentForeground(initialPalette)} !important`),
+  "sheet should expose the derived accent foreground",
+);
+assert.match(
+  generatedCss,
+  new RegExp(`--button-text-color-primary: ${paletteModule.deriveAccentForeground(initialPalette)} !important`),
+  "sheet should use the derived accent foreground for primary buttons",
+);
+assert.match(
+  generatedCss,
+  new RegExp(`\\.toggle-group-input:checked \\+ \\.toggle-group-label \\{[\\s\\S]*color: ${paletteModule.deriveAccentForeground(initialPalette)} !important`),
+  "sheet should use the derived accent foreground for Print toggles",
+);
 assert.match(generatedCss, /--button-text-color-menu: var\(--omazen-action-text\)/, "sheet should map action text");
 assert.match(generatedCss, /\.toggle-group-input:checked \+ \.toggle-group-label/, "sheet should style Print orientation");
 assert.match(generatedCss, /#open-dialog-link/, "sheet should style the system-dialog link");
@@ -427,6 +470,11 @@ files.set(`${stateRoot}/disabled`, { size: 0 });
 poll();
 assert.equal(attributes.has("data-omazen-enabled"), false, "disabled marker should clear chrome state");
 assert.equal(styleValues.has("--omazen-accent"), false, "disabled marker should clear palette variables");
+assert.equal(
+  styleValues.has("--omazen-accent-foreground"),
+  false,
+  "disabled marker should clear the derived accent foreground",
+);
 assert.equal(prefs.get("omazen.enabled"), false, "disabled marker should disable actor preferences");
 assert.equal(styleSheetService.registered.size, 0, "disabled marker should unregister content CSS");
 assert.deepEqual(sentMessages.at(-1), { name: "Omazen:Apply", payload: { enabled: false } });
@@ -438,6 +486,11 @@ files.delete(`${stateRoot}/disabled`);
 poll();
 assert.equal(attributes.get("data-omazen-mode"), "light", "re-enable should apply the new mode");
 assert.equal(styleValues.get("--omazen-accent"), "#abcdef", "re-enable should apply the new accent");
+assert.equal(
+  styleValues.get("--omazen-accent-foreground"),
+  paletteModule.deriveAccentForeground(updatedPalette),
+  "re-enable should recalculate the derived accent foreground",
+);
 assert.equal(prefs.get("omazen.enabled"), true, "re-enable should restore actor preferences");
 assert.equal(sentMessages.at(-1).payload.accent, "#abcdef", "updated palette should reach actors");
 computedPrimary = "#000000";

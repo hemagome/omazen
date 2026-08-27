@@ -4,6 +4,9 @@
 "use strict";
 
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+const ACCENT_TEXT_CONTRAST = 4.5;
+const BLACK = "#000000";
+const WHITE = "#ffffff";
 
 export const COLOR_KEYS = Object.freeze([
   "accent",
@@ -15,6 +18,48 @@ export const COLOR_KEYS = Object.freeze([
   "selection",
   "border",
 ]);
+
+function channelLuminance(channel) {
+  const normalized = channel / 255;
+  return normalized <= 0.04045
+    ? normalized / 12.92
+    : ((normalized + 0.055) / 1.055) ** 2.4;
+}
+
+export function relativeLuminance(color) {
+  if (typeof color !== "string" || !COLOR_RE.test(color)) {
+    throw new Error("invalid color");
+  }
+  const red = Number.parseInt(color.slice(1, 3), 16);
+  const green = Number.parseInt(color.slice(3, 5), 16);
+  const blue = Number.parseInt(color.slice(5, 7), 16);
+  return 0.2126 * channelLuminance(red)
+    + 0.7152 * channelLuminance(green)
+    + 0.0722 * channelLuminance(blue);
+}
+
+export function contrastRatio(first, second) {
+  const firstLuminance = relativeLuminance(first);
+  const secondLuminance = relativeLuminance(second);
+  return (Math.max(firstLuminance, secondLuminance) + 0.05)
+    / (Math.min(firstLuminance, secondLuminance) + 0.05);
+}
+
+/*
+ * Select the text color for a primary accent surface without changing the
+ * provider-facing v1 palette contract. Existing semantic colors are preferred
+ * when they already pass; black or white is used only as a guaranteed fallback.
+ */
+export function deriveAccentForeground(palette) {
+  for (const candidate of [palette.background_dark, palette.foreground]) {
+    if (contrastRatio(palette.accent, candidate) >= ACCENT_TEXT_CONTRAST) {
+      return candidate.toLowerCase();
+    }
+  }
+  return contrastRatio(palette.accent, BLACK) >= contrastRatio(palette.accent, WHITE)
+    ? BLACK
+    : WHITE;
+}
 
 const PALETTE_KEYS = Object.freeze(["schema_version", "mode", ...COLOR_KEYS]);
 
@@ -64,6 +109,7 @@ export function setRootPalette(root, palette, enabled) {
     root.removeAttribute("data-omazen-enabled");
     root.removeAttribute("data-omazen-mode");
     root.style.removeProperty("color-scheme");
+    root.style.removeProperty("--omazen-accent-foreground");
     for (const key of COLOR_KEYS) {
       root.style.removeProperty(`--omazen-${key.replaceAll("_", "-")}`);
     }
@@ -73,6 +119,7 @@ export function setRootPalette(root, palette, enabled) {
   root.setAttribute("data-omazen-enabled", "true");
   root.setAttribute("data-omazen-mode", palette.mode);
   root.style.setProperty("color-scheme", palette.mode);
+  root.style.setProperty("--omazen-accent-foreground", deriveAccentForeground(palette));
   for (const key of COLOR_KEYS) {
     root.style.setProperty(`--omazen-${key.replaceAll("_", "-")}`, palette[key]);
   }

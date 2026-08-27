@@ -298,6 +298,12 @@ grep -Fq -- '--omazen-secondary-text: color-mix(in srgb, var(--omazen-foreground
   "$CONTENT_CSS" || fail "readable secondary text role"
 grep -Fq -- '--button-text-color-ghost: var(--omazen-action-text)' \
   "$CONTENT_CSS" || fail "enabled ghost action text palette"
+grep -Fq -- '--omazen-accent-foreground: var(--omazen-background-dark)' \
+  "$CONTENT_CSS" || fail "accent foreground fallback token"
+grep -Fq -- '--button-text-color-primary: var(--omazen-accent-foreground)' \
+  "$CONTENT_CSS" || fail "primary button contrast token"
+grep -Fq -- '--in-content-primary-button-text-color: var(--omazen-accent-foreground)' \
+  "$CONTENT_CSS" || fail "in-content primary button contrast token"
 grep -Fq -- '--button-text-color-menu-active: var(--omazen-action-text)' \
   "$CONTENT_CSS" || fail "active menu action text palette"
 grep -Fq -- '--box-button-text-color-disabled: var(--omazen-disabled-text)' \
@@ -328,6 +334,9 @@ grep -Fq -- '#aboutDialogContainer button' \
   "$CHROME_CSS" || fail "About Zen button palette"
 grep -Fq -- 'notification-message .notification-button.primary' \
   "$CHROME_CSS" || fail "notification primary button palette"
+grep -A4 -F -- 'notification-message .notification-button.primary {' \
+  "$CHROME_CSS" | grep -Fq -- 'color: var(--omazen-accent-foreground)' || \
+  fail "notification primary button contrast token"
 grep -Fq -- 'chrome://browser/content/spotlight.html' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "Spotlight WindowActor match"
 grep -Fq -- ':root#places[data-omazen-enabled="true"] #placesList' \
@@ -350,7 +359,10 @@ grep -Fq -- 'body[data-page="spotlight"]' \
   "$CONTENT_CSS" || fail "Spotlight surface palette"
 grep -Fq -- '#commonDialog::part(omazen-primary-button)' \
   "$CONTENT_CSS" || fail "common dialog primary button palette"
-grep -Fq -- '--button-text-color-primary: var(--omazen-background-dark)' \
+grep -A4 -F -- '#commonDialog::part(omazen-primary-button) {' \
+  "$CONTENT_CSS" | grep -Fq -- 'color: var(--omazen-accent-foreground)' || \
+  fail "common dialog primary button contrast token"
+grep -Fq -- '--button-text-color-primary: var(--omazen-accent-foreground)' \
   "$CONTENT_CSS" || fail "Spotlight primary button contrast"
 pass "setup installs the isolated runtime and maps Quattro colors"
 

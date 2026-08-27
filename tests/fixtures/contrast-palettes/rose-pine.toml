@@ -1,0 +1,10 @@
+# Fallback fixture for CI environments without an installed Omarchy tree.
+mode = "light"
+accent = "#56949f"
+selection = "#dfdad9"
+muted = "#cecacd"
+background = "#faf4ed"
+dark_background = "#ede7e1"
+lighter_background = "#f2e9e1"
+foreground = "#575279"
+active_border_color = "#907aa9"

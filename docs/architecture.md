@@ -14,6 +14,7 @@ omarchy theme set
   -> ~/.local/state/omazen/palette.json
   -> privileged bridge in every Zen chrome window (250 ms fixed-file poll)
   -> strict schema and color validation
+  -> derived accent foreground for primary controls
   -> CSS variables + Omazen-scoped chrome stylesheet
   -> allowlisted Omazen JSWindowActor
   -> allowlisted about: pages and internal dialog documents
@@ -60,8 +61,10 @@ The bridge rejects missing keys, unknown keys, wrong schema versions, non-object
 fx-autoconfig injects `omazen-bridge.uc.js` into each top-level browser chrome document. Every browser window therefore owns a small watcher and applies the current palette to itself. The bridge observes only the exact `Browser:About`, `Places:Organizer` and `devtools:toolbox` window types and applies the same validated palette to existing or later-created About Zen, Library and Developer Tools windows; other auxiliary windows are ignored. A later-created browser window reads the existing JSON during initial injection.
 
 `OmazenPalette.sys.mjs` owns the shared color keys, strict palette and payload
-validation, actor payload construction, and root-variable application used by
-both the chrome bridge and child actor.
+validation, WCAG contrast calculation, derived accent foreground selection,
+actor payload construction, and root-variable application used by both the
+chrome bridge and child actor. The derived foreground is an internal v1 token;
+it is not accepted from providers or persisted as a new schema field.
 
 The actor is registered only for a fixed list of internal `about:` documents plus Zen's Spotlight, Firefox's common-dialog and Print documents, and the `chrome://devtools/content/` namespace. This covers Passwords, Translations, Print, Remote Debugging and the in-browser Developer Tools without granting access to ordinary content. It reads validated palette preferences when the actor is created and at `DOMContentLoaded`, and accepts only `Omazen:Apply` messages matching the same strict color contract. It is not registered for `http:`, `https:`, arbitrary extension pages or other chrome namespaces.
 
