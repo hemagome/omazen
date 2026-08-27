@@ -22,7 +22,8 @@ skip only the compositor-backed extension.
 The CI visual job downloads the fixed Zen release used by the test, verifies its
 SHA-256 before extraction, and then checks the embedded application version.
 The release workflow also builds the CLI with Rust 1.98.0 and publishes a Linux
-x86-64 archive containing `libexec/omazen-rust` plus a SHA-256 sidecar.
+x86-64 archive containing the `libexec/omazen-rust` installation payload plus a
+SHA-256 sidecar. `install.sh` places that payload directly at `bin/omazen`.
 
 ## Local deployment gate
 

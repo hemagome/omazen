@@ -12,4 +12,12 @@ if [[ -x $DESTINATION/bin/omazen ]]; then
 fi
 
 SOURCE_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
-exec "$SOURCE_ROOT/bin/omazen" uninstall
+if [[ -x $SOURCE_ROOT/libexec/omazen-rust ]]; then
+  OMAZEN_ROOT="$SOURCE_ROOT" exec "$SOURCE_ROOT/libexec/omazen-rust" uninstall
+fi
+if [[ -x $SOURCE_ROOT/target/release/omazen-rust ]]; then
+  OMAZEN_ROOT="$SOURCE_ROOT" exec "$SOURCE_ROOT/target/release/omazen-rust" uninstall
+fi
+
+printf 'ERROR: Omazen Rust CLI is missing or not executable\n' >&2
+exit 1

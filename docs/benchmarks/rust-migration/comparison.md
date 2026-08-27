@@ -1,11 +1,11 @@
 # Bash versus Rust migration comparison
 
 All supported CLI commands have native Rust implementations: `setup`, `sync`,
-`set`, `status`, `doctor`, `disable`, `enable`, `uninstall` and `help`. The
-installed shell entry point immediately uses `exec` to enter the bundled binary
-and contains no alternate command implementation. The qualified Bash fallback
-was removed after the final mixed-mode and live gates passed; its raw benchmark
-artifacts remain here as the historical control.
+`set`, `status`, `doctor`, `disable`, `enable`, `uninstall` and `help`. The shell
+entry point was removed after the final mixed-mode and live gates passed. The
+installed `bin/omazen` path is now the Rust executable itself, matching the
+historical direct-binary measurement; raw Bash artifacts remain here as the
+control.
 
 ## Disposable `sync` results
 
@@ -51,6 +51,17 @@ The release binary is 786,184 bytes before stripping and 626,712 bytes after
 `strip`. It dynamically links only the system C runtime and `libgcc_s`. The one
 direct dependency is `sha2`; all locked transitive licenses are recorded in
 `docs/rust-dependencies.md`.
+
+### Final direct command path
+
+After qualification and removal of the shell launcher, a confirmation campaign
+ran the final direct path for three runs of 200 measured samples after ten
+warmups. All 600 samples succeeded: p50 was 2.481 ms, p95 3.300 ms and p99
+3.765 ms. The raw data is stored in `rust-direct-final/`. All memory samples
+carry the documented short-process `/proc` under-run warning, and CPU remained
+below the 10 ms tick resolution, so this campaign supports only the latency
+conclusion. Because it was collected in a later session, it is not used as a
+same-session replacement for the dispatcher-versus-direct comparison above.
 
 ## Correctness gates
 

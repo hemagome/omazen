@@ -180,6 +180,18 @@ fn read_private_state_line(path: &Path) -> Option<OsString> {
     Some(line)
 }
 
+fn default_project_root() -> PathBuf {
+    if let Ok(executable) = env::current_exe()
+        && let Some(bin_directory) = executable.parent()
+        && bin_directory.file_name() == Some(OsStr::new("bin"))
+        && let Some(installed_root) = bin_directory.parent()
+        && installed_root.join(".omazen-installed").is_file()
+    {
+        return installed_root.to_path_buf();
+    }
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
 fn runtime_paths() -> Result<RuntimePaths, String> {
     let home_dir = nonempty_env("OMAZEN_HOME_DIR")
         .or_else(|| nonempty_env("HOME"))
@@ -216,7 +228,7 @@ fn runtime_paths() -> Result<RuntimePaths, String> {
         .unwrap_or_else(|| PathBuf::from(&home_dir).join(".config/omarchy/hooks"));
     let project_root = nonempty_env("OMAZEN_ROOT")
         .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."));
+        .unwrap_or_else(default_project_root);
     let owned_dir = state_dir.join("owned");
     let backup_dir = state_dir.join("backups");
     let data_dir = nonempty_env("OMAZEN_DATA_DIR")

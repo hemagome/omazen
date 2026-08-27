@@ -37,10 +37,9 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
 ## Reductions
 
 - No remote download, update or execution at runtime.
-- The command launcher contains no CLI implementation and uses `exec` to enter
-  the bundled Rust binary. It fails closed when that binary is unavailable;
-  Rust is a build dependency and the installed runtime never downloads a
-  toolchain.
+- The installed command is the Rust executable itself, with no shell launcher
+  or alternate CLI implementation. Rust is a build dependency and the
+  installed runtime never downloads a toolchain.
 - Dependencies are pinned by commit and SHA-256.
 - The visual CI job pins the Zen release version and verifies its SHA-256 before
   extraction or execution; the archive's version metadata remains a separate

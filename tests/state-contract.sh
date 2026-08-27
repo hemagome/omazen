@@ -5,7 +5,7 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
-REFERENCE_BIN=${OMAZEN_REFERENCE_BIN:-"$PROJECT_ROOT/bin/omazen"}
+REFERENCE_BIN=${OMAZEN_REFERENCE_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
 CANDIDATE_BIN=${OMAZEN_CANDIDATE_BIN:-$REFERENCE_BIN}
 TEST_ROOT=$(mktemp -d /tmp/omazen-state-contract.XXXXXX)
 

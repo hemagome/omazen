@@ -5,7 +5,7 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
-OMAZEN_BIN=${OMAZEN_BIN:-"$PROJECT_ROOT/bin/omazen"}
+OMAZEN_BIN=${OMAZEN_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
 OUTPUT_DIR=""
 RUNS=3
 ITERATIONS=100

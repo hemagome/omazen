@@ -6,8 +6,8 @@ All notable changes to Omazen are documented here.
 
 ### Changed
 
-- The installed shell entry point now fails explicitly when the packaged Rust
-  CLI is missing instead of silently changing implementations.
+- The Rust executable is now installed directly as `bin/omazen`, removing the
+  shell launcher and its process-start overhead from every CLI invocation.
 
 ### Fixed
 

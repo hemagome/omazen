@@ -31,6 +31,8 @@ trap cleanup_staging EXIT
 if [[ -z $RUST_BINARY ]]; then
   if [[ -x $SOURCE_ROOT/libexec/omazen-rust ]]; then
     RUST_BINARY="$SOURCE_ROOT/libexec/omazen-rust"
+  elif [[ -f $SOURCE_ROOT/.omazen-installed && -x $SOURCE_ROOT/bin/omazen ]]; then
+    RUST_BINARY="$SOURCE_ROOT/bin/omazen"
   elif command -v cargo >/dev/null 2>&1; then
     [[ $(rustc --version) == 'rustc 1.98.0 '* ]] || {
       printf 'ERROR: building Omazen requires rustc 1.98.0\n' >&2
@@ -69,14 +71,14 @@ fi
 
 mkdir -p -- "$(dirname -- "$DESTINATION")" "$BIN_DIRECTORY"
 STAGING=$(mktemp -d "${DESTINATION}.staging.XXXXXX")
-for item in bin zen hooks vendor docs tests README.md CHANGELOG.md LICENSE NOTICE THIRD_PARTY_LICENSES.md VERSION install.sh uninstall.sh; do
+for item in zen hooks vendor docs tests README.md CHANGELOG.md LICENSE NOTICE THIRD_PARTY_LICENSES.md VERSION install.sh uninstall.sh; do
   [[ -e $SOURCE_ROOT/$item ]] || continue
   cp -a -- "$SOURCE_ROOT/$item" "$STAGING/"
 done
-mkdir -p "$STAGING/libexec"
-install -m 0755 -- "$RUST_BINARY" "$STAGING/libexec/omazen-rust"
+mkdir -p "$STAGING/bin"
+install -m 0755 -- "$RUST_BINARY" "$STAGING/bin/omazen"
 printf '%s\n' "$OMAZEN_VERSION" >"$STAGING/.omazen-installed"
-chmod +x "$STAGING/bin/omazen" "$STAGING/hooks/theme-set" "$STAGING/install.sh" "$STAGING/uninstall.sh"
+chmod +x "$STAGING/hooks/theme-set" "$STAGING/install.sh" "$STAGING/uninstall.sh"
 
 if [[ ${OMAZEN_INSTALL_NO_SETUP:-0} != 1 ]]; then
   "$STAGING/bin/omazen" setup
