@@ -13,10 +13,10 @@ local server or page-exposed API. See the [architecture](docs/architecture.md) a
 
 ## Current status
 
-Omazen `1.3.2` is the local release candidate, adding WCAG palette checks,
-real-runtime visual integration coverage and verified Zen downloads in CI while
-preserving the structured diagnostics and palette-provider persistence. The
-current tested environment is Omarchy `4.0.1`
+Omazen `1.4.0` is the local release candidate, replacing the normal 250 ms
+palette-detection path with a shared event-driven watcher, adding repeatable
+latency benchmarks and retaining automatic polling fallback plus external
+palette-provider compatibility. The current tested environment is Omarchy `4.0.1`
 (Quattro) with native
 `zen-browser-bin 1.21.15b-1`.
 

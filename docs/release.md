@@ -1,6 +1,6 @@
 # Release checklist
 
-Use this checklist from a clean `main` worktree for the local `1.3.2` release
+Use this checklist from a clean `main` worktree for the local `1.4.0` release
 candidate.
 
 ## Automated gate
@@ -29,9 +29,10 @@ SHA-256 before extraction, and then checks the embedded application version.
 3. Reopen Zen once so fx-autoconfig loads the new bridge and shared module.
 4. Run `omazen doctor` and `omazen doctor --json`; require zero failures and
    zero warnings in both reports. Save the JSON report for the test record:
-   `omazen doctor --json > /tmp/omazen-1.3.2-doctor.json`.
-5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.3.2`, a successful
-   `PALETTE_APPLIED`, and no current error.
+   `omazen doctor --json > /tmp/omazen-1.4.0-doctor.json`.
+5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.4.0`,
+   `WATCHER_READY backend=inotify`, a successful `PALETTE_APPLIED`, and no
+   current error or `WATCHER_FALLBACK` after watcher startup.
 6. Exercise dark/light theme changes, disable/enable, Settings, a common dialog,
    Library, Passwords, Print and Developer Tools without destructive actions.
 7. Confirm the normal update created one timestamped application backup.

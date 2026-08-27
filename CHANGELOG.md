@@ -4,6 +4,8 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-26
+
 ### Added
 
 - A process-wide `inotifywait` watcher now wakes every open Zen bridge after
