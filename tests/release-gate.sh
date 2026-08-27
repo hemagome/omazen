@@ -26,6 +26,9 @@ printf '%s\n' '==> Validating Bash, JavaScript, and release consistency'
 printf '%s\n' '==> Running disposable lifecycle and regression tests'
 "$PROJECT_ROOT/tests/test.sh"
 
+printf '%s\n' '==> Running WCAG palette contrast checks'
+node "$PROJECT_ROOT/tests/contrast.mjs"
+
 printf '%s\n' '==> Running rendered-pixel smoke test'
 "$PROJECT_ROOT/tests/visual-smoke.sh"
 

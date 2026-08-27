@@ -144,15 +144,31 @@ tests/visual-smoke.sh
 It starts the installed `zen-browser` binary with a disposable profile,
 loads `tests/fixtures/visual-smoke.html`, captures a fixed `1000x768` viewport
 and checks the rendered pixels for the document surface, header, card, action
-button, input, scroll content and scrollbar thumb. This catches invalid or
-non-rendering color declarations that selector-presence checks cannot detect.
-It never uses the live profile or network. To retain the capture for review:
+button, input, scroll content and scrollbar thumb. It then invokes
+`tests/visual-integration.sh` when Wayland/Hyprland capture tools are available.
+That integration pass copies the production fx-autoconfig runtime into another
+disposable profile, boots a real Zen window on `about:preferences`, captures
+the browser chrome and Settings regions for dark/light palettes, exercises
+live palette changes plus disable/enable, verifies persisted palette
+preferences and compares captures with a bounded ImageMagick tolerance. It
+never uses the live profile or network. To retain the capture for review:
 
 ```bash
 OMAZEN_KEEP_VISUAL_OUTPUT=1 \
 OMAZEN_VISUAL_OUTPUT_DIR=/tmp/omazen-visual-capture \
   tests/visual-smoke.sh
 ```
+
+### Automated palette contrast check
+
+`node tests/contrast.mjs` scans all available Omarchy `colors.toml` files and
+uses the same WCAG relative-luminance implementation as the runtime-derived
+accent button foreground. Primary button text and selection text are enforced
+at 4.5:1; link, muted-text and scrollbar combinations are emitted as
+warnings until their surface-specific semantics are finalized. In CI without
+an Omarchy installation, two edge-case fixtures exercise both black and white
+accent foreground fallbacks. `--strict` promotes all warning groups to
+failures for a local accessibility audit.
 
 ## Reproduction checklist
 

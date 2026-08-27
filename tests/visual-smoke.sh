@@ -102,3 +102,5 @@ if [[ ${OMAZEN_KEEP_VISUAL_OUTPUT:-0} != 1 ]]; then
 fi
 
 pass "Zen rendered production CSS and palette colors into a real screenshot"
+
+"$PROJECT_ROOT/tests/visual-integration.sh"

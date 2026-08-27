@@ -31,6 +31,13 @@ grep -Fq -- 'from "./OmazenPalette.sys.mjs";' "$CHILD" || fail "child shared pal
 [[ -f $PROJECT_ROOT/zen/Omazen/$CONTENT_CSS ]] || fail "missing versioned content stylesheet"
 grep -Fq -- "omazen-content-v$VERSION.css" \
   "$PROJECT_ROOT/tests/fixtures/visual-smoke.html" || fail "visual fixture stylesheet version"
+# The real compositor-backed visual test must follow VERSION when the release
+# CSS filenames change, rather than silently testing a stale stylesheet.
+grep -Fq -- 'omazen-chrome-v${RELEASE_VERSION}.css' \
+  "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration chrome stylesheet version"
+grep -Fq -- 'omazen-content-v${RELEASE_VERSION}.css' \
+  "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration content stylesheet version"
+[[ -f $PROJECT_ROOT/tests/contrast.mjs ]] || fail "contrast validation test is missing"
 # shellcheck disable=SC2016 # Match the literal shell source, not expanded values.
 grep -Fq -- 'OMAZEN_VERSION=$(<"$OMAZEN_ROOT/VERSION")' "$PROJECT_ROOT/lib/common.sh" || \
   fail "shell runtime does not read VERSION"
