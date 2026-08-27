@@ -4,6 +4,8 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-27
+
 ### Changed
 
 - The Rust executable is now installed directly as `bin/omazen`, removing the

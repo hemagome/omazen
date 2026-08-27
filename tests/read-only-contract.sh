@@ -6,6 +6,8 @@ set -euo pipefail
 
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 CANDIDATE_BIN=${OMAZEN_CANDIDATE_BIN:-"$PROJECT_ROOT/target/release/omazen-rust"}
+RELEASE_VERSION=$(<"$PROJECT_ROOT/VERSION")
+BASELINE_VERSION=1.4.1
 MANIFEST="$PROJECT_ROOT/tests/fixtures/cli-contract/v1.4.1/read-only.sha256"
 UPDATE_MANIFEST=${OMAZEN_UPDATE_CONTRACT_MANIFEST:-0}
 TEST_ROOT=$(mktemp -d /tmp/omazen-read-contract.XXXXXX)
@@ -71,6 +73,7 @@ run_cli() {
     "$binary" "$@" >"$output.stdout" 2>"$output.stderr" || status=$?
   sed -Ei \
     -e "s|$TEST_ROOT|<TEST_ROOT>|g" \
+    -e "s|${RELEASE_VERSION//./\\.}|$BASELINE_VERSION|g" \
     -e 's/\(age [0-9]+s\)/(age <AGE>s)/g' \
     -e 's/("bridge_last_event_age_seconds": )[0-9]+/\1<AGE>/g' \
     -e 's/("generated_at": ")[^"]+/\1<TIMESTAMP>/g' \
@@ -80,12 +83,12 @@ run_cli() {
 
 run_cli "$CANDIDATE_BIN" "$TEST_ROOT/setup" setup
 grep -Fxq '0' "$TEST_ROOT/setup.status" || fail "disposable setup failed"
-cat >"$STATE/bridge.log" <<'EOF'
-2026-08-27T00:00:00.000Z [INFO] BRIDGE_LOADED version=1.4.1 profile=test
-2026-08-27T00:00:00.001Z [INFO] PALETTE_APPLIED accent=#112233 mode=dark profile=test
-2026-08-27T00:00:00.002Z [INFO] CHROME_CSS_APPLIED primary=#112233 profile=test
-2026-08-27T00:00:00.003Z [INFO] WATCHER_READY backend=inotify profile=test
-EOF
+printf '%s\n' \
+  "2026-08-27T00:00:00.000Z [INFO] BRIDGE_LOADED version=$RELEASE_VERSION profile=test" \
+  '2026-08-27T00:00:00.001Z [INFO] PALETTE_APPLIED accent=#112233 mode=dark profile=test' \
+  '2026-08-27T00:00:00.002Z [INFO] CHROME_CSS_APPLIED primary=#112233 profile=test' \
+  '2026-08-27T00:00:00.003Z [INFO] WATCHER_READY backend=inotify profile=test' \
+  >"$STATE/bridge.log"
 
 expected_hash() {
   local key=$1

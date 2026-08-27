@@ -13,12 +13,13 @@ local server or page-exposed API. See the [architecture](docs/architecture.md) a
 
 ## Current status
 
-Omazen `1.4.1` keeps canonical stylesheet sources unversioned in the repository
-while installing them under release-versioned names to preserve `chrome://`
-cache busting. It retains the shared event-driven watcher, automatic polling
-fallback, repeatable latency benchmarks and external palette-provider
-compatibility introduced in `1.4.0`. The current tested environment is Omarchy
-`4.0.1` (Quattro) with native
+Omazen `1.5.0` runs its complete CLI as a directly installed Rust executable,
+removing the former Bash implementation and launcher overhead while preserving
+the qualified command and rollback contracts. Canonical stylesheet sources
+remain unversioned in the repository and are installed under release-versioned
+names for `chrome://` cache busting. The shared event-driven watcher, automatic
+polling fallback and external palette-provider compatibility remain intact. The
+current tested environment is Omarchy `4.0.1` (Quattro) with native
 `zen-browser-bin 1.21.15b-1`.
 
 The historical live qualification and complete test results are recorded in

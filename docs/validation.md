@@ -1,5 +1,36 @@
 # Release validation report
 
+## 1.5.0 Rust CLI release
+
+Date: 2026-08-27
+Release: Omazen `1.5.0`
+
+Omazen `1.5.0` installs the complete CLI as a direct Rust executable and removes
+the obsolete Bash implementation. The migration preserves the v1.4.1 command,
+state, ownership and rollback contracts through versioned SHA-256 fixtures
+generated from the retired Bash implementation. It also retains the shared
+`inotifywait` fast path and automatic polling fallback.
+
+The complete `tests/release-gate.sh` passed for `1.5.0`: pinned static analysis,
+release consistency, Rust formatting and linting, unit tests, 26 CLI contract
+cases, the disposable lifecycle suite, critical palette contrast checks,
+rendered-pixel coverage and the real Zen integration sequence for dark/light
+palettes plus live disable/enable. The contrast checker retained its seven
+documented advisory warning groups and reported no critical failure.
+
+The local deployment gate updated the installed `1.4.1` release on Omarchy
+`4.0.1-1` with `zen-browser-bin 1.21.15b-1`. Setup upgraded both detected
+profiles, removed their owned `v1.4.1` stylesheet copies, installed the
+`v1.5.0` copies and retained the previous application as a timestamped backup.
+After opening Zen, the bridge logged `BRIDGE_LOADED version=1.5.0`,
+`WATCHER_READY backend=inotify`, `PALETTE_APPLIED` and `CHROME_CSS_APPLIED`.
+Both `omazen doctor` formats reported zero failures and zero warnings.
+
+The full Rust migration qualification additionally exercised 1, 4 and 8 Zen
+windows, forced watcher fallback, six complete theme changes with restoration
+and four ten-minute idle samples. Detailed raw data and results are retained in
+the [live migration report](benchmarks/rust-migration/live/report.md).
+
 ## 1.4.1 maintenance release
 
 Omazen `1.4.1` separates stable repository stylesheet sources from their

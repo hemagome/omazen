@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name           Omazen privileged palette bridge
 // @description    Applies a validated local Omazen palette to Zen chrome and internal pages.
-// @version        1.4.1
+// @version        1.5.0
 // @author         Omazen contributors
 // @include        main
 // @WindowActor    Omazen
@@ -23,9 +23,9 @@
   const LOG_ARCHIVE_LEAF = "bridge.log.1";
   const STYLE_ID = "omazen-chrome-style";
   const CONTENT_STYLE_ID = "omazen-content-style";
-  const VERSION = "1.4.1";
-  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v1.4.1.css";
-  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.4.1.css";
+  const VERSION = "1.5.0";
+  const STYLE_URI = "chrome://userscripts/content/Omazen/omazen-chrome-v1.5.0.css";
+  const CONTENT_STYLE_URI = "chrome://userscripts/content/Omazen/omazen-content-v1.5.0.css";
   const {
     COLOR_KEYS,
     actorPayload,
