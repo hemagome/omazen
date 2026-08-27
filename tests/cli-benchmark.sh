@@ -90,6 +90,8 @@ load_average=$(awk '{ print $1 " " $2 " " $3 }' /proc/loadavg)
 node_version=$(node --version)
 jq_version=$(jq --version)
 binary_sha256=$(sha256sum "$OMAZEN_BIN" | awk '{ print $1 }')
+rustc_version=$(rustc --version 2>/dev/null || true)
+cargo_version=$(cargo --version 2>/dev/null || true)
 jq -n \
   --arg implementation "$implementation" \
   --arg git_commit "$git_commit" \
@@ -104,6 +106,8 @@ jq -n \
   --arg node_version "$node_version" \
   --arg jq_version "$jq_version" \
   --arg binary_sha256 "$binary_sha256" \
+  --arg rustc_version "$rustc_version" \
+  --arg cargo_version "$cargo_version" \
   --argjson runs "$RUNS" \
   --argjson iterations "$ITERATIONS" \
   --argjson warmups "$WARMUPS" \
@@ -112,8 +116,8 @@ jq -n \
     implementation: $implementation,
     git_commit: $git_commit,
     omazen_version: $omazen_version,
-    rustc: null,
-    cargo: null,
+    rustc: (if $rustc_version == "" then null else $rustc_version end),
+    cargo: (if $cargo_version == "" then null else $cargo_version end),
     kernel: $kernel,
     cpu_model: $cpu_model,
     logical_cpus: $logical_cpus,
