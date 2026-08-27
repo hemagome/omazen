@@ -13,7 +13,7 @@ export OMAZEN_ROOT
 OMAZEN_COMMAND=${1:-help}
 OMAZEN_RUST_CANDIDATE=${OMAZEN_RUST_BIN:-"$OMAZEN_ROOT/libexec/omazen-rust"}
 case "$OMAZEN_COMMAND" in
-  sync|status|doctor|help|-h|--help)
+  sync|status|doctor|disable|enable|set|help|-h|--help)
     if [[ -x $OMAZEN_RUST_CANDIDATE ]]; then
       exec "$OMAZEN_RUST_CANDIDATE" "$@"
     fi

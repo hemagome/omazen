@@ -77,6 +77,15 @@ fn run() -> Result<(), String> {
             };
             doctor(json)
         }
+        Some("disable") => {
+            require_no_arguments("disable", &trailing)?;
+            disable()
+        }
+        Some("enable") => {
+            require_no_arguments("enable", &trailing)?;
+            enable()
+        }
+        Some("set") => set_theme(&trailing),
         Some("help" | "-h" | "--help") => {
             print_usage(false);
             Ok(())
@@ -1098,6 +1107,54 @@ fn sync_palette() -> Result<(), String> {
         paths.palette_file.display()
     );
     Ok(())
+}
+
+fn disable() -> Result<(), String> {
+    let paths = runtime_paths()?;
+    ensure_state_dirs(&paths.state_dir).map_err(|error| error.to_string())?;
+    let file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .open(&paths.disabled_file)
+        .map_err(|error| error.to_string())?;
+    file.set_permissions(fs::Permissions::from_mode(0o600))
+        .map_err(|error| error.to_string())?;
+    println!("Omazen disabled. Open Zen windows will revert automatically.");
+    Ok(())
+}
+
+fn enable() -> Result<(), String> {
+    let paths = runtime_paths()?;
+    sync_palette()?;
+    match fs::remove_file(&paths.disabled_file) {
+        Ok(()) => {}
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error.to_string()),
+    }
+    println!("Omazen enabled. Open Zen windows will update automatically.");
+    Ok(())
+}
+
+fn set_theme(arguments: &[OsString]) -> Result<(), String> {
+    if arguments.len() > 1 {
+        return Err("set accepts zero arguments or one quoted theme name".to_owned());
+    }
+    if let Some(theme) = arguments.first() {
+        let status = Command::new("omarchy")
+            .args([OsStr::new("theme"), OsStr::new("set"), theme.as_os_str()])
+            .status();
+        match status {
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                return Err("required command not found: omarchy".to_owned());
+            }
+            Err(error) => return Err(error.to_string()),
+            Ok(status) if !status.success() => return Err(String::new()),
+            Ok(_) => {}
+        }
+    }
+    sync_palette()
 }
 
 fn ensure_state_dirs(state_dir: &Path) -> io::Result<()> {
