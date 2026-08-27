@@ -22,6 +22,13 @@ omarchy theme set
   -> allowlisted about: pages and internal dialog documents
 ```
 
+The installed command enters through a minimal shell dispatcher and immediately
+`exec`s the Rust CLI from `libexec`. The Bash implementation remains available
+as a rollback fallback when that binary is absent; it does not remain resident
+on the Rust path. Rust owns command parsing, palette normalization, diagnostics,
+state changes, setup ownership and uninstall. The Gecko bridge, WindowActors,
+CSS and shared `inotifywait` watcher remain JavaScript/CSS.
+
 ## Theme-change latency
 
 Live theme changes do not require restarting Zen, but they are not necessarily

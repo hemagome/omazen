@@ -37,6 +37,8 @@ Review [the security model](docs/security.md), then run:
 The installer uses a bundled `libexec/omazen-rust` when present. A source
 checkout without that prebuilt binary requires the pinned Rust 1.98.0 toolchain
 once at build time; installed users do not need Rust or Cargo at runtime.
+Published Linux x86-64 release archives include that prebuilt binary and a
+SHA-256 sidecar.
 
 Close Zen normally and open it once after initial setup. Theme changes after
 that are live and do not require a restart.

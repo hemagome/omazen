@@ -31,14 +31,14 @@ trap cleanup_staging EXIT
 if [[ -z $RUST_BINARY ]]; then
   if [[ -x $SOURCE_ROOT/libexec/omazen-rust ]]; then
     RUST_BINARY="$SOURCE_ROOT/libexec/omazen-rust"
-  elif [[ -x $SOURCE_ROOT/target/release/omazen-rust ]]; then
-    RUST_BINARY="$SOURCE_ROOT/target/release/omazen-rust"
   elif command -v cargo >/dev/null 2>&1; then
     [[ $(rustc --version) == 'rustc 1.98.0 '* ]] || {
       printf 'ERROR: building Omazen requires rustc 1.98.0\n' >&2
       exit 1
     }
     cargo build --manifest-path "$SOURCE_ROOT/Cargo.toml" --release --locked
+    RUST_BINARY="$SOURCE_ROOT/target/release/omazen-rust"
+  elif [[ -x $SOURCE_ROOT/target/release/omazen-rust ]]; then
     RUST_BINARY="$SOURCE_ROOT/target/release/omazen-rust"
   else
     printf 'ERROR: prebuilt omazen-rust or the pinned Rust 1.98.0 toolchain is required\n' >&2

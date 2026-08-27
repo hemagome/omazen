@@ -15,10 +15,10 @@ security and compatibility boundaries documented in the repository.
 
 ## Development environment
 
-Omazen's runtime is intentionally shell and JavaScript based. No dependency
-installation is required for the functional test suite. The supported runtime
-and fully validated compatibility target are documented in the README and
-compatibility guide.
+Omazen's CLI is implemented in Rust while its rollback dispatcher and theme
+hook remain shell; Gecko integration remains JavaScript and CSS. Rust 1.98.0 is
+required for the Rust gates. The supported runtime and fully validated
+compatibility target are documented in the README and compatibility guide.
 
 To run the local checks on Linux x86-64:
 
@@ -26,6 +26,7 @@ To run the local checks on Linux x86-64:
 tests/install-linters.sh /tmp/omazen-linters
 PATH=/tmp/omazen-linters:$PATH tests/lint.sh
 tests/syntax.sh
+tests/rust.sh
 tests/test.sh
 ```
 
