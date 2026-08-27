@@ -367,6 +367,45 @@ grep -Fq -- '--button-text-color-primary: var(--omazen-accent-foreground)' \
   "$CONTENT_CSS" || fail "Spotlight primary button contrast"
 pass "setup installs the isolated runtime and maps Quattro colors"
 
+cat >"$FAKE_ZEN/defaults/pref/omazen-prefs.js" <<'EOF'
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* See NOTICE for the required Omazen project attribution terms. */
+
+// Omazen-owned preference drop-in. Removed by `omazen uninstall` when owned.
+pref("userChromeJS.experimental.enabled", true);
+pref("omazen.transitions.enabled", true);
+EOF
+awk -F '|' -v wanted="$FAKE_ZEN/defaults/pref/omazen-prefs.js" \
+  '$1 != wanted' "$FAKE_STATE/owned/program-files" >"$TEST_ROOT/program-files-without-prefs"
+mv -- "$TEST_ROOT/program-files-without-prefs" "$FAKE_STATE/owned/program-files"
+legacy_upgrade_output=$(run_omazen setup)
+grep -Fq 'Adopted known Omazen preference file into ownership tracking' \
+  <<<"$legacy_upgrade_output" || fail "known legacy preference file was not adopted"
+assert_same_hash "$FAKE_ZEN/defaults/pref/omazen-prefs.js" "$PROJECT_ROOT/zen/omazen-prefs.js"
+grep -Fq "$FAKE_ZEN/defaults/pref/omazen-prefs.js|" \
+  "$FAKE_STATE/owned/program-files" || fail "adopted preference file was not recorded"
+pass "setup safely adopts a known legacy Omazen preference file"
+
+UNKNOWN_PREF_ROOT="$TEST_ROOT/unknown-pref-program"
+mkdir -p "$UNKNOWN_PREF_ROOT/defaults/pref"
+printf '[App]\nVersion=1.21.15b\n' >"$UNKNOWN_PREF_ROOT/application.ini"
+cp "$PROJECT_ROOT/vendor/fx-autoconfig/program/config.js" "$UNKNOWN_PREF_ROOT/config.js"
+cp "$PROJECT_ROOT/vendor/fx-autoconfig/program/defaults/pref/config-prefs.js" \
+  "$UNKNOWN_PREF_ROOT/defaults/pref/config-prefs.js"
+printf 'foreign preference file\n' >"$UNKNOWN_PREF_ROOT/defaults/pref/omazen-prefs.js"
+if OMAZEN_TESTING=1 OMAZEN_SKIP_PACKAGE_CHECK=1 OMAZEN_HOME_DIR="$FAKE_HOME" \
+  OMAZEN_STATE_DIR="$TEST_ROOT/unknown-pref-state" OMAZEN_PROFILE="$FAKE_PROFILE" \
+  OMAZEN_ZEN_CONFIG_DIR="$FAKE_CONFIG" OMAZEN_ZEN_PROGRAM_DIR="$UNKNOWN_PREF_ROOT" \
+  OMAZEN_HOOKS_DIR="$FAKE_HOOKS" OMAZEN_ACTIVE_COLORS="$FAKE_COLORS" \
+  OMAZEN_OS_RELEASE_FILE="$FAKE_OS_RELEASE" \
+  "$PROJECT_ROOT/bin/omazen" setup >/dev/null 2>&1; then
+  fail "setup adopted an unknown unowned preference file"
+fi
+grep -Fqx 'foreign preference file' "$UNKNOWN_PREF_ROOT/defaults/pref/omazen-prefs.js" || \
+  fail "unknown unowned preference file was modified"
+pass "setup continues to reject unknown unowned preference files"
+
+
 rm -f -- "$FAKE_HOOKS/theme-set.d/theme-set"
 run_external_omazen setup >/dev/null
 assert_absent "$FAKE_HOOKS/theme-set.d/theme-set"

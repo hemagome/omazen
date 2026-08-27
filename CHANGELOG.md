@@ -25,6 +25,9 @@ All notable changes to Omazen are documented here.
 - Re-enabling Omazen while regenerating the palette no longer applies the same
   palette twice when the atomic replacement and disabled-marker removal events
   arrive together.
+- Updates now safely adopt byte-identical historical Omazen preference
+  drop-ins that predate their program-manifest entry, while continuing to
+  reject unknown files at the same path.
 
 ## [1.3.2] - 2026-08-26
 

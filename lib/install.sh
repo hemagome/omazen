@@ -12,6 +12,31 @@ OMAZEN_PROFILE_FILES=(
   "Omazen/omazen-content-v${OMAZEN_VERSION}.css"
 )
 
+# Releases before program-file ownership was fully recorded may leave this
+# exact Omazen preference drop-in installed without a manifest entry. Adopt
+# only byte-for-byte known historical variants; unknown files remain protected.
+OMAZEN_KNOWN_PREF_HASHES=(
+  c00f815b495394c0336b8cc8e8b980f25330b4fa2e555bc6db242885d8dc46fd
+  2baf2534230d8630230b7619755605d44c6b6f021d4a53562cf707476ff52777
+  4e94ffefa49485d8866c394e890621e8b08d52f56b508d350bb5372e4d34a492
+)
+
+adopt_known_omazen_prefs() {
+  local destination=$1
+  local destination_hash known_hash
+
+  [[ -f $destination && ! -L $destination ]] || return 0
+  manifest_has_path "$OMAZEN_PROGRAM_MANIFEST" "$destination" && return 0
+  destination_hash=$(sha256_file "$destination")
+  for known_hash in "${OMAZEN_KNOWN_PREF_HASHES[@]}"; do
+    if [[ $destination_hash == "$known_hash" ]]; then
+      record_owned_file "$OMAZEN_PROGRAM_MANIFEST" "$destination" "$destination_hash"
+      say "Adopted known Omazen preference file into ownership tracking: $destination"
+      return 0
+    fi
+  done
+}
+
 program_has_compatible_fx() {
   local config="$OMAZEN_ZEN_PROGRAM_DIR/config.js"
   [[ -f $config ]] || return 1
@@ -38,6 +63,7 @@ install_program_loader() {
     install_program_file "$vendor/program/config.js" "$config"
     install_program_file "$vendor/program/defaults/pref/config-prefs.js" "$prefs"
   fi
+  adopt_known_omazen_prefs "$omazen_prefs"
   install_program_file "$OMAZEN_ROOT/zen/omazen-prefs.js" "$omazen_prefs"
 }
 
