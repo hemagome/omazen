@@ -1,5 +1,53 @@
 # Architecture
 
+```mermaid
+flowchart LR
+  subgraph Desktop[Omarchy desktop]
+    Theme[omarchy theme set]
+    Colors[Active colors.toml]
+    Hook[Omazen theme hook]
+  end
+
+  subgraph CLI[Rust CLI: bin/omazen]
+    Sync[sync: parse and validate]
+    Atomic[Atomic palette.json replacement]
+    State[enable / disable marker]
+    Admin[setup / doctor / uninstall]
+  end
+
+  subgraph Watcher[Zen process-wide watcher]
+    Inotify[inotifywait fast path]
+    Safety[5 s safety poll]
+    Fallback[250 ms polling fallback]
+  end
+
+  subgraph Zen[Privileged Zen runtime]
+    Bridge[Bridge in each chrome window]
+    Validate[Strict palette validation]
+    Chrome[Chrome CSS variables and user sheet]
+    Actor[Allowlisted JSWindowActor]
+    Internal[Internal pages and dialogs]
+  end
+
+  Theme --> Colors --> Hook --> Sync --> Atomic
+  Admin -. manages installation and diagnostics .-> Bridge
+  Atomic --> Inotify --> Bridge
+  Atomic -. lost-event protection .-> Safety --> Bridge
+  Inotify -. unavailable or exits .-> Fallback
+  Atomic -. fixed-file checks .-> Fallback
+  State --> Inotify
+  State -. lost-event protection .-> Safety
+  State -. fixed-file checks .-> Fallback
+  Fallback --> Bridge
+  Bridge --> Validate --> Chrome
+  Validate --> Actor --> Internal
+```
+
+The solid path through `inotifywait` is the normal update route. Dotted edges
+represent recovery, safety, or administrative paths rather than additional
+palette transformations. All three watcher routes converge on the same bridge
+validation before any color reaches Zen chrome or an allowlisted internal page.
+
 ```text
 omarchy theme set
   -> stage ~/.local/state/omarchy/current/next-theme/colors.toml
