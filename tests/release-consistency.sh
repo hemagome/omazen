@@ -8,6 +8,7 @@ PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 VERSION=$(<"$PROJECT_ROOT/VERSION")
 BRIDGE="$PROJECT_ROOT/zen/omazen-bridge.uc.js"
 CHILD="$PROJECT_ROOT/zen/Omazen/OmazenChild.sys.mjs"
+CI_WORKFLOW="$PROJECT_ROOT/.github/workflows/ci.yml"
 CHROME_CSS="omazen-chrome-v${VERSION}.css"
 CONTENT_CSS="omazen-content-v${VERSION}.css"
 FX_AUTOCONFIG="$PROJECT_ROOT/vendor/fx-autoconfig"
@@ -38,6 +39,16 @@ grep -Fq -- 'omazen-chrome-v${RELEASE_VERSION}.css' \
 grep -Fq -- 'omazen-content-v${RELEASE_VERSION}.css' \
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration content stylesheet version"
 [[ -f $PROJECT_ROOT/tests/contrast.mjs ]] || fail "contrast validation test is missing"
+[[ -d $PROJECT_ROOT/tests/fixtures/contrast-palettes ]] || fail "contrast fallback fixtures are missing"
+grep -Eq -- '^[[:space:]]+ZEN_VERSION:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+[[:alnum:]_.-]*[[:space:]]*$' \
+  "$CI_WORKFLOW" || fail "CI Zen version pin is missing or malformed"
+grep -Eq -- '^[[:space:]]+ZEN_SHA256:[[:space:]]+[0-9a-f]{64}[[:space:]]*$' \
+  "$CI_WORKFLOW" || fail "CI Zen SHA-256 pin is missing or malformed"
+zen_hash_line=$(grep -nF -- 'sha256sum --check --status' "$CI_WORKFLOW" | cut -d: -f1) || \
+  fail "CI Zen archive hash verification is missing"
+zen_extract_line=$(grep -nF -- 'tar --strip-components=1 -xf' "$CI_WORKFLOW" | cut -d: -f1) || \
+  fail "CI Zen archive extraction is missing"
+(( zen_hash_line < zen_extract_line )) || fail "CI verifies Zen after extraction"
 # shellcheck disable=SC2016 # Match the literal shell source, not expanded values.
 grep -Fq -- 'OMAZEN_VERSION=$(<"$OMAZEN_ROOT/VERSION")' "$PROJECT_ROOT/lib/common.sh" || \
   fail "shell runtime does not read VERSION"

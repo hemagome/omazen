@@ -18,8 +18,8 @@ chrome/utils/utils.sys.mjs
 chrome/JS/omazen-bridge.uc.js
 chrome/JS/Omazen/OmazenParent.sys.mjs
 chrome/JS/Omazen/OmazenChild.sys.mjs
-chrome/JS/Omazen/omazen-chrome-v1.3.1.css
-chrome/JS/Omazen/omazen-content-v1.3.1.css
+chrome/JS/Omazen/omazen-chrome-v1.3.2.css
+chrome/JS/Omazen/omazen-content-v1.3.2.css
 ```
 
 Program-level files for the supported Zen package:
@@ -36,6 +36,9 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
 
 - No remote download, update or execution at runtime.
 - Dependencies are pinned by commit and SHA-256.
+- The visual CI job pins the Zen release version and verifies its SHA-256 before
+  extraction or execution; the archive's version metadata remains a separate
+  defense-in-depth check.
 - No `eval`, dynamic import path, local port, native-messaging host or page-exposed API.
 - Palette and log paths are fixed; JSON cannot select a path. Logging is bounded
   to the active `bridge.log` plus one rotated `bridge.log.1` archive.

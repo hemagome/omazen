@@ -46,6 +46,9 @@ jobs:
       - name: Run test suite
         run: tests/test.sh
 
+      - name: Run WCAG palette contrast checks
+        run: node tests/contrast.mjs
+
       - name: Check repository whitespace
         run: git diff --check
 
@@ -69,9 +72,10 @@ jobs:
       - name: Install visual test dependencies
         run: sudo apt-get update && sudo apt-get install --yes imagemagick libasound2t64 libdbus-glib-1-2 libgtk-3-0t64
 
-      - name: Install validated Zen build
+      - name: Install verified Zen build
         env:
           ZEN_VERSION: 1.21.15b
+          ZEN_SHA256: 2eaea664b840067ca0ace623bd4f4548fae98f46a98e2ddbdfdcb9253b674bbf
         run: |
           set -euo pipefail
           archive="$RUNNER_TEMP/zen.linux-x86_64.tar.xz"
@@ -81,6 +85,8 @@ jobs:
           curl --fail --location --proto '=https' --retry 3 --silent --show-error \
             --output "$archive" \
             "https://github.com/zen-browser/desktop/releases/download/$ZEN_VERSION/zen.linux-x86_64.tar.xz"
+
+          printf '%s  %s\n' "$ZEN_SHA256" "$archive" | sha256sum --check --status
 
           mkdir -p "$zen_root" "$bin_root"
           first_entry=$(tar -tf "$archive" | sed -n '1p')
