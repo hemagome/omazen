@@ -10,15 +10,10 @@ export OMAZEN_ROOT
 
 # During the incremental migration, dispatch migrated commands before sourcing
 # the Bash implementation. `exec` prevents the shell from remaining resident.
-OMAZEN_COMMAND=${1:-help}
 OMAZEN_RUST_CANDIDATE=${OMAZEN_RUST_BIN:-"$OMAZEN_ROOT/libexec/omazen-rust"}
-case "$OMAZEN_COMMAND" in
-  sync|status|doctor|disable|enable|set|help|-h|--help)
-    if [[ -x $OMAZEN_RUST_CANDIDATE ]]; then
-      exec "$OMAZEN_RUST_CANDIDATE" "$@"
-    fi
-    ;;
-esac
+if [[ -x $OMAZEN_RUST_CANDIDATE ]]; then
+  exec "$OMAZEN_RUST_CANDIDATE" "$@"
+fi
 
 # shellcheck source=../lib/common.sh
 source "$OMAZEN_ROOT/lib/common.sh"

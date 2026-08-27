@@ -455,6 +455,8 @@ pass "setup repairs an owned partial fx-autoconfig profile runtime"
 
 LEGACY_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome.css"
 LEGACY_CONTENT_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-content.css"
+V140_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v1.4.0.css"
+V140_CONTENT_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-content-v1.4.0.css"
 FOREIGN_STYLE="$FAKE_PROFILE/chrome/JS/Omazen/omazen-chrome-v9.9.9.css"
 printf 'owned legacy style\n' >"$LEGACY_STYLE"
 printf '%s|%s\n' "$LEGACY_STYLE" "$(sha256sum "$LEGACY_STYLE" | awk '{print $1}')" \
@@ -462,10 +464,18 @@ printf '%s|%s\n' "$LEGACY_STYLE" "$(sha256sum "$LEGACY_STYLE" | awk '{print $1}'
 printf 'owned legacy content style\n' >"$LEGACY_CONTENT_STYLE"
 printf '%s|%s\n' "$LEGACY_CONTENT_STYLE" "$(sha256sum "$LEGACY_CONTENT_STYLE" | awk '{print $1}')" \
   >>"$FAKE_STATE/owned/profile-files"
+printf 'owned v1.4.0 chrome style\n' >"$V140_STYLE"
+printf '%s|%s\n' "$V140_STYLE" "$(sha256sum "$V140_STYLE" | awk '{print $1}')" \
+  >>"$FAKE_STATE/owned/profile-files"
+printf 'owned v1.4.0 content style\n' >"$V140_CONTENT_STYLE"
+printf '%s|%s\n' "$V140_CONTENT_STYLE" "$(sha256sum "$V140_CONTENT_STYLE" | awk '{print $1}')" \
+  >>"$FAKE_STATE/owned/profile-files"
 printf 'foreign style\n' >"$FOREIGN_STYLE"
 run_omazen setup >/dev/null
 assert_absent "$LEGACY_STYLE"
 assert_absent "$LEGACY_CONTENT_STYLE"
+assert_absent "$V140_STYLE"
+assert_absent "$V140_CONTENT_STYLE"
 assert_file "$FOREIGN_STYLE"
 assert_same_hash "$FAKE_PROFILE/chrome/userChrome.css" "$TEST_ROOT/userChrome.before"
 assert_same_hash "$FAKE_PROFILE/user.js" "$TEST_ROOT/user.before"

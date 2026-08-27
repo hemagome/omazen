@@ -11,6 +11,7 @@ BIN_DIRECTORY=${OMAZEN_LOCAL_BIN_DIR:-"${XDG_BIN_HOME:-$OMAZEN_HOME_DIR/.local/b
 OMAZEN_VERSION=$(<"$SOURCE_ROOT/VERSION")
 BACKUP="${DESTINATION}.backup.$(date -u +%Y%m%dT%H%M%SZ).${BASHPID}"
 STAGING=""
+RUST_BINARY=${OMAZEN_RUST_BINARY:-}
 
 cleanup_staging() {
   if [[ -n $STAGING && -d $STAGING ]]; then
@@ -26,6 +27,28 @@ trap cleanup_staging EXIT
   exit 1
 }
 "$SOURCE_ROOT/tests/release-consistency.sh" >/dev/null
+
+if [[ -z $RUST_BINARY ]]; then
+  if [[ -x $SOURCE_ROOT/libexec/omazen-rust ]]; then
+    RUST_BINARY="$SOURCE_ROOT/libexec/omazen-rust"
+  elif [[ -x $SOURCE_ROOT/target/release/omazen-rust ]]; then
+    RUST_BINARY="$SOURCE_ROOT/target/release/omazen-rust"
+  elif command -v cargo >/dev/null 2>&1; then
+    [[ $(rustc --version) == 'rustc 1.98.0 '* ]] || {
+      printf 'ERROR: building Omazen requires rustc 1.98.0\n' >&2
+      exit 1
+    }
+    cargo build --manifest-path "$SOURCE_ROOT/Cargo.toml" --release --locked
+    RUST_BINARY="$SOURCE_ROOT/target/release/omazen-rust"
+  else
+    printf 'ERROR: prebuilt omazen-rust or the pinned Rust 1.98.0 toolchain is required\n' >&2
+    exit 1
+  fi
+fi
+[[ -x $RUST_BINARY ]] || {
+  printf 'ERROR: Rust CLI binary is not executable: %s\n' "$RUST_BINARY" >&2
+  exit 1
+}
 
 if [[ -e $DESTINATION && ! -f $DESTINATION/.omazen-installed ]]; then
   printf 'ERROR: refusing to overwrite unowned directory: %s\n' "$DESTINATION" >&2
@@ -50,6 +73,8 @@ for item in bin lib zen hooks vendor docs tests README.md CHANGELOG.md LICENSE N
   [[ -e $SOURCE_ROOT/$item ]] || continue
   cp -a -- "$SOURCE_ROOT/$item" "$STAGING/"
 done
+mkdir -p "$STAGING/libexec"
+install -m 0755 -- "$RUST_BINARY" "$STAGING/libexec/omazen-rust"
 printf '%s\n' "$OMAZEN_VERSION" >"$STAGING/.omazen-installed"
 chmod +x "$STAGING/bin/omazen" "$STAGING/hooks/theme-set" "$STAGING/install.sh" "$STAGING/uninstall.sh"
 

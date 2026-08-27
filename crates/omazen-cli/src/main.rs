@@ -5,11 +5,13 @@ use std::collections::HashMap;
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File, OpenOptions};
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, BufRead, BufReader, Read, Write};
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::process::{self, Command};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use sha2::{Digest, Sha256};
 
 const VERSION: &str = include_str!("../../../VERSION");
 
@@ -29,6 +31,15 @@ struct RuntimePaths {
     hooks_dir: PathBuf,
     omarchy_state_dir: PathBuf,
     project_root: PathBuf,
+    owned_dir: PathBuf,
+    backup_dir: PathBuf,
+    profile_manifest: PathBuf,
+    program_manifest: PathBuf,
+    hook_manifest: PathBuf,
+    provider_mode_file: PathBuf,
+    active_colors_file: PathBuf,
+    data_dir: PathBuf,
+    local_bin_dir: PathBuf,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -86,6 +97,14 @@ fn run() -> Result<(), String> {
             enable()
         }
         Some("set") => set_theme(&trailing),
+        Some("setup") => {
+            require_no_arguments("setup", &trailing)?;
+            setup()
+        }
+        Some("uninstall") => {
+            require_no_arguments("uninstall", &trailing)?;
+            uninstall()
+        }
         Some("help" | "-h" | "--help") => {
             print_usage(false);
             Ok(())
@@ -198,13 +217,30 @@ fn runtime_paths() -> Result<RuntimePaths, String> {
     let project_root = nonempty_env("OMAZEN_ROOT")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."));
+    let owned_dir = state_dir.join("owned");
+    let backup_dir = state_dir.join("backups");
+    let data_dir = nonempty_env("OMAZEN_DATA_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| {
+            nonempty_env("XDG_DATA_HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| PathBuf::from(&home_dir).join(".local/share"))
+                .join("omazen")
+        });
+    let local_bin_dir = nonempty_env("OMAZEN_LOCAL_BIN_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| {
+            nonempty_env("XDG_BIN_HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| PathBuf::from(&home_dir).join(".local/bin"))
+        });
     Ok(RuntimePaths {
         home_dir: PathBuf::from(home_dir),
         palette_file: state_dir.join("palette.json"),
         disabled_file: state_dir.join("disabled"),
         bridge_log: state_dir.join("bridge.log"),
         bridge_log_archive: state_dir.join("bridge.log.1"),
-        state_dir,
+        state_dir: state_dir.clone(),
         active_colors,
         skip_theme_hook: provider_mode == OsStr::new("1"),
         zen_config_dir,
@@ -213,6 +249,15 @@ fn runtime_paths() -> Result<RuntimePaths, String> {
         hooks_dir,
         omarchy_state_dir: xdg_state.join("omarchy"),
         project_root,
+        profile_manifest: owned_dir.join("profile-files"),
+        program_manifest: owned_dir.join("program-files"),
+        hook_manifest: owned_dir.join("hook-files"),
+        provider_mode_file: state_dir.join("provider-mode"),
+        active_colors_file: state_dir.join("active-colors"),
+        owned_dir,
+        backup_dir,
+        data_dir,
+        local_bin_dir,
     })
 }
 
@@ -1155,6 +1200,788 @@ fn set_theme(arguments: &[OsString]) -> Result<(), String> {
         }
     }
     sync_palette()
+}
+
+const PROFILE_FILES: &[&str] = &[
+    "omazen-bridge.uc.js",
+    "Omazen/OmazenParent.sys.mjs",
+    "Omazen/OmazenChild.sys.mjs",
+    "Omazen/OmazenPalette.sys.mjs",
+    "Omazen/OmazenWatcher.sys.mjs",
+];
+const FX_FILES: &[&str] = &[
+    "boot.sys.mjs",
+    "chrome.manifest",
+    "fs.sys.mjs",
+    "module_loader.mjs",
+    "uc_api.sys.mjs",
+    "utils.sys.mjs",
+];
+const KNOWN_PREF_HASHES: &[&str] = &[
+    "c00f815b495394c0336b8cc8e8b980f25330b4fa2e555bc6db242885d8dc46fd",
+    "2baf2534230d8630230b7619755605d44c6b6f021d4a53562cf707476ff52777",
+    "4e94ffefa49485d8866c394e890621e8b08d52f56b508d350bb5372e4d34a492",
+];
+
+fn setup() -> Result<(), String> {
+    let paths = runtime_paths()?;
+    check_supported_install(&paths)?;
+    if !Path::new("/usr/bin/inotifywait").is_file() {
+        eprintln!(
+            "WARNING: inotifywait is unavailable; Zen will retain the 250 ms polling fallback"
+        );
+    }
+    ensure_state_dirs(&paths.state_dir).map_err(|error| error.to_string())?;
+    let version = detect_zen_version(&paths.zen_program_dir)
+        .ok_or_else(|| "could not determine Zen version".to_owned())?;
+    if !version_at_least(&version, "1.20") {
+        return Err(format!(
+            "Zen {version} is older than the minimum candidate version 1.20"
+        ));
+    }
+    let profiles = zen_profiles(&paths);
+    if profiles.is_empty() {
+        return Err(format!(
+            "no Zen profiles found in {}/profiles.ini",
+            paths.zen_config_dir.display()
+        ));
+    }
+
+    install_program_loader(&paths)?;
+    for profile in &profiles {
+        install_fx_profile_runtime(&paths, profile)?;
+        install_profile_files(&paths, profile)?;
+        cleanup_obsolete_styles(&paths, profile)?;
+    }
+    if paths.skip_theme_hook {
+        println!("Skipping the Omarchy theme hook for an external palette provider.");
+    } else {
+        install_theme_hook(&paths)?;
+    }
+    sync_palette()?;
+    persist_provider_config(&paths)?;
+    remove_if_exists(&paths.disabled_file).map_err(|error| error.to_string())?;
+    println!("Omazen setup complete for {} profile(s).", profiles.len());
+    println!("Close Zen normally and open it once to activate the privileged loader.");
+    println!(
+        "Security note: profile chrome scripts can execute with browser privileges; see docs/security.md."
+    );
+    Ok(())
+}
+
+fn check_supported_install(paths: &RuntimePaths) -> Result<(), String> {
+    if !platform_supported(&paths.os_release_file) {
+        return Err(format!(
+            "unsupported platform: {}; Omazen requires Omarchy Quattro (4.x)",
+            platform_summary(&paths.os_release_file)
+        ));
+    }
+    if !paths.zen_program_dir.is_dir() {
+        return Err(format!(
+            "supported Zen program directory not found: {}",
+            paths.zen_program_dir.display()
+        ));
+    }
+    if !paths.zen_program_dir.join("application.ini").is_file() {
+        return Err("Zen application.ini not found in supported installation".to_owned());
+    }
+    if env::var_os("OMAZEN_SKIP_PACKAGE_CHECK").as_deref() != Some(OsStr::new("1")) {
+        let status = Command::new("pacman")
+            .args(["-Q", "zen-browser-bin"])
+            .status()
+            .ok();
+        if !status.is_some_and(|status| status.success()) {
+            return Err("MVP supports the native zen-browser-bin package only".to_owned());
+        }
+    }
+    Ok(())
+}
+
+fn sha256_file(path: &Path) -> io::Result<String> {
+    let mut file = File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buffer = [0_u8; 64 * 1024];
+    loop {
+        let count = file.read(&mut buffer)?;
+        if count == 0 {
+            break;
+        }
+        hasher.update(&buffer[..count]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn manifest_entries(path: &Path) -> Vec<(PathBuf, String)> {
+    fs::read_to_string(path)
+        .ok()
+        .map(|text| {
+            text.lines()
+                .filter_map(|line| line.split_once('|'))
+                .map(|(path, hash)| (PathBuf::from(path), hash.to_owned()))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn manifest_hash(path: &Path, wanted: &Path) -> Option<String> {
+    manifest_entries(path)
+        .into_iter()
+        .find_map(|(entry, hash)| (entry == wanted).then_some(hash))
+}
+
+fn record_owned_file(manifest: &Path, owned: &Path, hash: &str) -> Result<(), String> {
+    let mut entries = manifest_entries(manifest);
+    entries.retain(|(path, _)| path != owned);
+    entries.push((owned.to_path_buf(), hash.to_owned()));
+    let body: String = entries
+        .iter()
+        .map(|(path, hash)| format!("{}|{hash}\n", path.display()))
+        .collect();
+    write_private_atomic(manifest, body.as_bytes()).map_err(|error| error.to_string())
+}
+
+fn forget_owned_file(manifest: &Path, owned: &Path) -> Result<(), String> {
+    if !manifest.is_file() {
+        return Ok(());
+    }
+    let mut entries = manifest_entries(manifest);
+    entries.retain(|(path, _)| path != owned);
+    let body: String = entries
+        .iter()
+        .map(|(path, hash)| format!("{}|{hash}\n", path.display()))
+        .collect();
+    write_private_atomic(manifest, body.as_bytes()).map_err(|error| error.to_string())
+}
+
+fn write_private_atomic(destination: &Path, bytes: &[u8]) -> io::Result<()> {
+    let parent = destination
+        .parent()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "destination has no parent"))?;
+    fs::create_dir_all(parent)?;
+    let temporary = parent.join(format!(
+        ".{}.{}.{:x}",
+        destination
+            .file_name()
+            .unwrap_or_else(|| OsStr::new("state"))
+            .to_string_lossy(),
+        process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    ));
+    let result = (|| {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(&temporary)?;
+        file.write_all(bytes)?;
+        file.flush()?;
+        drop(file);
+        fs::rename(&temporary, destination)
+    })();
+    if result.is_err() {
+        let _ = fs::remove_file(&temporary);
+    }
+    result
+}
+
+fn backup_owned_file(paths: &RuntimePaths, source: &Path) -> Result<(), String> {
+    if !source.is_file() {
+        return Ok(());
+    }
+    let relative = source.strip_prefix("/").unwrap_or(source);
+    let destination = paths.backup_dir.join(backup_stamp()).join(relative);
+    if let Some(parent) = destination.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    fs::copy(source, &destination).map_err(|error| error.to_string())?;
+    fs::set_permissions(
+        &destination,
+        fs::symlink_metadata(source)
+            .map_err(|error| error.to_string())?
+            .permissions(),
+    )
+    .map_err(|error| error.to_string())?;
+    println!("Backed up owned file: {}", destination.display());
+    Ok(())
+}
+
+fn backup_stamp() -> String {
+    utc_timestamp().replace(['-', ':'], "")
+}
+
+fn install_user_file(
+    paths: &RuntimePaths,
+    source: &Path,
+    destination: &Path,
+    mode: u32,
+    manifest: &Path,
+) -> Result<(), String> {
+    let source_hash = sha256_file(source).map_err(|error| error.to_string())?;
+    if destination.is_file() {
+        let destination_hash = sha256_file(destination).map_err(|error| error.to_string())?;
+        if destination_hash == source_hash {
+            println!("Reusing identical file: {}", destination.display());
+            return Ok(());
+        }
+        if manifest_hash(&paths.profile_manifest, destination).is_none()
+            && manifest_hash(&paths.hook_manifest, destination).is_none()
+        {
+            return Err(format!(
+                "refusing to overwrite unowned file: {}",
+                destination.display()
+            ));
+        }
+        backup_owned_file(paths, destination)?;
+    }
+    if let Some(parent) = destination.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    fs::copy(source, destination).map_err(|error| error.to_string())?;
+    fs::set_permissions(destination, fs::Permissions::from_mode(mode))
+        .map_err(|error| error.to_string())?;
+    record_owned_file(manifest, destination, &source_hash)
+}
+
+fn install_program_file(
+    paths: &RuntimePaths,
+    source: &Path,
+    destination: &Path,
+    mode: u32,
+) -> Result<(), String> {
+    let source_hash = sha256_file(source).map_err(|error| error.to_string())?;
+    if destination.is_file() {
+        let destination_hash = sha256_file(destination).map_err(|error| error.to_string())?;
+        if destination_hash == source_hash {
+            println!("Reusing identical program file: {}", destination.display());
+            return Ok(());
+        }
+        if manifest_hash(&paths.program_manifest, destination).is_none() {
+            return Err(format!(
+                "refusing to overwrite unowned program file: {}",
+                destination.display()
+            ));
+        }
+        backup_owned_file(paths, destination)?;
+    }
+    privileged_install(source, destination, mode)?;
+    record_owned_file(&paths.program_manifest, destination, &source_hash)
+}
+
+fn privileged_install(source: &Path, destination: &Path, mode: u32) -> Result<(), String> {
+    let testing = env::var_os("OMAZEN_TESTING").as_deref() == Some(OsStr::new("1"));
+    let effective_root = fs::read_to_string("/proc/self/status")
+        .ok()
+        .and_then(|text| {
+            text.lines()
+                .find_map(|line| line.strip_prefix("Uid:"))
+                .and_then(|line| line.split_whitespace().nth(1))
+                .map(|uid| uid == "0")
+        })
+        .unwrap_or(false);
+    if testing || effective_root {
+        if let Some(parent) = destination.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        fs::copy(source, destination).map_err(|error| error.to_string())?;
+        fs::set_permissions(destination, fs::Permissions::from_mode(mode))
+            .map_err(|error| error.to_string())?;
+        return Ok(());
+    }
+    use std::io::IsTerminal;
+    let helper = if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() {
+        "sudo"
+    } else {
+        "pkexec"
+    };
+    let parent = destination
+        .parent()
+        .ok_or_else(|| "destination has no parent".to_owned())?;
+    let mkdir = Command::new(helper)
+        .args([OsStr::new("mkdir"), OsStr::new("-p"), parent.as_os_str()])
+        .status()
+        .map_err(|error| error.to_string())?;
+    if !mkdir.success() {
+        return Err(String::new());
+    }
+    let install = Command::new(helper)
+        .arg("install")
+        .arg("-m")
+        .arg(format!("{mode:o}"))
+        .arg(source)
+        .arg(destination)
+        .status()
+        .map_err(|error| error.to_string())?;
+    if install.success() {
+        Ok(())
+    } else {
+        Err(String::new())
+    }
+}
+
+fn install_program_loader(paths: &RuntimePaths) -> Result<(), String> {
+    let config = paths.zen_program_dir.join("config.js");
+    let prefs = paths.zen_program_dir.join("defaults/pref/config-prefs.js");
+    let omazen_prefs = paths.zen_program_dir.join("defaults/pref/omazen-prefs.js");
+    if program_has_compatible_fx(&paths.zen_program_dir) {
+        println!("Reusing compatible fx-autoconfig program loader.");
+    } else if config.is_file()
+        || directory_contains(
+            &paths.zen_program_dir.join("defaults/pref"),
+            "general.config.filename",
+        )
+    {
+        return Err(
+            "Zen already has a different autoconfig setup; Omazen will not merge or overwrite it"
+                .to_owned(),
+        );
+    } else {
+        install_program_file(
+            paths,
+            &paths
+                .project_root
+                .join("vendor/fx-autoconfig/program/config.js"),
+            &config,
+            0o644,
+        )?;
+        install_program_file(
+            paths,
+            &paths
+                .project_root
+                .join("vendor/fx-autoconfig/program/defaults/pref/config-prefs.js"),
+            &prefs,
+            0o644,
+        )?;
+    }
+    if omazen_prefs.is_file() && manifest_hash(&paths.program_manifest, &omazen_prefs).is_none() {
+        let hash = sha256_file(&omazen_prefs).map_err(|error| error.to_string())?;
+        if KNOWN_PREF_HASHES.contains(&hash.as_str()) {
+            record_owned_file(&paths.program_manifest, &omazen_prefs, &hash)?;
+            println!(
+                "Adopted known Omazen preference file into ownership tracking: {}",
+                omazen_prefs.display()
+            );
+        }
+    }
+    install_program_file(
+        paths,
+        &paths.project_root.join("zen/omazen-prefs.js"),
+        &omazen_prefs,
+        0o644,
+    )
+}
+
+fn profile_has_compatible_fx(profile: &Path) -> bool {
+    FX_FILES
+        .iter()
+        .all(|name| profile.join("chrome/utils").join(name).is_file())
+        && file_contains(
+            &profile.join("chrome/utils/boot.sys.mjs"),
+            "buildScriptActorDefinition",
+        )
+        && file_contains(
+            &profile.join("chrome/utils/chrome.manifest"),
+            "content userscripts",
+        )
+}
+
+fn install_fx_profile_runtime(paths: &RuntimePaths, profile: &Path) -> Result<(), String> {
+    let source_dir = paths
+        .project_root
+        .join("vendor/fx-autoconfig/profile/chrome/utils");
+    let destination_dir = profile.join("chrome/utils");
+    if profile_has_compatible_fx(profile) {
+        println!(
+            "Reusing compatible fx-autoconfig profile runtime: {}",
+            profile.display()
+        );
+        return Ok(());
+    }
+    let has_any = FX_FILES
+        .iter()
+        .any(|name| destination_dir.join(name).exists());
+    if has_any {
+        for name in FX_FILES {
+            let destination = destination_dir.join(name);
+            if !destination.exists() {
+                continue;
+            }
+            let source_hash =
+                sha256_file(&source_dir.join(name)).map_err(|error| error.to_string())?;
+            let destination_hash = sha256_file(&destination).map_err(|error| error.to_string())?;
+            if source_hash != destination_hash
+                && manifest_hash(&paths.profile_manifest, &destination).is_none()
+            {
+                return Err(format!(
+                    "partial or incompatible unowned fx-autoconfig runtime in profile: {}",
+                    profile.display()
+                ));
+            }
+        }
+        println!(
+            "Repairing partial fx-autoconfig profile runtime: {}",
+            profile.display()
+        );
+    }
+    for name in FX_FILES {
+        install_user_file(
+            paths,
+            &source_dir.join(name),
+            &destination_dir.join(name),
+            0o644,
+            &paths.profile_manifest,
+        )?;
+    }
+    Ok(())
+}
+
+fn install_profile_files(paths: &RuntimePaths, profile: &Path) -> Result<(), String> {
+    for relative in PROFILE_FILES {
+        install_user_file(
+            paths,
+            &paths.project_root.join("zen").join(relative),
+            &profile.join("chrome/JS").join(relative),
+            0o644,
+            &paths.profile_manifest,
+        )?;
+    }
+    let version = VERSION.trim_end();
+    install_user_file(
+        paths,
+        &paths.project_root.join("zen/Omazen/omazen-chrome.css"),
+        &profile
+            .join("chrome/JS/Omazen")
+            .join(format!("omazen-chrome-v{version}.css")),
+        0o644,
+        &paths.profile_manifest,
+    )?;
+    install_user_file(
+        paths,
+        &paths.project_root.join("zen/Omazen/omazen-content.css"),
+        &profile
+            .join("chrome/JS/Omazen")
+            .join(format!("omazen-content-v{version}.css")),
+        0o644,
+        &paths.profile_manifest,
+    )
+}
+
+fn cleanup_obsolete_styles(paths: &RuntimePaths, profile: &Path) -> Result<(), String> {
+    let directory = profile.join("chrome/JS/Omazen");
+    let version = VERSION.trim_end();
+    let current = [
+        format!("omazen-chrome-v{version}.css"),
+        format!("omazen-content-v{version}.css"),
+    ];
+    let Ok(entries) = fs::read_dir(&directory) else {
+        return Ok(());
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let style = name == "omazen-chrome.css"
+            || name == "omazen-content.css"
+            || (name.starts_with("omazen-chrome-v") && name.ends_with(".css"))
+            || (name.starts_with("omazen-content-v") && name.ends_with(".css"));
+        if !style || current.contains(&name) {
+            continue;
+        }
+        if manifest_hash(&paths.profile_manifest, &path).is_some()
+            && !remove_owned_file(&paths.profile_manifest, &path, false)?
+        {
+            eprintln!(
+                "WARNING: obsolete stylesheet was modified and remains installed: {}",
+                path.display()
+            );
+        }
+    }
+    Ok(())
+}
+
+fn install_theme_hook(paths: &RuntimePaths) -> Result<(), String> {
+    let source = paths.project_root.join("hooks/theme-set");
+    let destination = paths.hooks_dir.join("theme-set.d/theme-set");
+    let source_hash = sha256_file(&source).map_err(|error| error.to_string())?;
+    if destination.is_file() {
+        let destination_hash = sha256_file(&destination).map_err(|error| error.to_string())?;
+        if destination_hash == source_hash {
+            println!("Reusing identical Omarchy hook: {}", destination.display());
+            return Ok(());
+        }
+        if manifest_hash(&paths.hook_manifest, &destination).is_none() {
+            return Err(format!(
+                "refusing to overwrite unowned Omarchy hook: {}",
+                destination.display()
+            ));
+        }
+        backup_owned_file(paths, &destination)?;
+    }
+    if env::var_os("OMAZEN_TESTING").as_deref() == Some(OsStr::new("1")) {
+        if let Some(parent) = destination.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        fs::copy(&source, &destination).map_err(|error| error.to_string())?;
+        fs::set_permissions(&destination, fs::Permissions::from_mode(0o755))
+            .map_err(|error| error.to_string())?;
+    } else {
+        let status = Command::new("omarchy")
+            .args([
+                OsStr::new("hook"),
+                OsStr::new("install"),
+                OsStr::new("theme-set"),
+            ])
+            .arg(&source)
+            .status();
+        match status {
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                return Err("required command not found: omarchy".to_owned());
+            }
+            Err(error) => return Err(error.to_string()),
+            Ok(status) if !status.success() => return Err(String::new()),
+            Ok(_) => {}
+        }
+    }
+    record_owned_file(&paths.hook_manifest, &destination, &source_hash)
+}
+
+fn persist_provider_config(paths: &RuntimePaths) -> Result<(), String> {
+    write_private_atomic(
+        &paths.provider_mode_file,
+        if paths.skip_theme_hook {
+            b"1\n"
+        } else {
+            b"0\n"
+        },
+    )
+    .map_err(|error| error.to_string())?;
+    let mut active = paths.active_colors.as_os_str().as_encoded_bytes().to_vec();
+    active.push(b'\n');
+    write_private_atomic(&paths.active_colors_file, &active).map_err(|error| error.to_string())
+}
+
+fn remove_if_exists(path: &Path) -> io::Result<()> {
+    match fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error),
+    }
+}
+
+fn remove_owned_file(manifest: &Path, path: &Path, program: bool) -> Result<bool, String> {
+    let Some(expected) = manifest_hash(manifest, path) else {
+        return Ok(true);
+    };
+    if path.exists() {
+        let current = sha256_file(path).map_err(|error| error.to_string())?;
+        if current != expected {
+            eprintln!(
+                "WARNING: leaving modified {}file in place: {}",
+                if program { "program " } else { "owned " },
+                path.display()
+            );
+            return Ok(false);
+        }
+        if program {
+            privileged_remove(path)?;
+        } else {
+            fs::remove_file(path).map_err(|error| error.to_string())?;
+        }
+        println!("Removed: {}", path.display());
+    }
+    forget_owned_file(manifest, path)?;
+    Ok(true)
+}
+
+fn privileged_remove(path: &Path) -> Result<(), String> {
+    if env::var_os("OMAZEN_TESTING").as_deref() == Some(OsStr::new("1")) {
+        return remove_if_exists(path).map_err(|error| error.to_string());
+    }
+    let effective_root = fs::read_to_string("/proc/self/status")
+        .ok()
+        .and_then(|text| {
+            text.lines()
+                .find_map(|line| line.strip_prefix("Uid:"))
+                .and_then(|line| line.split_whitespace().nth(1))
+                .map(|uid| uid == "0")
+        })
+        .unwrap_or(false);
+    if effective_root {
+        return remove_if_exists(path).map_err(|error| error.to_string());
+    }
+    use std::io::IsTerminal;
+    let helper = if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() {
+        "sudo"
+    } else {
+        "pkexec"
+    };
+    let status = Command::new(helper)
+        .args([OsStr::new("rm"), OsStr::new("-f"), path.as_os_str()])
+        .status()
+        .map_err(|error| error.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(String::new())
+    }
+}
+
+fn other_user_scripts_exist(paths: &RuntimePaths) -> bool {
+    fn walk(directory: &Path) -> Vec<PathBuf> {
+        let mut files = Vec::new();
+        let Ok(entries) = fs::read_dir(directory) else {
+            return files;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                files.extend(walk(&path));
+            } else {
+                files.push(path);
+            }
+        }
+        files
+    }
+    for profile in zen_profiles(paths) {
+        let root = profile.join("chrome/JS");
+        for file in walk(&root) {
+            let name = file.file_name().and_then(OsStr::to_str).unwrap_or("");
+            let relevant =
+                name.ends_with(".uc.js") || name.ends_with(".uc.mjs") || name.ends_with(".sys.mjs");
+            if !relevant {
+                continue;
+            }
+            let own_bridge = name == "omazen-bridge.uc.js";
+            let own_module = file
+                .strip_prefix(&root)
+                .ok()
+                .is_some_and(|relative| relative.starts_with("Omazen"));
+            if !own_bridge && !own_module {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn uninstall() -> Result<(), String> {
+    let paths = runtime_paths()?;
+    let mut leftovers = false;
+    for path in manifest_entries(&paths.hook_manifest)
+        .into_iter()
+        .map(|(path, _)| path)
+        .rev()
+    {
+        if !remove_owned_file(&paths.hook_manifest, &path, false)? {
+            leftovers = true;
+        }
+    }
+    for path in manifest_entries(&paths.profile_manifest)
+        .into_iter()
+        .map(|(path, _)| path)
+        .rev()
+    {
+        if !remove_owned_file(&paths.profile_manifest, &path, false)? {
+            leftovers = true;
+        }
+    }
+    for path in manifest_entries(&paths.program_manifest)
+        .into_iter()
+        .map(|(path, _)| path)
+        .rev()
+    {
+        let shared_loader = (path == paths.zen_program_dir.join("config.js")
+            || path == paths.zen_program_dir.join("defaults/pref/config-prefs.js"))
+            && other_user_scripts_exist(&paths);
+        if shared_loader {
+            eprintln!(
+                "WARNING: leaving shared fx-autoconfig program loader because other user scripts exist"
+            );
+            continue;
+        }
+        if !remove_owned_file(&paths.program_manifest, &path, true)? {
+            leftovers = true;
+        }
+    }
+    for profile in zen_profiles(&paths) {
+        for directory in [
+            profile.join("chrome/JS/Omazen"),
+            profile.join("chrome/JS"),
+            profile.join("chrome/utils"),
+            profile.join("chrome"),
+        ] {
+            let _ = fs::remove_dir(&directory);
+        }
+    }
+    let _ = fs::remove_dir(paths.hooks_dir.join("theme-set.d"));
+    for state in [
+        &paths.disabled_file,
+        &paths.palette_file,
+        &paths.bridge_log,
+        &paths.bridge_log_archive,
+        &paths.provider_mode_file,
+        &paths.active_colors_file,
+    ] {
+        remove_if_exists(state).map_err(|error| error.to_string())?;
+    }
+    if leftovers {
+        eprintln!(
+            "WARNING: uninstall left modified or shared files in place; ownership records remain in {}",
+            paths.owned_dir.display()
+        );
+        return Err(String::new());
+    }
+    for manifest in [
+        &paths.hook_manifest,
+        &paths.profile_manifest,
+        &paths.program_manifest,
+    ] {
+        remove_if_exists(manifest).map_err(|error| error.to_string())?;
+    }
+    let _ = fs::remove_dir(&paths.owned_dir);
+    let _ = fs::remove_dir(&paths.backup_dir);
+    let _ = fs::remove_dir(&paths.state_dir);
+    println!(
+        "Omazen integration removed. Existing userChrome.css, userContent.css and user.js were not touched."
+    );
+    remove_installed_application_copy(&paths)
+}
+
+fn remove_installed_application_copy(paths: &RuntimePaths) -> Result<(), String> {
+    if !paths.project_root.join(".omazen-installed").is_file() {
+        return Ok(());
+    }
+    let root = fs::canonicalize(&paths.project_root).map_err(|error| error.to_string())?;
+    let data = fs::canonicalize(&paths.data_dir).unwrap_or_else(|_| paths.data_dir.clone());
+    if root != data {
+        eprintln!(
+            "WARNING: installed marker exists outside configured Omazen data directory; leaving application copy"
+        );
+        return Err(String::new());
+    }
+    let home = fs::canonicalize(&paths.home_dir).unwrap_or_else(|_| paths.home_dir.clone());
+    if root == Path::new("/") || root == home {
+        return Err("unsafe application removal target".to_owned());
+    }
+    let entry = paths.local_bin_dir.join("omazen");
+    if fs::symlink_metadata(&entry)
+        .ok()
+        .is_some_and(|metadata| metadata.file_type().is_symlink())
+        && fs::canonicalize(&entry).ok() == fs::canonicalize(root.join("bin/omazen")).ok()
+    {
+        fs::remove_file(&entry).map_err(|error| error.to_string())?;
+        println!("Removed: {}", entry.display());
+    }
+    fs::remove_dir_all(&root).map_err(|error| error.to_string())?;
+    println!(
+        "Removed installed Omazen application copy: {}",
+        root.display()
+    );
+    Ok(())
 }
 
 fn ensure_state_dirs(state_dir: &Path) -> io::Result<()> {
