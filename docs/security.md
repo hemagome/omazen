@@ -20,8 +20,8 @@ chrome/JS/Omazen/OmazenParent.sys.mjs
 chrome/JS/Omazen/OmazenChild.sys.mjs
 chrome/JS/Omazen/OmazenPalette.sys.mjs
 chrome/JS/Omazen/OmazenWatcher.sys.mjs
-chrome/JS/Omazen/omazen-chrome-v1.4.0.css
-chrome/JS/Omazen/omazen-content-v1.4.0.css
+chrome/JS/Omazen/omazen-chrome-v1.4.1.css
+chrome/JS/Omazen/omazen-content-v1.4.1.css
 ```
 
 Program-level files for the supported Zen package:

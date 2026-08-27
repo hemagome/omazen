@@ -13,11 +13,12 @@ local server or page-exposed API. See the [architecture](docs/architecture.md) a
 
 ## Current status
 
-Omazen `1.4.0` is the local release candidate, replacing the normal 250 ms
-palette-detection path with a shared event-driven watcher, adding repeatable
-latency benchmarks and retaining automatic polling fallback plus external
-palette-provider compatibility. The current tested environment is Omarchy `4.0.1`
-(Quattro) with native
+Omazen `1.4.1` keeps canonical stylesheet sources unversioned in the repository
+while installing them under release-versioned names to preserve `chrome://`
+cache busting. It retains the shared event-driven watcher, automatic polling
+fallback, repeatable latency benchmarks and external palette-provider
+compatibility introduced in `1.4.0`. The current tested environment is Omarchy
+`4.0.1` (Quattro) with native
 `zen-browser-bin 1.21.15b-1`.
 
 The historical live qualification and complete test results are recorded in

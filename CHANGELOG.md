@@ -4,6 +4,20 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-08-26
+
+### Changed
+
+- Chrome and content stylesheets now have stable canonical source names in the
+  repository. Installation still copies them to release-versioned profile paths
+  so Zen receives a fresh `chrome://` URI after upgrades without making pending
+  stylesheet contributions target an obsolete release file.
+
+### Removed
+
+- Historical versioned stylesheet copies were removed from `main`; immutable
+  release tags remain the source for older release contents.
+
 ## [1.4.0] - 2026-08-26
 
 ### Added
