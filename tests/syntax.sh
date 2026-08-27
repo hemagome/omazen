@@ -27,6 +27,8 @@ javascript_files=(
   "$PROJECT_ROOT/tests/bridge-regressions.mjs"
   "$PROJECT_ROOT/tests/contrast.mjs"
   "$PROJECT_ROOT/tests/js-regressions.mjs"
+  "$PROJECT_ROOT/tests/generate-benchmark-report.mjs"
+  "$PROJECT_ROOT/tests/process-tree-metrics.mjs"
   "$PROJECT_ROOT/tests/watcher-regressions.mjs"
 )
 for javascript_file in "${javascript_files[@]}"; do
@@ -34,5 +36,6 @@ for javascript_file in "${javascript_files[@]}"; do
 done
 
 "$PROJECT_ROOT/tests/release-consistency.sh"
+"$PROJECT_ROOT/tests/sync-contract.sh"
 
 printf 'Syntax checks passed.\n'

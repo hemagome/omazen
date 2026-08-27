@@ -37,7 +37,7 @@ under the same conditions.
 
 ## Current architecture to document before implementation
 
-The baseline documentation must describe the implementation at `v1.4.0`, not
+The baseline documentation must describe the implementation at `v1.4.1`, not
 an intended future design.
 
 ```text
@@ -68,6 +68,8 @@ Document all of the following in a dedicated current-runtime reference:
 - Zen profile discovery and supported installation checks.
 - Owned-file manifests, known historical adoption, backups, update failure
   recovery, unknown-file refusal and uninstall behavior.
+- Stable unversioned stylesheet sources in the repository, release-versioned
+  installed stylesheet paths, and safe cleanup of owned obsolete versions.
 - The fixed `/usr/bin/inotifywait` command, watched leaves/events, one-process
   multi-window lifecycle, 5-second safety poll and 250 ms fallback.
 - The security boundary: Rust may produce a palette, but JavaScript must still
@@ -235,7 +237,7 @@ Create a stable artifact tree such as:
 ```text
 docs/benchmarks/rust-migration/
   methodology.md
-  baseline-v1.4.0/
+  baseline-v1.4.1/
     environment.json
     summary.md
     latency.csv
@@ -257,7 +259,7 @@ Normalize paths and profile identifiers as the existing bridge does.
 - Write the complete current-runtime reference.
 - Extend benchmark tooling for CPU, RAM, failure counts and environment data.
 - Add fixture-driven contract tests for every command.
-- Capture and commit the controlled `v1.4.0` baseline.
+- Capture and commit the controlled `v1.4.1` baseline.
 - Identify noise and rerun unstable scenarios before writing Rust code.
 
 Exit gate: the baseline is reproducible from documentation and raw samples can
@@ -301,7 +303,8 @@ Exit gate: live Zen tests pass without restart and without duplicate applies.
   backups, unknown-file refusal, symlink/path defenses and partial-failure
   recovery.
 - Test exclusively in disposable roots before any live installation.
-- Include update from `v1.4.0`, failed update, downgrade and uninstall cases.
+- Include update from `v1.4.0` to `v1.4.1`, failed update, downgrade and
+  uninstall cases.
 
 Exit gate: all lifecycle tests pass and destructive targets remain explicitly
 bounded and recoverable.

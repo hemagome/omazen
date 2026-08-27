@@ -21,11 +21,12 @@ Start by auditing the repository at the branch head and confirming the working
 tree, current version, available tools and active Zen/Omarchy environment. The
 first implementation milestone is Phase 0, not Rust code:
 
-1. Document the complete current `v1.4.0` runtime, including command behavior,
+1. Document the complete current `v1.4.1` runtime, including command behavior,
    file formats, atomic writes, environment precedence, installation ownership,
    privilege boundaries, `OMAZEN_SKIP_THEME_HOOK`, watcher lifecycle, safety
    polling, fallback and the distinction between palette application and the
-   delayed CSS diagnostic.
+   delayed CSS diagnostic. Treat `v1.4.1` as the baseline wherever the migration
+   plan still refers to `v1.4.0`.
 2. Extend the benchmark tooling to capture reproducible raw latency, CPU and
    RAM data as specified in the plan. Include process-tree accounting, 1/4/8
    window scenarios, healthy inotify and polling fallback, idle and burst
@@ -34,7 +35,7 @@ first implementation milestone is Phase 0, not Rust code:
    least 100 measured latency samples and 200+ where p99 is a decision metric,
    at least three runs, ten-minute idle/leak samples, and a complete environment
    manifest. Store normalized raw data and generated summaries under
-   `docs/benchmarks/rust-migration/baseline-v1.4.0/`.
+   `docs/benchmarks/rust-migration/baseline-v1.4.1/`.
 4. Make the benchmark report regenerate entirely from raw samples. Do not hide
    timeouts or discard outliers. Record watcher backend and all warnings.
 
@@ -50,7 +51,11 @@ After the baseline is complete and reproducible, implement the phases in order:
 - Migrate `disable`, `enable` and `set` after that.
 - Migrate `setup` and `uninstall` last, only after exhaustive disposable-root
   tests for manifests, backups, known historical preference adoption, unknown
-  file refusal, symlinks, partial failures, downgrade and rollback.
+  file refusal, symlinks, partial failures, downgrade and rollback. Preserve the
+  `v1.4.1` stylesheet contract: canonical repository sources remain unversioned,
+  installed profile stylesheets remain release-versioned, owned obsolete
+  versions such as `v1.4.0` are removed on update, and modified or unknown files
+  are never silently overwritten or deleted.
 - Use a pre-source `exec` dispatcher while Bash and Rust coexist. Avoid FFI.
 - Keep the shell `theme-set` hook as a minimal compatibility wrapper.
 - Preserve the exact semantics and precedence of `OMAZEN_SKIP_THEME_HOOK=1`.
