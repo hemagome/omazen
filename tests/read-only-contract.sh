@@ -57,6 +57,7 @@ run_cli() {
   shift 2
   local status=0
   OMAZEN_HOME_DIR="$HOME_ROOT" \
+  XDG_STATE_HOME="$HOME_ROOT/.local/state" \
   OMAZEN_STATE_DIR="$STATE" \
   OMAZEN_ACTIVE_COLORS="$COLORS" \
   OMAZEN_SKIP_THEME_HOOK=1 \
