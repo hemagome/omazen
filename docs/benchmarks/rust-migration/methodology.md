@@ -53,3 +53,9 @@ Every timeout, nonzero exit, missing PSS permission, log rotation, backend
 change, sampler under-run and restore failure is part of the raw result. Do not
 discard outliers. Rerun noisy scenarios as an additional run rather than
 replacing the original data.
+
+`tests/live-idle-sampler.sh` captures fixed-interval `/proc` observations for
+an already prepared window/backend scenario. `tests/live-theme-benchmark.sh`
+alternates a secondary theme with the captured original theme and restores the
+original through an exit trap. Both require a real graphical session and are
+therefore intentionally excluded from the automatic repository gate.

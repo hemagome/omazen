@@ -19,6 +19,16 @@ fi
 source "$OMAZEN_ROOT/lib/common.sh"
 # shellcheck source=../lib/palette.sh
 source "$OMAZEN_ROOT/lib/palette.sh"
+
+# Keep the latency-sensitive Bash fallback small: sync needs only the common
+# runtime paths/helpers and palette implementation. Other commands load their
+# modules below.
+if [[ ${1:-help} == sync ]]; then
+  (( $# == 1 )) || die "sync takes no arguments"
+  sync_palette
+  exit 0
+fi
+
 # shellcheck source=../lib/profile.sh
 source "$OMAZEN_ROOT/lib/profile.sh"
 # shellcheck source=../lib/hook.sh

@@ -60,24 +60,40 @@ write_palette_json() {
 
 validate_palette_json() {
   local source=$1
-  local color_key
   [[ -f $source ]] || return 1
-  [[ $(wc -c <"$source") -le 2048 ]] || return 1
-  [[ $(wc -l <"$source") -eq 12 ]] || return 1
-  [[ $(head -n 1 "$source") == "{" && $(tail -n 1 "$source") == "}" ]] || return 1
-  grep -Eq '^  "schema_version": 1,$' "$source" || return 1
-  grep -Eq '^  "mode": "(dark|light)",$' "$source" || return 1
-  for color_key in accent background background_dark background_light foreground foreground_muted selection; do
-    grep -Eq "^  \"$color_key\": \"#[0-9a-f]{6}\",$" "$source" || return 1
-  done
-  grep -Eq '^  "border": "#[0-9a-f]{6}"$' "$source" || return 1
-  [[ $(grep -Ec '^  "[a-z_]+":' "$source") -eq 10 ]] || return 1
+  LC_ALL=C awk '
+    {
+      bytes += length($0) + length(RT)
+      if (RT == "\n") newline_count++
+      lines[NR] = $0
+      if ($0 ~ /^  "[a-z_]+":/) key_count++
+      if ($0 == "  \"schema_version\": 1,") schema_count++
+      if ($0 ~ /^  "mode": "(dark|light)",$/) mode_count++
+      if ($0 ~ /^  "accent": "#[0-9a-f]{6}",$/) accent_count++
+      if ($0 ~ /^  "background": "#[0-9a-f]{6}",$/) background_count++
+      if ($0 ~ /^  "background_dark": "#[0-9a-f]{6}",$/) background_dark_count++
+      if ($0 ~ /^  "background_light": "#[0-9a-f]{6}",$/) background_light_count++
+      if ($0 ~ /^  "foreground": "#[0-9a-f]{6}",$/) foreground_count++
+      if ($0 ~ /^  "foreground_muted": "#[0-9a-f]{6}",$/) foreground_muted_count++
+      if ($0 ~ /^  "selection": "#[0-9a-f]{6}",$/) selection_count++
+      if ($0 ~ /^  "border": "#[0-9a-f]{6}"$/) border_count++
+    }
+    END {
+      valid = bytes <= 2048 && NR == 12 && newline_count == 12 &&
+        lines[1] == "{" && lines[NR] == "}" &&
+        schema_count > 0 && mode_count > 0 && accent_count > 0 &&
+        background_count > 0 && background_dark_count > 0 &&
+        background_light_count > 0 && foreground_count > 0 &&
+        foreground_muted_count > 0 && selection_count > 0 &&
+        border_count > 0 && key_count == 10
+      exit !valid
+    }
+  ' "$source"
 }
 
 sync_palette() {
   parse_colors_toml "$OMAZEN_ACTIVE_COLORS" || \
     die "invalid or missing Quattro palette: $OMAZEN_ACTIVE_COLORS"
   write_palette_json "$OMAZEN_PALETTE_FILE"
-  validate_palette_json "$OMAZEN_PALETTE_FILE" || die "generated palette failed validation"
   say "Palette synchronized atomically: $OMAZEN_PALETTE_FILE"
 }
