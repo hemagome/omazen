@@ -208,7 +208,7 @@ wait_for_log() {
   local before=$2
   local start=$((before + 1))
   local attempt
-  for attempt in $(seq 1 120); do
+  for ((attempt = 1; attempt <= 120; attempt += 1)); do
     if [[ -f $BRIDGE_LOG ]] && tail -n +"$start" "$BRIDGE_LOG" | grep -Fq -- "$marker"; then
       return 0
     fi

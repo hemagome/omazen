@@ -34,9 +34,9 @@ grep -Fq -- "omazen-content-v$VERSION.css" \
   "$PROJECT_ROOT/tests/fixtures/visual-smoke.html" || fail "visual fixture stylesheet version"
 # The real compositor-backed visual test must follow VERSION when the release
 # CSS filenames change, rather than silently testing a stale stylesheet.
-grep -Fq -- 'omazen-chrome-v${RELEASE_VERSION}.css' \
+grep -Fq -- "omazen-chrome-v\${RELEASE_VERSION}.css" \
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration chrome stylesheet version"
-grep -Fq -- 'omazen-content-v${RELEASE_VERSION}.css' \
+grep -Fq -- "omazen-content-v\${RELEASE_VERSION}.css" \
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration content stylesheet version"
 [[ -f $PROJECT_ROOT/tests/contrast.mjs ]] || fail "contrast validation test is missing"
 [[ -d $PROJECT_ROOT/tests/fixtures/contrast-palettes ]] || fail "contrast fallback fixtures are missing"
