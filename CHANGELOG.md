@@ -4,6 +4,24 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-08-26
+
+### Added
+
+- WCAG palette contrast checks for installed Omarchy themes and deterministic
+  fallback fixtures. Primary accent buttons now derive a readable foreground
+  color without changing the provider-facing palette schema.
+- Real-runtime visual integration coverage for dark and light palettes, a
+  disposable profile, Settings and browser chrome captures, palette changes,
+  disable/enable, and tolerant visual comparisons.
+
+### Changed
+
+- The visual CI job now verifies the pinned SHA-256 of the Zen release archive
+  before extracting or executing the downloaded browser.
+- Omazen-owned color transitions and the removed `omazen.transitions.enabled`
+  preference no longer alter native Zen or page transitions.
+
 ## [1.3.1] - 2026-08-25
 
 ### Fixed

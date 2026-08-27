@@ -1,6 +1,6 @@
 # Release checklist
 
-Use this checklist from a clean `main` worktree for the local `1.3.1` release
+Use this checklist from a clean `main` worktree for the local `1.3.2` release
 candidate.
 
 ## Automated gate
@@ -10,9 +10,17 @@ tests/release-gate.sh
 ```
 
 The gate installs the pinned analyzers, runs static analysis, validates the
-release consistency, exercises the disposable lifecycle, renders the visual
-smoke fixture with Zen, and checks repository whitespace. It must pass before
-deployment.
+release consistency and palette contrast, exercises the disposable lifecycle,
+renders the visual smoke fixture with Zen, and checks repository whitespace. On
+a Wayland session with Hyprland and ImageMagick it also boots a disposable real
+Zen profile to
+capture Settings and browser chrome, exercise palette changes plus
+disable/enable, and compare the captures with tolerance. It must pass before
+deployment; headless environments retain the deterministic fixture check and
+skip only the compositor-backed extension.
+
+The CI visual job downloads the fixed Zen release used by the test, verifies its
+SHA-256 before extraction, and then checks the embedded application version.
 
 ## Local deployment gate
 
@@ -21,8 +29,8 @@ deployment.
 3. Reopen Zen once so fx-autoconfig loads the new bridge and shared module.
 4. Run `omazen doctor` and `omazen doctor --json`; require zero failures and
    zero warnings in both reports. Save the JSON report for the test record:
-   `omazen doctor --json > /tmp/omazen-1.3.1-doctor.json`.
-5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.3.1`, a successful
+   `omazen doctor --json > /tmp/omazen-1.3.2-doctor.json`.
+5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.3.2`, a successful
    `PALETTE_APPLIED`, and no current error.
 6. Exercise dark/light theme changes, disable/enable, Settings, a common dialog,
    Library, Passwords, Print and Developer Tools without destructive actions.

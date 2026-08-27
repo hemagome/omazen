@@ -11,10 +11,10 @@ page-exposed API. See the [architecture](docs/architecture.md) and
 
 ## Current status
 
-Omazen `1.3.1` is the current maintenance release, preserving the structured
-diagnostics, palette-provider persistence and bridge health checks from 1.3.0
-while correcting the context-menu hover palette. The current tested environment
-is Omarchy `4.0.1`
+Omazen `1.3.2` is the local release candidate, adding WCAG palette checks,
+real-runtime visual integration coverage and verified Zen downloads in CI while
+preserving the structured diagnostics and palette-provider persistence. The
+current tested environment is Omarchy `4.0.1`
 (Quattro) with native
 `zen-browser-bin 1.21.15b-1`.
 
@@ -75,8 +75,6 @@ omazen uninstall
 - `disable` and `enable` update open windows without restarting Zen.
 - `uninstall` removes only unchanged files recorded as Omazen-owned.
 
-Transitions default to 180 ms, respect reduced-motion settings, and can be disabled in `about:config` with `omazen.transitions.enabled=false`.
-
 ## Compatibility
 
 The official support scope is **Omarchy Quattro plus the native Arch package
@@ -99,6 +97,27 @@ Run the disposable functional suite with:
 ```bash
 tests/test.sh
 ```
+
+Run the WCAG palette contrast checks with:
+
+```bash
+node tests/contrast.mjs
+```
+
+The checker scans installed Omarchy `colors.toml` files (or the paths in
+`OMAZEN_CONTRAST_PALETTE_DIR`) and falls back to edge-case fixtures when the
+provider is not installed. Primary button and selection checks are enforced;
+link, muted-text and scrollbar findings are reported as warnings while their
+surface-specific semantics are being refined. Use `--strict` or
+`OMAZEN_CONTRAST_STRICT=1` to promote warnings to failures.
+
+The visual smoke command first runs the deterministic headless fixture and,
+when Wayland/Hyprland capture tools are available, also runs
+`tests/visual-integration.sh`. The integration pass boots a real Zen runtime
+with a disposable profile, captures Settings and browser chrome for dark and
+light palettes, exercises live palette changes plus disable/enable, and
+compares the captures with a bounded tolerance. Set
+`OMAZEN_SKIP_VISUAL_INTEGRATION=1` only for environments without a compositor.
 
 Run the complete pre-release gate, including static analysis, regression tests,
 the rendered-pixel smoke test and whitespace checks, with:
