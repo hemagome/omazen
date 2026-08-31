@@ -29,19 +29,18 @@ Omarchy hook.
 
 | Target | Contract |
 |---|---|
-| Omarchy 4.0.1 / Quattro | Supported; current tested environment 2026-08-25 |
+| Omarchy 4.0.2 / Quattro | Supported; current tested environment 2026-08-31 |
 | Omarchy 3.x and earlier | Incompatible; rejected by `omazen setup` and `omazen doctor` |
-| `zen-browser-bin 1.21.15b-1` | Supported; full validation 2026-08-24 |
+| `zen-browser-bin 1.21.16b-1` | Supported; full validation 2026-08-31 |
 | Native `zen-browser-bin` Zen >= 1.20 | Compatibility candidate; `omazen doctor` warns unless it is the fully validated version above |
 | Native Zen < 1.20 | Rejected by `omazen setup` and `omazen doctor` |
 
 The full live qualification recorded below was performed on Omarchy `4.0.0-1`.
-After the system update, Omarchy `4.0.1` is the current tested Quattro
-environment; the validated Zen, fx-autoconfig and Omazen runtime versions are
-unchanged.
+After subsequent system updates, Omarchy `4.0.2` is the current tested Quattro
+environment and Zen `1.21.16b` is the current fully validated browser version.
 
-The only fully validated Zen version in this release is `1.21.15b` (package
-`1.21.15b-1`). The candidate range is native `zen-browser-bin` Zen `>=1.20`;
+The only fully validated Zen version in this release is `1.21.16b` (package
+`1.21.16b-1`). The candidate range is native `zen-browser-bin` Zen `>=1.20`;
 being in that range means that setup may proceed, not that the version is
 stable or covered by the release guarantee.
 
@@ -84,7 +83,7 @@ The setup operation is idempotent. It reuses an intact compatible loader, update
 
 ## Selector maintenance
 
-Zen-specific selectors and `--zen-*` variables are not a stable public API. The current CSS was checked against the installed 1.21.15b `browser/omni.ja`. A future Zen build may keep the bridge operational while individual surfaces stop matching. Compatibility updates should inspect the exact package's `zen-styles` files and extend CSS only under Omazen's scope attribute.
+Zen-specific selectors and `--zen-*` variables are not a stable public API. The current CSS was checked against the installed 1.21.16b `browser/omni.ja`. A future Zen build may keep the bridge operational while individual surfaces stop matching. Compatibility updates should inspect the exact package's `zen-styles` files and extend CSS only under Omazen's scope attribute.
 
 ## Known product boundaries
 

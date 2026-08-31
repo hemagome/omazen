@@ -80,8 +80,8 @@ jobs:
 
       - name: Install verified Zen build
         env:
-          ZEN_VERSION: 1.21.15b
-          ZEN_SHA256: 2eaea664b840067ca0ace623bd4f4548fae98f46a98e2ddbdfdcb9253b674bbf
+          ZEN_VERSION: 1.21.16b
+          ZEN_SHA256: 1e4c3c391d10a82239d35afad84658fa3b3856b8ff72f93bbff7f57392acb942
         run: |
           set -euo pipefail
           archive="$RUNNER_TEMP/zen.linux-x86_64.tar.xz"

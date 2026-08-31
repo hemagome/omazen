@@ -863,7 +863,7 @@ fn doctor(json: bool) -> Result<(), String> {
     }
     let zen_version = detect_zen_version(&paths.zen_program_dir);
     match zen_version.as_deref() {
-        Some("1.21.15b") => report.pass("Zen 1.21.15b (fully validated version)"),
+        Some("1.21.16b") => report.pass("Zen 1.21.16b (fully validated version)"),
         Some(version) if version_at_least(version, "1.20") => report.warn(format!(
             "Zen {version} is a compatible candidate but has not been fully validated by this release"
         )),
