@@ -58,6 +58,10 @@ The first two may be reused from a compatible pre-existing fx-autoconfig install
   profile identifier and validation errors—not URLs, page titles, profile paths
   or browsing data.
 - Logs rotate at 128 KiB.
+- `omazen report` packages only sanitized text diagnostics, a bounded recent log
+  fragment and SHA-256 metadata; it does not copy profiles, palette contents or
+  other user files. Paths below the configured home directory are rendered as
+  `$HOME`. Users should still inspect the archive before sharing it.
 - Disable is live and uninstall is ownership/hash aware.
 - External palette-provider mode can skip the Omarchy hook, but it does not
   bypass palette validation, fixed paths, loader integrity, or ownership

@@ -88,6 +88,7 @@ fn run() -> Result<(), String> {
             };
             doctor(json)
         }
+        Some("report") => report(&trailing),
         Some("disable") => {
             require_no_arguments("disable", &trailing)?;
             disable()
@@ -133,7 +134,10 @@ fn print_usage(stderr: bool) {
         "  sync              Regenerate the normalized palette from active colors.toml\n",
         "  set [theme]       Set an Omarchy theme, or sync the current theme\n",
         "  status            Show concise installation and runtime state\n",
-        "  doctor [--json]   Run compatibility and installation diagnostics\n",
+        "  doctor            Run compatibility and installation diagnostics\n",
+        "                    Use --json for machine-readable output\n",
+        "  report            Create a sanitized support report\n",
+        "                    Use --output PATH for a custom archive location\n",
         "  disable           Disable Omazen live without removing it\n",
         "  enable            Re-enable Omazen live\n",
         "  uninstall         Remove only files owned by Omazen\n",
@@ -275,6 +279,11 @@ fn runtime_paths() -> Result<RuntimePaths, String> {
 
 fn status() -> Result<(), String> {
     let paths = runtime_paths()?;
+    print!("{}", status_text(&paths));
+    Ok(())
+}
+
+fn status_text(paths: &RuntimePaths) -> String {
     let platform = platform_summary(&paths.os_release_file);
     let zen_version =
         detect_zen_version(&paths.zen_program_dir).unwrap_or_else(|| "not detected".to_owned());
@@ -290,27 +299,490 @@ fn status() -> Result<(), String> {
     } else {
         "enabled"
     };
-    let profile_count = zen_profiles(&paths).len();
+    let profile_count = zen_profiles(paths).len();
     let provider = if paths.skip_theme_hook {
         "external"
     } else {
         "omarchy-hook"
     };
 
-    println!("Omazen: {}", VERSION.trim_end());
-    println!("OS: {platform}");
-    println!("State: {enabled_state}");
-    println!("Palette provider: {provider}");
-    println!("Palette source: {}", paths.active_colors.display());
-    println!("Zen: {zen_version}");
-    println!("Profiles detected: {profile_count}");
-    println!("Palette: {palette_state}");
+    let mut output = String::new();
+    use std::fmt::Write as _;
+    writeln!(output, "Omazen: {}", VERSION.trim_end()).expect("writing to a String cannot fail");
+    writeln!(output, "OS: {platform}").expect("writing to a String cannot fail");
+    writeln!(output, "State: {enabled_state}").expect("writing to a String cannot fail");
+    writeln!(output, "Palette provider: {provider}").expect("writing to a String cannot fail");
+    writeln!(output, "Palette source: {}", paths.active_colors.display())
+        .expect("writing to a String cannot fail");
+    writeln!(output, "Zen: {zen_version}").expect("writing to a String cannot fail");
+    writeln!(output, "Profiles detected: {profile_count}")
+        .expect("writing to a String cannot fail");
+    writeln!(output, "Palette: {palette_state}").expect("writing to a String cannot fail");
     if let Some(line) = last_line(&paths.bridge_log) {
-        println!("Bridge: {line}");
+        writeln!(output, "Bridge: {line}").expect("writing to a String cannot fail");
     } else {
-        println!("Bridge: no runtime log yet");
+        output.push_str("Bridge: no runtime log yet\n");
     }
+    output
+}
+
+fn report(arguments: &[OsString]) -> Result<(), String> {
+    let requested_output = match arguments {
+        [] => None,
+        [flag, path] if flag == OsStr::new("--output") || flag == OsStr::new("-o") => {
+            if path.is_empty() {
+                return Err("report output path cannot be empty".to_owned());
+            }
+            Some(PathBuf::from(path))
+        }
+        _ => return Err("report accepts no arguments or --output PATH".to_owned()),
+    };
+
+    let output = requested_output
+        .unwrap_or_else(|| PathBuf::from(format!("omazen-report-{}.tar.gz", report_timestamp())));
+    let output = if output.is_absolute() {
+        output
+    } else {
+        env::current_dir()
+            .map(|directory| directory.join(output))
+            .map_err(|error| error.to_string())?
+    };
+    if fs::symlink_metadata(&output).is_ok() {
+        return Err(format!(
+            "refusing to overwrite existing report: {}",
+            output.display()
+        ));
+    }
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+
+    let paths = runtime_paths()?;
+    let (doctor_success, doctor_stdout) = capture_self_command(&["doctor", "--json"])?;
+    let doctor_json = if doctor_stdout.trim_start().starts_with('{') {
+        doctor_stdout
+    } else {
+        format!(
+            "{{\n  \"schema_version\": 1,\n  \"ok\": false,\n  \"error\": \"doctor did not produce JSON (exit status: {doctor_success})\"\n}}\n"
+        )
+    };
+    let (_, status_stdout) = capture_self_command(&["status"])?;
+    let status_text = if status_stdout.is_empty() {
+        "status did not produce output\n".to_owned()
+    } else {
+        status_stdout
+    };
+
+    let timestamp = utc_timestamp();
+    let report_id = format!("omazen-report-{}", report_timestamp());
+    let temporary_root = create_report_temp_directory()?;
+    let report_directory = temporary_root.join(&report_id);
+    let result = (|| {
+        fs::create_dir(&report_directory).map_err(|error| error.to_string())?;
+        fs::set_permissions(&report_directory, fs::Permissions::from_mode(0o700))
+            .map_err(|error| error.to_string())?;
+
+        write_report_file(
+            &report_directory.join("report-info.txt"),
+            &format!(
+                "Omazen sanitized support report\n\
+schema_version: 1\n\
+generated_at: {timestamp}\n\
+doctor_exit_status: {doctor_success}\n\
+sanitization: paths below the configured home directory are shown as $HOME\n\
+contents: doctor.json, status.txt, versions.txt, bridge.log.fragment, installed-files.json\n"
+            ),
+        )?;
+        write_report_file(
+            &report_directory.join("doctor.json"),
+            &sanitize_report_text(&doctor_json, &paths),
+        )?;
+        write_report_file(
+            &report_directory.join("status.txt"),
+            &sanitize_report_text(&status_text, &paths),
+        )?;
+        write_report_file(
+            &report_directory.join("versions.txt"),
+            &sanitize_report_text(&report_versions(&paths), &paths),
+        )?;
+        write_report_file(
+            &report_directory.join("bridge.log.fragment"),
+            &sanitize_report_text(&report_log_fragment(&paths), &paths),
+        )?;
+        write_report_file(
+            &report_directory.join("installed-files.json"),
+            &report_installed_hashes(&paths),
+        )?;
+
+        let tar_status = Command::new("tar")
+            .arg("-czf")
+            .arg(&output)
+            .arg("-C")
+            .arg(&temporary_root)
+            .arg(&report_id)
+            .status()
+            .map_err(|error| {
+                format!("could not create report archive with tar: {}", error.kind())
+            })?;
+        if !tar_status.success() {
+            return Err("tar failed while creating the report archive".to_owned());
+        }
+        fs::set_permissions(&output, fs::Permissions::from_mode(0o600))
+            .map_err(|error| error.to_string())?;
+        Ok(())
+    })();
+    let cleanup_result = fs::remove_dir_all(&temporary_root);
+    if result.is_err() {
+        let _ = remove_if_exists(&output);
+    }
+    cleanup_result.map_err(|error| error.to_string())?;
+    result?;
+
+    println!(
+        "Sanitized Omazen support report created: {}",
+        output.display()
+    );
+    println!("Review the archive contents before attaching it to a public issue.");
     Ok(())
+}
+
+fn capture_self_command(arguments: &[&str]) -> Result<(bool, String), String> {
+    let executable = env::current_exe().map_err(|error| error.to_string())?;
+    let output = Command::new(executable)
+        .args(arguments)
+        .output()
+        .map_err(|error| error.to_string())?;
+    Ok((
+        output.status.success(),
+        String::from_utf8_lossy(&output.stdout).into_owned(),
+    ))
+}
+
+fn create_report_temp_directory() -> Result<PathBuf, String> {
+    let base = env::temp_dir();
+    for attempt in 0..100_u32 {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let path = base.join(format!(
+            "omazen-report.{}.{}.{attempt}",
+            process::id(),
+            nonce
+        ));
+        match fs::create_dir(&path) {
+            Ok(()) => {
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o700))
+                    .map_err(|error| error.to_string())?;
+                return Ok(path);
+            }
+            Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
+            Err(error) => return Err(error.to_string()),
+        }
+    }
+    Err("could not allocate a private temporary directory for the report".to_owned())
+}
+
+fn write_report_file(path: &Path, text: &str) -> Result<(), String> {
+    fs::write(path, text.as_bytes()).map_err(|error| error.to_string())?;
+    fs::set_permissions(path, fs::Permissions::from_mode(0o600)).map_err(|error| error.to_string())
+}
+
+fn report_timestamp() -> String {
+    utc_timestamp()
+        .chars()
+        .filter(|character| character.is_ascii_alphanumeric())
+        .collect()
+}
+
+fn sanitize_report_text(text: &str, paths: &RuntimePaths) -> String {
+    let home = paths.home_dir.to_string_lossy();
+    if home.is_empty() || home == "/" {
+        return sanitize_configured_paths(text.to_owned(), paths);
+    }
+    sanitize_configured_paths(text.replace(home.as_ref(), "$HOME"), paths)
+}
+
+fn sanitize_configured_paths(mut text: String, paths: &RuntimePaths) -> String {
+    for (path, replacement) in [
+        (&paths.state_dir, "$OMAZEN_STATE_DIR"),
+        (&paths.active_colors, "$OMAZEN_ACTIVE_COLORS"),
+        (&paths.zen_config_dir, "$ZEN_CONFIG_DIR"),
+        (&paths.zen_program_dir, "$ZEN_PROGRAM_DIR"),
+        (&paths.hooks_dir, "$OMAZEN_HOOKS_DIR"),
+        (&paths.omarchy_state_dir, "$OMARCHY_STATE_DIR"),
+        (&paths.project_root, "$OMAZEN_ROOT"),
+        (&paths.data_dir, "$OMAZEN_DATA_DIR"),
+        (&paths.local_bin_dir, "$OMAZEN_BIN_DIR"),
+    ] {
+        let raw = path.to_string_lossy();
+        if raw.is_empty() || raw == "/" || raw == "/opt/zen-browser-bin" || raw == "/etc/os-release"
+        {
+            continue;
+        }
+        text = text.replace(raw.as_ref(), replacement);
+    }
+    for profile in zen_profiles(paths) {
+        let raw = profile.to_string_lossy();
+        if raw.is_empty() || raw == "/" {
+            continue;
+        }
+        text = text.replace(raw.as_ref(), "$ZEN_PROFILE");
+    }
+    text
+}
+
+fn report_command_version(program: &str, arguments: &[&str]) -> String {
+    let output = match Command::new(program).args(arguments).output() {
+        Ok(output) => output,
+        Err(error) => return format!("unavailable ({})", error.kind()),
+    };
+    let mut text = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !stderr.trim().is_empty() {
+        if !text.is_empty() && !text.ends_with('\n') {
+            text.push('\n');
+        }
+        text.push_str(&stderr);
+    }
+    let text = text.trim();
+    if text.is_empty() {
+        return format!("unavailable (exit status: {})", output.status);
+    }
+    let bounded: String = text.chars().take(2048).collect();
+    if output.status.success() {
+        bounded
+    } else {
+        format!("{bounded} (exit status: {})", output.status)
+    }
+}
+
+fn report_versions(paths: &RuntimePaths) -> String {
+    let mut output = String::new();
+    use std::fmt::Write as _;
+    writeln!(output, "Omazen: {}", VERSION.trim_end()).expect("writing to a String cannot fail");
+    writeln!(
+        output,
+        "Zen (application.ini): {}",
+        detect_zen_version(&paths.zen_program_dir).unwrap_or_else(|| "not detected".to_owned())
+    )
+    .expect("writing to a String cannot fail");
+    writeln!(
+        output,
+        "Platform: {}",
+        platform_summary(&paths.os_release_file)
+    )
+    .expect("writing to a String cannot fail");
+    writeln!(
+        output,
+        "Kernel: {}",
+        report_command_version("uname", &["-srmo"])
+    )
+    .expect("writing to a String cannot fail");
+    writeln!(
+        output,
+        "Omarchy CLI: {}",
+        report_command_version("omarchy", &["--version"])
+    )
+    .expect("writing to a String cannot fail");
+    writeln!(
+        output,
+        "Zen CLI: {}",
+        report_command_version("zen-browser", &["--version"])
+    )
+    .expect("writing to a String cannot fail");
+    writeln!(
+        output,
+        "zen-browser-bin package: {}",
+        report_command_version("pacman", &["-Q", "zen-browser-bin"])
+    )
+    .expect("writing to a String cannot fail");
+    writeln!(
+        output,
+        "inotifywait: {}",
+        report_command_version("inotifywait", &["--version"])
+    )
+    .expect("writing to a String cannot fail");
+    output
+}
+
+fn report_log_fragment(paths: &RuntimePaths) -> String {
+    const MAX_LOG_LINES: usize = 200;
+    let logs: Vec<PathBuf> = [&paths.bridge_log_archive, &paths.bridge_log]
+        .into_iter()
+        .filter(|path| path.is_file())
+        .cloned()
+        .collect();
+    let lines = read_log_lines(&logs);
+    if lines.is_empty() {
+        return "No bridge log events were available.\n".to_owned();
+    }
+    let start = lines.len().saturating_sub(MAX_LOG_LINES);
+    let mut output = lines[start..].join("\n");
+    output.push('\n');
+    output
+}
+
+#[derive(Debug)]
+struct ReportHashEntry {
+    category: String,
+    path: PathBuf,
+    expected: Option<String>,
+    current: Option<String>,
+    state: String,
+}
+
+fn report_installed_hashes(paths: &RuntimePaths) -> String {
+    let mut entries = Vec::new();
+    for (category, manifest) in [
+        ("hook", &paths.hook_manifest),
+        ("profile", &paths.profile_manifest),
+        ("program", &paths.program_manifest),
+    ] {
+        for (path, expected) in manifest_entries(manifest) {
+            add_report_hash(&mut entries, category, path, Some(expected));
+        }
+    }
+
+    for path in [
+        paths.zen_program_dir.join("config.js"),
+        paths.zen_program_dir.join("defaults/pref/config-prefs.js"),
+        paths.zen_program_dir.join("defaults/pref/omazen-prefs.js"),
+    ] {
+        add_report_hash(&mut entries, "program", path, None);
+    }
+    for profile in zen_profiles(paths) {
+        for name in FX_FILES {
+            add_report_hash(
+                &mut entries,
+                "profile",
+                profile.join("chrome/utils").join(name),
+                None,
+            );
+        }
+        for relative in PROFILE_FILES {
+            add_report_hash(
+                &mut entries,
+                "profile",
+                profile.join("chrome/JS").join(relative),
+                None,
+            );
+        }
+        let version = VERSION.trim_end();
+        for stylesheet in [
+            format!("omazen-chrome-v{version}.css"),
+            format!("omazen-content-v{version}.css"),
+        ] {
+            add_report_hash(
+                &mut entries,
+                "profile",
+                profile.join("chrome/JS/Omazen").join(stylesheet),
+                None,
+            );
+        }
+    }
+    if !paths.skip_theme_hook {
+        add_report_hash(
+            &mut entries,
+            "hook",
+            paths.hooks_dir.join("theme-set.d/theme-set"),
+            None,
+        );
+    }
+    for path in [
+        paths.palette_file.clone(),
+        paths.provider_mode_file.clone(),
+        paths.active_colors_file.clone(),
+    ] {
+        add_report_hash(&mut entries, "state", path, None);
+    }
+    if let Ok(executable) = env::current_exe() {
+        add_report_hash(&mut entries, "omazen", executable, None);
+    }
+
+    entries.sort_by(|left, right| {
+        left.category
+            .cmp(&right.category)
+            .then_with(|| left.path.cmp(&right.path))
+    });
+    let mut output = String::from("[\n");
+    for (index, entry) in entries.iter().enumerate() {
+        if index > 0 {
+            output.push_str(",\n");
+        }
+        let current = entry.current.as_deref().unwrap_or("");
+        let expected = entry.expected.as_deref().unwrap_or("");
+        use std::fmt::Write as _;
+        write!(
+            output,
+            "  {{\"category\":\"{}\",\"path\":\"{}\",\"expected_sha256\":\"{}\",\"current_sha256\":\"{}\",\"state\":\"{}\"}}",
+            json_escape(&entry.category),
+            json_escape(&sanitize_report_text(&entry.path.to_string_lossy(), paths)),
+            json_escape(expected),
+            json_escape(current),
+            json_escape(&entry.state),
+        )
+        .expect("writing to a String cannot fail");
+    }
+    output.push_str("\n]\n");
+    output
+}
+
+fn add_report_hash(
+    entries: &mut Vec<ReportHashEntry>,
+    category: &str,
+    path: PathBuf,
+    expected: Option<String>,
+) {
+    if let Some(existing) = entries.iter_mut().find(|entry| entry.path == path) {
+        if existing.expected.is_none() {
+            existing.expected = expected;
+            if existing.expected.is_some() {
+                existing.state = report_hash_state(&existing.current, &existing.expected);
+            }
+        }
+        return;
+    }
+    let (current, state) = report_hash_value(&path, expected.as_deref());
+    entries.push(ReportHashEntry {
+        category: category.to_owned(),
+        path,
+        expected,
+        current,
+        state,
+    });
+}
+
+fn report_hash_value(path: &Path, expected: Option<&str>) -> (Option<String>, String) {
+    let Ok(metadata) = fs::symlink_metadata(path) else {
+        return (None, "missing".to_owned());
+    };
+    if metadata.file_type().is_symlink() {
+        return (None, "symlink".to_owned());
+    }
+    if !metadata.is_file() {
+        return (None, "not-a-file".to_owned());
+    }
+    match sha256_file(path) {
+        Ok(current) => {
+            let state = match expected {
+                Some(expected) if expected == current => "ok",
+                Some(_) => "modified",
+                None => "present",
+            };
+            (Some(current), state.to_owned())
+        }
+        Err(_) => (None, "unreadable".to_owned()),
+    }
+}
+
+fn report_hash_state(current: &Option<String>, expected: &Option<String>) -> String {
+    match (current.as_deref(), expected.as_deref()) {
+        (Some(current), Some(expected)) if current == expected => "ok".to_owned(),
+        (Some(_), Some(_)) => "modified".to_owned(),
+        (Some(_), None) => "present".to_owned(),
+        (None, _) => "missing".to_owned(),
+    }
 }
 
 #[derive(Debug)]

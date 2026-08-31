@@ -556,6 +556,36 @@ grep -Fq 'current bridge error: 2026-08-24T10:02:00.000Z [ERROR] current palette
   fail "doctor did not report the current bridge error"
 pass "doctor reports only a current bridge error"
 
+REPORT_ARCHIVE="$TEST_ROOT/omazen-report.tar.gz"
+report_output=$(run_omazen report --output "$REPORT_ARCHIVE")
+assert_file "$REPORT_ARCHIVE"
+REPORT_EXTRACT="$TEST_ROOT/report-extract"
+mkdir -p "$REPORT_EXTRACT"
+tar -xzf "$REPORT_ARCHIVE" -C "$REPORT_EXTRACT"
+REPORT_ROOT=$(find "$REPORT_EXTRACT" -mindepth 1 -maxdepth 1 -type d -print -quit)
+[[ -n $REPORT_ROOT ]] || fail "report archive root directory"
+for report_file in report-info.txt doctor.json status.txt versions.txt \
+  bridge.log.fragment installed-files.json; do
+  assert_file "$REPORT_ROOT/$report_file"
+done
+node -e '
+  const fs = require("node:fs");
+  const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  const hashes = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+  if (report.ok || !Array.isArray(report.checks) || !Array.isArray(hashes) ||
+      !hashes.some(entry => entry.current_sha256 && entry.state)) process.exit(1);
+' "$REPORT_ROOT/doctor.json" "$REPORT_ROOT/installed-files.json" || \
+  fail "sanitized report JSON contents"
+if grep -R -Fq "$FAKE_HOME" "$REPORT_ROOT"; then
+  fail "sanitized report leaked the configured home path"
+fi
+grep -R -Fq '$HOME' "$REPORT_ROOT" || fail "sanitized report did not mark home paths"
+grep -Fq 'current palette error' "$REPORT_ROOT/bridge.log.fragment" || \
+  fail "report omitted the relevant bridge log fragment"
+printf '%s\n' "$report_output" | grep -Fq 'Sanitized Omazen support report created' || \
+  fail "report did not announce the created archive"
+pass "report packages sanitized diagnostics, logs, and file hashes"
+
 VALID_COLORS="$TEST_ROOT/colors.before"
 cp "$FAKE_COLORS" "$VALID_COLORS"
 run_omazen disable >/dev/null
