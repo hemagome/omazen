@@ -579,7 +579,7 @@ node -e '
 if grep -R -Fq "$FAKE_HOME" "$REPORT_ROOT"; then
   fail "sanitized report leaked the configured home path"
 fi
-grep -R -Fq '$HOME' "$REPORT_ROOT" || fail "sanitized report did not mark home paths"
+grep -R -Fq "\$HOME" "$REPORT_ROOT" || fail "sanitized report did not mark home paths"
 grep -Fq 'current palette error' "$REPORT_ROOT/bridge.log.fragment" || \
   fail "report omitted the relevant bridge log fragment"
 printf '%s\n' "$report_output" | grep -Fq 'Sanitized Omazen support report created' || \
