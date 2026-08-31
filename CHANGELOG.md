@@ -4,6 +4,21 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-31
+
+### Added
+
+- Added `omazen report [--output PATH]` to create a sanitized support archive
+  with doctor/status diagnostics, versions, recent bridge logs and installed-file
+  SHA-256 metadata.
+
+### Changed
+
+- Updated the supported and fully validated environment to Omarchy `4.0.2`
+  (Quattro) with native `zen-browser-bin 1.21.16b-1`.
+- Updated the Rust `doctor` compatibility check, disposable fixtures, and CI
+  archive pin for Zen `1.21.16b`.
+
 ## [1.5.0] - 2026-08-27
 
 ### Changed
