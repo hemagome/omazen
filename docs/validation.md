@@ -20,6 +20,24 @@ documented advisory warning groups and reported no critical failure.
 
 ## Current compatibility revalidation
 
+Date: 2026-09-05
+
+The installed environment is Omarchy `4.0.2-1` (Quattro) with native
+`zen-browser-bin 1.22b-1`. Zen reports build ID `20260904060728`, source stamp
+`c2a638b7f735c7e7d4ee22e0182c8f6a16da93e5`, and Gecko `155.0.1`.
+
+The installed browser's production CSS smoke test passes, including document
+surfaces, controls, inputs, scroll content and the scrollbar thumb. The Rust
+build, unit tests, disposable lifecycle suite, syntax, release-consistency and
+palette contrast checks also pass against this Zen version. The installed
+bridge is active and applies the current palette with no recorded error.
+
+The compositor-backed visual integration suite remains unavailable in this
+session because `hyprctl` does not return parseable JSON; this is an environment
+limitation, not a reported Zen styling failure.
+
+## Previous compatibility revalidation
+
 Date: 2026-08-31
 
 The installed environment is now Omarchy `4.0.2-1` (Quattro) with native

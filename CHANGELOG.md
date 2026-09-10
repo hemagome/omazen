@@ -4,6 +4,16 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-09-10
+
+### Changed
+
+- Updated the supported and fully validated environment to native
+  `zen-browser-bin 1.22b-1`.
+- Updated the Rust `doctor` compatibility check and CI archive pin for Zen
+  `1.22b`, including its official SHA-256.
+- Accepted Zen's `x.yb` version format in release consistency validation.
+
 ## [1.6.0] - 2026-08-31
 
 ### Added

@@ -49,7 +49,7 @@ grep -Fq -- "\"\$PROFILE/chrome/JS/Omazen/omazen-content-v\${RELEASE_VERSION}.cs
   "$PROJECT_ROOT/tests/visual-integration.sh" || fail "visual integration content stylesheet destination"
 [[ -f $PROJECT_ROOT/tests/contrast.mjs ]] || fail "contrast validation test is missing"
 [[ -d $PROJECT_ROOT/tests/fixtures/contrast-palettes ]] || fail "contrast fallback fixtures are missing"
-grep -Eq -- '^[[:space:]]+ZEN_VERSION:[[:space:]]+[0-9]+\.[0-9]+\.[0-9]+[[:alnum:]_.-]*[[:space:]]*$' \
+grep -Eq -- '^[[:space:]]+ZEN_VERSION:[[:space:]]+[0-9]+\.[0-9]+(\.[0-9]+)?[[:alnum:]_.-]*[[:space:]]*$' \
   "$CI_WORKFLOW" || fail "CI Zen version pin is missing or malformed"
 grep -Eq -- '^[[:space:]]+ZEN_SHA256:[[:space:]]+[0-9a-f]{64}[[:space:]]*$' \
   "$CI_WORKFLOW" || fail "CI Zen SHA-256 pin is missing or malformed"
