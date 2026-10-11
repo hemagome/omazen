@@ -55,7 +55,7 @@ jobs:
 
       - name: Build pinned Rust CLI
         run: |
-          rustup toolchain install 1.98.0 --profile minimal
+          rustup toolchain install 1.99.0 --profile minimal
           cargo build --release --locked
 
       - name: Build release archive

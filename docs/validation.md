@@ -20,6 +20,26 @@ documented advisory warning groups and reported no critical failure.
 
 ## Current compatibility revalidation
 
+Date: 2026-10-10
+
+The installed environment is Omarchy `4.0.4-1` (Quattro) with native
+`zen-browser-bin 1.23.2b-1`. Zen reports build ID `20261009073723`, source
+stamp `185e856f68a451dc71988e988bc080c56452ea66`, and Gecko `157.0.1`.
+
+The installed browser's production CSS smoke test passes, including document
+surfaces, controls, inputs, scroll content and the scrollbar thumb. The Zen
+`zen-styles` files retain the Omazen dependency variables and selectors. The
+disposable lifecycle suite also passes. The installed bridge is active and
+applies the current palette with no recorded error. Zen `1.23.2b` was released
+on 2026-10-09 with Library and session/sidebar fixes; no Omazen selector or
+bridge breakage was observed.
+
+The compositor-backed visual integration capture was not available in this
+session because the Hyprland socket is unavailable; this is an environment
+limitation, not a reported Zen styling failure.
+
+## Previous compatibility revalidation
+
 Date: 2026-09-05
 
 The installed environment is Omarchy `4.0.2-1` (Quattro) with native
@@ -36,7 +56,7 @@ The compositor-backed visual integration suite remains unavailable in this
 session because `hyprctl` does not return parseable JSON; this is an environment
 limitation, not a reported Zen styling failure.
 
-## Previous compatibility revalidation
+## Historical compatibility revalidation
 
 Date: 2026-08-31
 

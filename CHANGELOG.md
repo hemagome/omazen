@@ -4,6 +4,15 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-10-10
+
+### Changed
+
+- Updated the pinned Rust toolchain and minimum supported compiler to `1.99.0`.
+- Updated the supported and fully validated browser to native
+  `zen-browser-bin 1.23.2b-1`, including the Rust `doctor` check and verified
+  CI archive pin.
+
 ## [1.6.1] - 2026-09-10
 
 ### Changed

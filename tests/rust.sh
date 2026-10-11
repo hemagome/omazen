@@ -7,17 +7,17 @@ set -euo pipefail
 PROJECT_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 
 command -v rustc >/dev/null 2>&1 || {
-  printf 'ERROR: rustc 1.98.0 is required\n' >&2
+  printf 'ERROR: rustc 1.99.0 is required\n' >&2
   exit 1
 }
 command -v cargo >/dev/null 2>&1 || {
-  printf 'ERROR: Cargo 1.98.0 is required\n' >&2
+  printf 'ERROR: Cargo 1.99.0 is required\n' >&2
   exit 1
 }
 
 rustc -vV
-[[ $(rustc --version) == 'rustc 1.98.0 '* ]] || {
-  printf 'ERROR: expected rustc 1.98.0\n' >&2
+[[ $(rustc --version) == 'rustc 1.99.0 '* ]] || {
+  printf 'ERROR: expected rustc 1.99.0\n' >&2
   exit 1
 }
 

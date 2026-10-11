@@ -33,7 +33,7 @@ jobs:
           package-manager-cache: false
 
       - name: Install pinned Rust toolchain
-        run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt,clippy
+        run: rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
 
       - name: Install pinned static analyzers
         run: |
@@ -80,8 +80,8 @@ jobs:
 
       - name: Install verified Zen build
         env:
-          ZEN_VERSION: 1.22b
-          ZEN_SHA256: 41e725c82a2bee91a351c5fe8f8771f8e2748c7f323ebbb0138dbeaae84afbb8
+          ZEN_VERSION: 1.23.2b
+          ZEN_SHA256: 5e67f4fa081b1b437243c464449ea1bd2a3b15b6f932487a8aa0c25aa8514600
         run: |
           set -euo pipefail
           archive="$RUNNER_TEMP/zen.linux-x86_64.tar.xz"

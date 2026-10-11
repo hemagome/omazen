@@ -21,7 +21,7 @@ All are compatible permissive licenses. Palette parsing, canonical
 serialization, path resolution, private directory creation and atomic rename
 continue to use the Rust standard library.
 
-The compiler is pinned to Rust 1.98.0. Rust standard-library components are
+The compiler is pinned to Rust 1.99.0. Rust standard-library components are
 distributed under the Apache-2.0 and MIT licenses; those toolchain components
 are build inputs and the dynamically linked system C runtime remains supplied
 by the supported Omarchy system. Revisit this record before accepting every new

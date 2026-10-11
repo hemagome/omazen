@@ -34,8 +34,8 @@ if [[ -z $RUST_BINARY ]]; then
   elif [[ -f $SOURCE_ROOT/.omazen-installed && -x $SOURCE_ROOT/bin/omazen ]]; then
     RUST_BINARY="$SOURCE_ROOT/bin/omazen"
   elif command -v cargo >/dev/null 2>&1; then
-    [[ $(rustc --version) == 'rustc 1.98.0 '* ]] || {
-      printf 'ERROR: building Omazen requires rustc 1.98.0\n' >&2
+    [[ $(rustc --version) == 'rustc 1.99.0 '* ]] || {
+      printf 'ERROR: building Omazen requires rustc 1.99.0\n' >&2
       exit 1
     }
     cargo build --manifest-path "$SOURCE_ROOT/Cargo.toml" --release --locked
@@ -43,7 +43,7 @@ if [[ -z $RUST_BINARY ]]; then
   elif [[ -x $SOURCE_ROOT/target/release/omazen-rust ]]; then
     RUST_BINARY="$SOURCE_ROOT/target/release/omazen-rust"
   else
-    printf 'ERROR: prebuilt omazen-rust or the pinned Rust 1.98.0 toolchain is required\n' >&2
+    printf 'ERROR: prebuilt omazen-rust or the pinned Rust 1.99.0 toolchain is required\n' >&2
     exit 1
   fi
 fi
