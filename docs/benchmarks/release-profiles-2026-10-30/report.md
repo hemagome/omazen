@@ -2,6 +2,10 @@
 
 Fecha: 2026-10-30, America/Mexico_City. Código: Omazen `1.6.2`, Rust/Cargo `1.99.1`, `sha2 0.11.1`.
 
+Nota posterior: release `1.6.3` adopta `strip = "symbols"` y `lto = "thin"`.
+Los resultados y la descripción del estado durante el experimento se conservan
+como evidencia histórica; no son mediciones nuevas de `1.6.3`.
+
 ## Resultado y recomendación
 
 Hay un beneficio claro de tamaño y una mejora pequeña de tiempo en un comando: **`strip = "symbols"` más `lto = "thin"`** reduce el ejecutable un 20.5 % y el payload comprimido un 9.6 %. ThinLTO mejora `doctor` aproximadamente un 4–5 % en las dos series de confirmación, equivalentes a unos **0.04 ms**. No se observa una mejora repetible en `sync` ni una mejora perceptible que pueda atribuirse a la interfaz de Zen.

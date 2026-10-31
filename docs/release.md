@@ -5,6 +5,11 @@ candidate.
 
 ## Automated gate
 
+The workspace release profile enables ThinLTO and strips symbols. It retains
+Cargo's default optimization level 3, 16 codegen units and unwind panic
+behavior. The measured tradeoffs are recorded in the
+[release-profile study](benchmarks/release-profiles-2026-10-30/report.md).
+
 ```bash
 tests/release-gate.sh
 ```

@@ -5,8 +5,8 @@
 The [2026-10-30 release-profile study](benchmarks/release-profiles-2026-10-30/report.md)
 compares nine Rust compiler configurations with 73,416 measured CLI invocations,
 binary sizes, clean build times, CPU time and disposable regression checks.
-It recommends symbols stripping plus ThinLTO as a modest size/performance
-tradeoff; the production release profile remains unchanged. The report includes
+Its symbols-stripping plus ThinLTO configuration is adopted for release
+`1.6.3` as a modest size/performance tradeoff. The report includes
 raw data and reproduction instructions for `tests/release-profile-benchmark.py`.
 
 ## Live palette latency
