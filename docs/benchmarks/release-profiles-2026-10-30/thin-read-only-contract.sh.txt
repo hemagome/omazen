@@ -1,0 +1,14 @@
+ok - read-only parity: no-arguments
+ok - read-only parity: help
+ok - read-only parity: help-extra
+ok - read-only parity: status
+ok - read-only parity: status-arity
+ok - read-only parity: doctor
+ok - read-only parity: doctor-json
+ok - read-only parity: doctor-arity
+ok - read-only parity: doctor-stale
+ok - read-only parity: doctor-stale-json
+ok - read-only parity: doctor-disabled
+ok - read-only parity: doctor-bridge-error
+ok - read-only parity: unknown
+1..13

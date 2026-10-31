@@ -1,0 +1,46 @@
+{
+  "rounds": 12,
+  "samples": 25,
+  "report_samples_per_round": 2,
+  "seed": 20261030,
+  "cpu": 0,
+  "variants": [
+    "baseline",
+    "strip",
+    "cgu1",
+    "thin",
+    "thin1",
+    "fat1",
+    "size_s",
+    "size_z",
+    "abort"
+  ],
+  "warmups": 8,
+  "report_warmups": 2,
+  "scenarios": {
+    "help": [
+      "help"
+    ],
+    "sync": [
+      "sync"
+    ],
+    "status": [
+      "status"
+    ],
+    "doctor": [
+      "doctor",
+      "--json"
+    ],
+    "report": [
+      "report",
+      "--output",
+      "/tmp/omazen-profile-study/fixture/report.tar.gz"
+    ]
+  },
+  "load_average_at_end": [
+    1.87255859375,
+    1.55224609375,
+    1.21923828125
+  ],
+  "timing": "perf_counter_ns around Popen + wait4; direct exec, no shell; wait4 child CPU includes report descendants; warm page cache"
+}

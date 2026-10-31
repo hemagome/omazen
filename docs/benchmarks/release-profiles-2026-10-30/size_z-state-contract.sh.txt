@@ -1,0 +1,9 @@
+ok - state parity: disable
+ok - state parity: disable-arity
+ok - state parity: enable
+ok - state parity: enable-invalid
+ok - state parity: enable-arity
+ok - state parity: set-sync
+ok - state parity: set-theme
+ok - state parity: set-arity
+1..8

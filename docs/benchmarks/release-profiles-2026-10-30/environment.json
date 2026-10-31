@@ -1,0 +1,28 @@
+{
+  "commit": "13f48b7104b111ff2e830b7cd6e3db5781274ef6",
+  "source_diff_sha256": "d5d72375aa97038ce898cac58821df1a156a2f30dadb7e56ec94f931caaf5fb7",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1\n",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "cpuinfo": "processor\t: 0\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 197\nmodel name\t: Intel(R) Core(TM) Ultra 7 255H\nstepping\t: 2\nmicrocode\t: 0x122\ncpu MHz\t\t: 400.000\ncache size\t: 24576 KB\nphysical id\t: 0\nsiblings\t: 16\ncore id\t\t: 0\ncpu cores\t: 16\napicid\t\t: 0\ninitial apicid\t: 0\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 35\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni lass lam wbnoinvd dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid bus_lock_detect movdiri movdir64b fsrm md_clear serialize arch_lbr ibt flush_l1d arch_capabilities\nvmx flags\t: vnmi preemption_timer posted_intr invvpid ept_x_only ept_ad ept_1gb flexpriority apicv tsc_offset vtpr mtf vapic ept vpid unrestricted_guest vapic_reg vid ple shadow_vmcs pml ept_violation_ve ept_mode_based_exec tsc_scaling usr_wait_pause notify_vm_exiting ipi_virt\nbugs\t\t: spectre_v1 spectre_v2 spec_store_bypass swapgs bhi spectre_v2_user vmscape\nbogomips\t: 7372.80\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 42 bits physical, 48 bits virtual\npower management:",
+  "kernel": "7.2.8-9-omarchy",
+  "load_average": [
+    1.88427734375,
+    1.13037109375,
+    1.03076171875
+  ],
+  "governor": "powersave",
+  "note": "Dirty working tree, same source for all variants. Clean target directories; warm dependency cache. No target-cpu=native.",
+  "source_files_sha256": {
+    "Cargo.toml": "e8ac6be0e363b38b17b9138efc0737a7bd35a918cf1fad7b8644adb4eed94f9b",
+    "Cargo.lock": "2ee977e0a3182d54117ee85ae04748359ef17df05b9b7dee53fde8738e41cb7c",
+    "crates/omazen-cli/Cargo.toml": "186e79026afb8efc874276e9ea53590311b669435ce418bdf28947797999a6e9",
+    "crates/omazen-cli/src/main.rs": "81c3c60d3b0a3add5b2bb36f2f679ea8642286de6a4aa72949e94585371d7cd9",
+    "rust-toolchain.toml": "d13306be0ecda81ce779baa290ffb417380d525928477f16200884b5169cca33"
+  },
+  "fixture_filesystem": "tmpfs",
+  "workspace_filesystem": "btrfs",
+  "discarded_pilot": "Initial pilot stopped when report external-version lookup cost was identified; incomplete pilot CSV excluded from results.",
+  "gzip_level": 6,
+  "runner_note": "Published runner uses tracked .txt logs, explicitly freezes baseline Cargo defaults, and derives the fixture Zen version from doctor for future runs. These match the measured settings; raw data are unchanged.",
+  "published_runner_sha256": "8388d52c8bc2ee12f7e566825956ffecaaee91d0582efd09e885b1dcc482f60f"
+}

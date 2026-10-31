@@ -1,0 +1,22 @@
+ok - status and doctor report the supported platform
+ok - doctor emits a structured JSON report
+ok - Omarchy 3 is rejected before setup changes
+ok - setup installs the isolated runtime and maps Quattro colors
+ok - setup safely adopts a known legacy Omazen preference file
+ok - setup continues to reject unknown unowned preference files
+ok - external palette providers can skip the Omarchy theme hook
+ok - setup repairs an owned partial fx-autoconfig profile runtime
+ok - setup is idempotent, cleans owned legacy styles, and preserves user files
+ok - doctor rejects installation, permission, palette, and bridge drift
+ok - doctor reports only a current bridge error
+ok - report packages sanitized diagnostics, logs, and file hashes
+ok - enable and setup keep Omazen disabled until palette validation succeeds
+ok - disable removes Shadow DOM styles and observers
+ok - bridge filters mutations, rotates logs, and cleans up runtime resources
+ok - shared inotify watcher filters events and broadcasts updates
+ok - setup rejects an unowned partial fx-autoconfig profile runtime
+ok - uninstall removes owned files and preserves pre-existing files
+ok - setup stops on an unowned autoconfig conflict
+ok - staged install, failed-update recovery, backup, and uninstall are reversible
+ok - chrome stylesheet leaves web-page select dropdowns on Zen's stock palette
+1..13

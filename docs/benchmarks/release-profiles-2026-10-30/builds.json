@@ -1,0 +1,105 @@
+[
+  {
+    "variant": "baseline",
+    "overrides": {},
+    "build_seconds": 6.145000504000109,
+    "bytes": 837728,
+    "gzip_bytes": 353338,
+    "sha256": "d81446c19214fd15c00f00fb6afb888ae910b2a5d2e19e5078a7aa2d6468e9d4"
+  },
+  {
+    "variant": "strip",
+    "overrides": {
+      "STRIP": "symbols"
+    },
+    "build_seconds": 6.133953761999919,
+    "bytes": 670344,
+    "gzip_bytes": 318405,
+    "sha256": "c531c38018997f0f5208568affa904f0e6fcdf82254f5ca29779c0775443a30b"
+  },
+  {
+    "variant": "cgu1",
+    "overrides": {
+      "STRIP": "symbols",
+      "CODEGEN_UNITS": "1"
+    },
+    "build_seconds": 6.919611275999841,
+    "bytes": 655712,
+    "gzip_bytes": 312132,
+    "sha256": "399e0aaa750186bbe4d1e1c59c7c140873956af40a2dd8f713d64195d74af057"
+  },
+  {
+    "variant": "thin",
+    "overrides": {
+      "STRIP": "symbols",
+      "LTO": "thin"
+    },
+    "build_seconds": 7.789990320000015,
+    "bytes": 665824,
+    "gzip_bytes": 319244,
+    "sha256": "db9433fb094b13c6182cbc316ba3896181ab9f828057d00a0adc9b4a4a903a38"
+  },
+  {
+    "variant": "thin1",
+    "overrides": {
+      "STRIP": "symbols",
+      "LTO": "thin",
+      "CODEGEN_UNITS": "1"
+    },
+    "build_seconds": 8.796935588999986,
+    "bytes": 657688,
+    "gzip_bytes": 315307,
+    "sha256": "7e1b9cd7bd54d1dfe24b0420bce130bb973f41fb3435f20c3523b2890d340655"
+  },
+  {
+    "variant": "fat1",
+    "overrides": {
+      "STRIP": "symbols",
+      "LTO": "fat",
+      "CODEGEN_UNITS": "1"
+    },
+    "build_seconds": 10.721018709999953,
+    "bytes": 616832,
+    "gzip_bytes": 302552,
+    "sha256": "4d64c681b8f49d0c5fe50d015efb7ffce5691b22c00e3e0549fb2e8cc3221bd2"
+  },
+  {
+    "variant": "size_s",
+    "overrides": {
+      "STRIP": "symbols",
+      "LTO": "thin",
+      "CODEGEN_UNITS": "1",
+      "OPT_LEVEL": "s"
+    },
+    "build_seconds": 8.325603127000022,
+    "bytes": 597688,
+    "gzip_bytes": 287108,
+    "sha256": "028698cf30d363083e15103c93f1c4440fa1f04531b3c15a93f377204f11723f"
+  },
+  {
+    "variant": "size_z",
+    "overrides": {
+      "STRIP": "symbols",
+      "LTO": "thin",
+      "CODEGEN_UNITS": "1",
+      "OPT_LEVEL": "z"
+    },
+    "build_seconds": 7.60328078800012,
+    "bytes": 568944,
+    "gzip_bytes": 276085,
+    "sha256": "83eada394ed65fc8a5ae581e06168e2a07b794b8c96c971500483fab91372fd6"
+  },
+  {
+    "variant": "abort",
+    "overrides": {
+      "STRIP": "symbols",
+      "LTO": "thin",
+      "CODEGEN_UNITS": "1",
+      "PANIC": "abort"
+    },
+    "build_seconds": 8.51969906599993,
+    "bytes": 629088,
+    "gzip_bytes": 300354,
+    "sha256": "7a348495636261ae5f24df3ca692caeecf476e1d15df9a4d564f1da4161c04ac"
+  }
+]

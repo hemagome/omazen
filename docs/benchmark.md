@@ -1,5 +1,16 @@
 # Latency benchmark
 
+## Release compiler profiles
+
+The [2026-10-30 release-profile study](benchmarks/release-profiles-2026-10-30/report.md)
+compares nine Rust compiler configurations with 73,416 measured CLI invocations,
+binary sizes, clean build times, CPU time and disposable regression checks.
+It recommends symbols stripping plus ThinLTO as a modest size/performance
+tradeoff; the production release profile remains unchanged. The report includes
+raw data and reproduction instructions for `tests/release-profile-benchmark.py`.
+
+## Live palette latency
+
 `tests/benchmark.sh` measures the current implementation without changing the
 polling interval or adding instrumentation to the bridge.
 

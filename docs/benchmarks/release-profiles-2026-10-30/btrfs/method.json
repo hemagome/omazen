@@ -1,0 +1,39 @@
+{
+  "rounds": 20,
+  "samples": 40,
+  "report_samples_per_round": 2,
+  "seed": 20261101,
+  "cpu": 0,
+  "variants": [
+    "baseline",
+    "strip",
+    "thin",
+    "fat1",
+    "size_s",
+    "size_z"
+  ],
+  "warmups": 8,
+  "report_warmups": 2,
+  "scenarios": {
+    "help": [
+      "help"
+    ],
+    "sync": [
+      "sync"
+    ],
+    "status": [
+      "status"
+    ],
+    "doctor": [
+      "doctor",
+      "--json"
+    ]
+  },
+  "load_average_at_end": [
+    2.34375,
+    1.7421875,
+    1.31298828125
+  ],
+  "timing": "perf_counter_ns around Popen + wait4; direct exec, no shell; wait4 child CPU includes report descendants; warm page cache",
+  "fixture_filesystem": "btrfs"
+}

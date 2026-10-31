@@ -1,0 +1,6 @@
+ok - sync parity: valid
+ok - sync parity: valid-border
+ok - sync parity: invalid-mode
+ok - sync parity: invalid-color
+ok - sync parity: missing
+1..5

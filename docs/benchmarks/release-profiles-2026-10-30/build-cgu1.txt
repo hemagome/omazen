@@ -1,0 +1,11 @@
+   Compiling typenum v1.20.1
+   Compiling const-oid v0.10.2
+   Compiling cfg-if v1.0.5
+   Compiling cpufeatures v0.3.1
+   Compiling hybrid-array v0.4.15
+   Compiling block-buffer v0.12.1
+   Compiling crypto-common v0.2.2
+   Compiling digest v0.11.3
+   Compiling sha2 v0.11.1
+   Compiling omazen-cli v1.6.2 (/home/hemagome/Projects/omazen/crates/omazen-cli)
+    Finished `release` profile [optimized] target(s) in 6.90s
