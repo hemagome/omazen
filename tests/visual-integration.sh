@@ -147,7 +147,12 @@ cat >"$PROFILE/chrome/JS/visual-control.uc.js" <<'EOF'
         triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
       });
     }
-    if (browser.currentURI?.spec === "about:preferences") {
+    if (
+      browser.currentURI?.spec === "about:preferences" &&
+      browser.browsingContext?.currentWindowGlobal?.documentURI?.spec ===
+        "about:preferences" &&
+      !browser.webProgress.isLoadingDocument
+    ) {
       markReady();
       return;
     }
@@ -319,10 +324,9 @@ assert_similar() {
   (( mismatches <= limit )) || fail "$label differs too much ($mismatches/$total pixels, limit $limit)"
 }
 
-assert_color_present() {
+color_present() {
   local image=$1
   local color=$2
-  local label=$3
   local ratio
   if [[ $IMAGE_MAGICK == magick ]]; then
     ratio=$(magick "$image" -fuzz 3% -fill white -opaque "#$color" \
@@ -331,8 +335,24 @@ assert_color_present() {
     ratio=$(convert "$image" -fuzz 3% -fill white -opaque "#$color" \
       -fill black +opaque white -colorspace gray -format '%[fx:mean]' info:)
   fi
-  awk -v value="$ratio" 'BEGIN { exit !(value >= 0.01) }' || \
-    fail "$label does not contain palette color #$color within tolerance"
+  awk -v value="$ratio" 'BEGIN { exit !(value >= 0.01) }'
+}
+
+capture_palette() {
+  local name=$1
+  local color=$2
+  local attempt
+  # Navigation and bridge events precede compositor painting. Wait for the
+  # expected pixels in both regions rather than assuming a fixed delay is enough.
+  for ((attempt = 1; attempt <= 20; attempt += 1)); do
+    capture_window "$name"
+    if color_present "$OUTPUT_DIR/$name-window.png" "$color" &&
+      color_present "$OUTPUT_DIR/$name-settings.png" "$color"; then
+      return 0
+    fi
+    sleep 0.2
+  done
+  fail "$name chrome/settings capture does not contain palette color #$color within tolerance"
 }
 
 write_colors dark '#ff7a18' '#304050' '#a0b0c0' '#102030' '#081018' '#203040' '#f5eedd' '#506070'
@@ -361,9 +381,7 @@ for _ in $(seq 1 120); do
 done
 [[ -s $TEST_ROOT/settings.ready ]] || fail "visual control script did not navigate the disposable window to Settings"
 sleep 0.5
-capture_window dark
-assert_color_present "$OUTPUT_DIR/dark-window.png" '081018' 'dark chrome/settings capture'
-assert_color_present "$OUTPUT_DIR/dark-settings.png" '081018' 'dark Settings capture'
+capture_palette dark '081018'
 pass "real loader, bridge and dark Settings/chrome capture"
 
 before=$(log_lines)
@@ -373,9 +391,7 @@ wait_for_log 'WATCHER_EVENT leaf=palette.json events=MOVED_TO' "$before"
 wait_for_log 'PALETTE_APPLIED accent=#7a18ff mode=light' "$before"
 wait_for_log 'CHROME_CSS_APPLIED primary=#7a18ff' "$before"
 sleep 0.5
-capture_window light
-assert_color_present "$OUTPUT_DIR/light-window.png" 'efe4d2' 'light chrome/settings capture'
-assert_color_present "$OUTPUT_DIR/light-settings.png" 'efe4d2' 'light Settings capture'
+capture_palette light 'efe4d2'
 assert_different "$OUTPUT_DIR/dark-chrome.png" "$OUTPUT_DIR/light-chrome.png" 'dark/light chrome'
 assert_different "$OUTPUT_DIR/dark-settings.png" "$OUTPUT_DIR/light-settings.png" 'dark/light Settings'
 pass "live palette change from dark to light"
