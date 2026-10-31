@@ -33,7 +33,7 @@ jobs:
           package-manager-cache: false
 
       - name: Install pinned Rust toolchain
-        run: rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
+        run: rustup toolchain install 1.99.1 --profile minimal --component rustfmt,clippy
 
       - name: Install pinned static analyzers
         run: |
