@@ -1,6 +1,6 @@
 # Release checklist
 
-Use this checklist from a clean `main` worktree for the local `1.6.2` release
+Use this checklist from a clean `main` worktree for the local `1.6.3` release
 candidate.
 
 ## Automated gate
@@ -37,12 +37,15 @@ SHA-256 sidecar. `install.sh` places that payload directly at `bin/omazen`.
 3. Reopen Zen once so fx-autoconfig loads the new bridge and shared module.
 4. Run `omazen doctor` and `omazen doctor --json`; require zero failures and
    zero warnings in both reports. Save the JSON report for the test record:
-   `omazen doctor --json > /tmp/omazen-1.6.2-doctor.json`.
-5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.6.2`,
+   `omazen doctor --json > /tmp/omazen-1.6.3-doctor.json`.
+5. Confirm `bridge.log` contains `BRIDGE_LOADED version=1.6.3`,
    `WATCHER_READY backend=inotify`, a successful `PALETTE_APPLIED`, and no
    current error or `WATCHER_FALLBACK` after watcher startup.
-6. Exercise dark/light theme changes, disable/enable, Settings, a common dialog,
+6. Exercise dark/light theme changes, disable/enable and Settings. For changes
+   to browser runtime behavior or selectors, also review a common dialog,
    Library, Passwords, Print and Developer Tools without destructive actions.
+   For CLI/compiler-only changes, record the focused coverage and the unchanged
+   historical auxiliary-surface baseline in the validation report.
 7. Confirm the normal update created one timestamped application backup.
 
 Do not publish the tag if any live gate fails. The staged installer leaves the

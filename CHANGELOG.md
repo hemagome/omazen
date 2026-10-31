@@ -4,6 +4,32 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-10-30
+
+### Changed
+
+- Enabled ThinLTO and symbol stripping for release builds while retaining
+  optimization level 3, 16 codegen units and unwind panic behavior. Local
+  comparisons measured a 20.5% smaller executable and a modest 4–5% improvement
+  in `doctor`; no repeatable `sync` speedup was observed.
+- Updated the pinned Rust toolchain and minimum supported compiler to `1.99.1`
+  across development, the installer, local checks, CI and release builds.
+- Migrated to `sha2 0.11.1` and its dependency graph, preserving lowercase
+  SHA-256 output with explicit byte formatting and known-vector coverage.
+- Qualified Omarchy `4.0.6` with native `zen-browser-bin 1.24b-1`; updated the
+  doctor compatibility check and the verified CI browser archive pin.
+
+### Fixed
+
+- Wait for the Settings document and expected palette pixels before visual
+  integration captures, avoiding a race with compositor painting.
+
+### Documentation
+
+- Added a reproducible nine-variant compiler profile study with 73,416 measured
+  CLI invocations, binary sizes, clean build times, CPU data and regressions.
+- Recorded compatibility, deployment and dependency/license validation results.
+
 ## [1.6.2] - 2026-10-10
 
 ### Changed

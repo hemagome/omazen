@@ -1,5 +1,131 @@
 # Release validation report
 
+## 1.6.3 release qualification
+
+Date: 2026-10-30 (America/Mexico_City)
+
+The complete `tests/release-gate.sh` passes for Omazen `1.6.3` with Rust
+`1.99.1`, `sha2 0.11.1`, ThinLTO and symbol stripping. This includes pinned
+ShellCheck/actionlint, release consistency, formatting, Clippy with warnings
+denied, 5 unit tests, all 26 CLI contracts, disposable lifecycle/JavaScript
+regressions, critical contrast checks and real Zen rendered-pixel plus
+compositor-backed dark/light and disable/enable integration. The existing
+seven advisory contrast warning groups remain; no critical contrast check fails.
+
+The local x86-64 release executable is a stripped ELF of 665,824 bytes
+(650.2 KiB), with SHA-256
+`65db86a04b952dd8123c342fd7c33647f2b10b579b0998baa03ab8cf24601cdd`.
+The benchmark runner also passes a disposable smoke check against the new
+release. Its published version freezes the baseline compiler defaults so a
+future run can compare against the newly adopted profile correctly.
+
+Zen `1.24b` is now the validated diagnostic/CI pin. The CI archive digest
+`323f2682e73e38247a51fbcc75e5628ed2bb9b404db00cf9cf16af329a916fae`
+was obtained from the official `zen-browser/desktop` release asset metadata;
+CI verifies it before extraction.
+
+The browser runtime changes from `1.6.2` are release identifiers and stylesheet
+paths. Focused Settings/live-state coverage reuses the unchanged historical
+Library/Print/Passwords surface baseline; those auxiliary surfaces were not
+manually re-audited for this CLI/compiler update.
+
+## Release compiler profile experiment
+
+Date: 2026-10-30 (America/Mexico_City)
+
+Nine isolated builds of the current Rust `1.99.1` / `sha2 0.11.1` CLI passed
+all 26 CLI contracts. The strip, ThinLTO, FatLTO, size-s and size-z candidates
+also passed the disposable lifecycle and JavaScript regression suite.
+The [profile study](benchmarks/release-profiles-2026-10-30/report.md) records
+73,416 timed invocations across an initial comparison and independent tmpfs
+and Btrfs confirmations. The baseline binary matches the active installation
+exactly. During that experiment, no candidate replaced the installed executable and
+no release profile was added to Cargo.toml. Release `1.6.3` subsequently adopts
+the measured ThinLTO/symbol-stripping configuration.
+
+## Local deployment of the Rust 1.99.1 / SHA-2 0.11 update
+
+Date: 2026-10-30 (America/Mexico_City; deployment logs use UTC on 2026-10-31)
+
+The complete `tests/release-gate.sh` passed before deployment, including
+pinned static analysis, Rust `1.99.1` checks, 5 unit tests, 26 CLI contracts,
+lifecycle regressions, critical palette contrast, rendered-pixel smoke and
+compositor-backed dark/light and disable/enable integration. Contrast retains
+the seven documented advisory warning groups.
+
+An initial full-gate attempt exposed a capture race: bridge/navigation events
+could precede Settings rendering. The visual test now checks the loaded
+document and waits, with a bounded retry, for the expected palette pixels in
+both window and Settings captures. The complete gate passed with this fix.
+
+Zen was closed normally, then `install.sh` activated the tested Omazen
+`1.6.2` executable in place of `1.6.1`, updated both detected profiles and
+removed their owned `v1.6.1` styles. The compatible program loader and identical
+Omarchy hook were reused. The previous application is retained at
+`~/.local/share/omazen.backup.20261031T051311Z.57626`.
+
+The installed executable's SHA-256 matches the tested release binary:
+`d81446c19214fd15c00f00fb6afb888ae910b2a5d2e19e5078a7aa2d6468e9d4`.
+After reopening Zen, the live log recorded `BRIDGE_LOADED version=1.6.2`,
+`PALETTE_APPLIED accent=#81a1c1 mode=dark`, `CHROME_CSS_APPLIED` and
+`WATCHER_READY backend=inotify`. `omazen doctor --json` reports zero failures
+and the one expected Zen `1.24b` version-pin warning; no current bridge error
+is recorded. Omazen is enabled and the Nord desktop palette is retained.
+
+## SHA-2 0.11 migration validation
+
+Date: 2026-10-30 (America/Mexico_City)
+
+The Omazen `1.6.2` source tree now uses `sha2 = "0.11"`, locked to
+`0.11.1`, with Rust `1.99.1`. The upgrade required changing the final digest
+formatting: the new array type does not implement `LowerHex`. The file
+hashing function still emits exactly 64 lowercase hexadecimal characters.
+
+`tests/rust.sh` passes formatting, Clippy with warnings denied, 5 unit tests,
+the locked release build, all 26 CLI contract cases and the disposable
+lifecycle/JavaScript regressions. The added file-hash test verifies known
+SHA-256 results for empty input, `abc` and one million `a` bytes (spanning
+multiple 64 KiB reads), plus the missing-file error. Existing lifecycle
+tests verify owned-file hashes against `sha256sum`, installation integrity,
+repair, update recovery and uninstall. Pinned ShellCheck/actionlint,
+`tests/syntax.sh` and `git diff --check` also pass.
+
+The updated graph removes `generic-array` and `version_check`, introduces
+`hybrid-array` and `const-oid`, and upgrades the RustCrypto buffer/digest
+dependencies. Exact versions and licenses were checked against the downloaded
+package manifests and recorded in [the dependency record](rust-dependencies.md).
+All retained licenses are MIT/Apache-2.0 compatible. No dependency requires
+a compiler newer than the selected Rust `1.99.1` toolchain.
+
+This validation rebuilt the source CLI and used disposable test installations;
+it did not deploy to the user's active installation or repeat browser visual
+tests, since browser runtime files did not change.
+
+## Rust 1.99.1 toolchain revalidation
+
+Date: 2026-10-30 (America/Mexico_City)
+
+The Omazen `1.6.2` source tree passes `tests/rust.sh` with Rust
+`1.99.1 (58cf8f9c3 2026-10-13)` and Cargo
+`1.99.1 (5f94df478 2026-08-27)`: formatting, Clippy with warnings denied,
+4 unit tests, the locked release build, 26 CLI contract cases and the
+disposable lifecycle/JavaScript regressions all pass. `tests/syntax.sh`,
+the pinned ShellCheck/actionlint checks and `git diff --check` also pass.
+
+The toolchain file, mise configuration, Cargo minimum compiler version,
+installer, Rust checks, CI/release workflows and current development guides
+now agree on `1.99.1`. The lockfile also updates `cfg-if` to `1.0.5` and
+`libc` to `0.2.191`; their manifests retain `MIT OR Apache-2.0` licensing
+and require compilers older than the selected toolchain. The dependency
+record reflects those versions.
+
+The checks used the installed toolchain binaries and a temporary Cargo home;
+missing locked dependencies were downloaded there before the offline test
+run. `mise exec -- rustc --version` and `mise exec -- cargo --version` also
+resolve to `1.99.1`. This source/build revalidation did not repeat browser
+visual tests or deploy the rebuilt CLI. Earlier test results below retain
+the compiler versions with which they were actually recorded.
+
 ## 1.5.0 Rust CLI release
 
 Date: 2026-08-27
@@ -19,6 +145,58 @@ palettes plus live disable/enable. The contrast checker retained its seven
 documented advisory warning groups and reported no critical failure.
 
 ## Current compatibility revalidation
+
+Date: 2026-10-30 (America/Mexico_City; test logs use UTC on 2026-10-31)
+
+Result: **local compatibility checks passed** on Omarchy `4.0.6-1`
+(Quattro) with native `zen-browser-bin 1.24b-1`. Zen reports build ID
+`20261029123729`, source stamp
+`f75390aa2b797ddc3524ff9ed52ceb32a839f9fa`, and Gecko `159.0`.
+
+The live installation runs Omazen `1.6.1`, enabled with the Nord palette.
+`omazen doctor --json` reports zero failures and one warning: Zen `1.24b`
+is newer than its validated-version pin. Both detected profiles pass the
+owned runtime integrity checks; the active bridge records `BRIDGE_LOADED`,
+`PALETTE_APPLIED`, `CHROME_CSS_APPLIED` and `WATCHER_READY backend=inotify`
+with no current bridge error. The repository under test is Omazen `1.6.2`.
+The published CLI version checks and CI browser pin are unchanged by this
+documentation-only revalidation.
+
+| Check | Result |
+|---|---|
+| Rust `1.99.0` formatting, Clippy, unit tests and release build (`tests/rust.sh`) | Pass; 4 unit tests and all 26 CLI contract cases |
+| Disposable lifecycle and JavaScript regressions (included in `tests/rust.sh`) | Pass; setup, repair, ownership conflicts, update recovery, enable/disable and uninstall |
+| Shell/JavaScript syntax and release consistency (`tests/syntax.sh`) | Pass |
+| Palette contrast (`node tests/contrast.mjs`) | Critical checks pass on 23 palettes; 7 existing advisory warning groups remain |
+| Production CSS rendered-pixel smoke (`tests/visual-smoke.sh`) | Pass; document, header, card, button, input, scroll content and thumb |
+| Real Zen loader and compositor-backed integration (invoked by the smoke test) | Pass; dark/light browser chrome and Settings, live dark-to-light palette change, disable/enable without restart, and persisted WindowActor palette preferences |
+| Installed Zen styles | Inspected 36 `zen-styles` CSS files from `browser/omni.ja`; all 19 Omazen-referenced `--zen-*` variables remain present |
+
+The visual test used a disposable profile and state directory with production
+repository bridge files and the installed program loader. Desktop access was
+required: the initial restricted attempt rendered the headless fixture but
+could not connect to Wayland/Hyprland; rerunning with desktop access passed
+the complete visual sequence. Rust checks used the already installed
+`1.99.0` toolchain and a temporary Cargo home with the existing dependency
+cache, avoiding the unrelated mise/rustup launcher issues.
+
+The contact sheet below preserves the disposable-profile captures, scaled
+for documentation: dark and light on the top row, disabled and re-enabled
+on the bottom row. A second complete integration run also passed using a
+temporary copy of `tests/visual-integration.sh` with its four capture-settle
+delays increased from 0.5 to 3 seconds. These captures come from that second
+run, allowing Settings to finish its initial load before the dark capture.
+The committed test script was not modified.
+
+![Zen 1.24b dark, light, disabled and re-enabled integration captures](images/validation-2026-10-30/integration.png)
+
+This is a focused compatibility revalidation, not a repeat of the exhaustive
+historical surface audit or the complete release gate. No live-profile
+install/uninstall, browser restart, light-to-dark transition, or separate
+Library/Print/Passwords review was performed. The user's existing profiles,
+installed Omazen and Nord desktop theme were retained.
+
+## Previous compatibility revalidation (2026-10-10)
 
 Date: 2026-10-10
 
