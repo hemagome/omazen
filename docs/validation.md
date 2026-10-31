@@ -29,6 +29,15 @@ paths. Focused Settings/live-state coverage reuses the unchanged historical
 Library/Print/Passwords surface baseline; those auxiliary surfaces were not
 manually re-audited for this CLI/compiler update.
 
+The optimized `1.6.3` build was then installed over `1.6.2` with Zen closed.
+Both profiles were updated, obsolete owned `v1.6.2` styles were removed and
+the previous application was retained at
+`~/.local/share/omazen.backup.20261031T054042Z.183451`. The installed executable
+matches the tested SHA-256 above. After reopening Zen, the live log confirms
+bridge `1.6.3`, Nord palette/CSS application and the inotify watcher.
+Both doctor formats report **zero failures and zero warnings**. The desktop
+theme remains Nord.
+
 ## Release compiler profile experiment
 
 Date: 2026-10-30 (America/Mexico_City)
