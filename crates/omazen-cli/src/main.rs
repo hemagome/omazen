@@ -1797,7 +1797,13 @@ fn sha256_file(path: &Path) -> io::Result<String> {
         }
         hasher.update(&buffer[..count]);
     }
-    Ok(format!("{:x}", hasher.finalize()))
+    let digest = hasher.finalize();
+    let mut hexadecimal = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+        use std::fmt::Write as _;
+        write!(hexadecimal, "{byte:02x}").expect("writing to a String cannot fail");
+    }
+    Ok(hexadecimal)
 }
 
 fn manifest_entries(path: &Path) -> Vec<(PathBuf, String)> {
@@ -2676,7 +2682,48 @@ fn write_palette_atomic(destination: &Path, palette: &Palette) -> io::Result<()>
 
 #[cfg(test)]
 mod tests {
-    use super::{Palette, canonical_palette, is_color, json_escape, parse_assignment};
+    use super::{Palette, canonical_palette, is_color, json_escape, parse_assignment, sha256_file};
+
+    #[test]
+    fn file_hash_matches_known_sha256_vectors() {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory =
+            std::env::temp_dir().join(format!("omazen-hash-test-{}-{nonce}", std::process::id()));
+        std::fs::create_dir(&directory).unwrap();
+        let path = directory.join("input");
+        let vectors = [
+            (
+                Vec::new(),
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            ),
+            (
+                b"abc".to_vec(),
+                "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+            ),
+            (
+                vec![b'a'; 1_000_000],
+                "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0",
+            ),
+        ];
+        let results: Vec<_> = vectors
+            .iter()
+            .map(|(input, _)| {
+                std::fs::write(&path, input).unwrap();
+                sha256_file(&path).unwrap()
+            })
+            .collect();
+        std::fs::remove_dir_all(&directory).unwrap();
+        for ((_, expected), actual) in vectors.iter().zip(results) {
+            assert_eq!(&actual, expected);
+        }
+        assert_eq!(
+            sha256_file(&path).unwrap_err().kind(),
+            std::io::ErrorKind::NotFound
+        );
+    }
 
     #[test]
     fn assignment_contract() {
