@@ -353,6 +353,10 @@ grep -Fq -- 'treechildren::-moz-tree-row(selected)' \
   "$CHROME_CSS" || fail "Library tree selection palette"
 grep -Fq -- '#downloadsListBox > richlistitem[selected]' \
   "$CHROME_CSS" || fail "Library downloads palette"
+grep -Fq -- '--zen-transparent-browser-background: var(--omazen-background)' \
+  "$CHROME_CSS" || fail "empty tab background palette"
+grep -Fq -- 'browser[type="content"]:not([transparent="true"])' \
+  "$CHROME_CSS" || fail "content browser pre-paint background palette"
 grep -Fq -- 'chrome://global/content/commonDialog.xhtml' \
   "$PROJECT_ROOT/zen/omazen-bridge.uc.js" || fail "common dialog WindowActor match"
 grep -Fq -- 'window.gDialogBox?.dialog?._frame' \

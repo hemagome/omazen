@@ -411,6 +411,17 @@
   outline-color: var(--omazen-border) !important;
 }
 
+/* Zen paints an empty tab's transparent content browser with a white wash and
+ * other content browsers with fixed grey until the page paints. Zen defines the
+ * wash on .browserSidebarContainer, so it cannot be overridden from :root. */
+:root[data-omazen-enabled="true"] .browserSidebarContainer {
+  --zen-transparent-browser-background: var(--omazen-background) !important;
+}
+
+:root[data-omazen-enabled="true"] .browserSidebarContainer browser[type="content"]:not([transparent="true"]) {
+  background: var(--omazen-background) !important;
+}
+
 :root[data-omazen-enabled="true"] ::selection {
   background-color: var(--omazen-selection) !important;
   color: var(--omazen-foreground) !important;
