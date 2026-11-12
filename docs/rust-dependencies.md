@@ -16,7 +16,7 @@ dependency graph is:
 | `cpufeatures` | 0.3.1 | MIT OR Apache-2.0 |
 | `cfg-if` | 1.0.5 | MIT OR Apache-2.0 |
 | `libc` | 0.2.191 | MIT OR Apache-2.0 |
-| `const-oid` | 0.10.2 | Apache-2.0 OR MIT |
+| `const-oid` | 0.10.3 | Apache-2.0 OR MIT |
 
 The `0.11` migration replaces `generic-array` with `hybrid-array` for
 fixed-size cryptographic buffers and removes `version_check`. `const-oid` is

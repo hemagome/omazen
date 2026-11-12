@@ -1,5 +1,51 @@
 # Release validation report
 
+## 1.6.4 release validation
+
+Date: 2026-11-12 (America/Mexico_City)
+
+The complete `tests/release-gate.sh` passed for Omazen `1.6.4` on x86-64 with
+Rust/Cargo `1.99.1` (`58cf8f9c3` / `5f94df478`), including the updated locked
+`const-oid 0.10.3`. Static analysis, release consistency, Rust formatting and
+Clippy with warnings denied, five unit tests, CLI contract/parity tests,
+disposable lifecycle and JavaScript regressions all passed. Critical palette
+contrast checks passed across 24 installed palettes; the seven existing
+advisory contrast warning groups remain.
+
+Rendered-pixel smoke and the compositor-backed Zen integration passed on the
+installed Omarchy `4.5.0-3` and native Zen `1.24.2b-1`. Coverage includes
+dark/light browser chrome and Settings, live palette changes, disable/enable
+without restarting Zen, and WindowActor-backed Settings state. The test used a
+disposable profile and did not install or alter the active Omazen application.
+
+## PR #5 compatibility validation
+
+Date: 2026-11-12 (America/Mexico_City)
+
+Environment: Omarchy `4.5.0-3`, native `zen-browser-bin 1.24.2b-1`, Omazen
+`1.6.3`, x86-64. Zen reports build ID `20261111122308`, source stamp
+`f384dac1c21f997ffe2ec389752fef8ecd9e4e04`, and Gecko `160.0`. The installed
+`zen-browser-container.css` still defines
+`--zen-transparent-browser-background` on `.browserSidebarContainer` and uses
+it on `browser[type="content"][transparent="true"]`; it also retains the
+fixed opaque content-browser background the merged CSS overrides.
+
+The merged PR #5 stylesheet was loaded in a disposable Zen profile using the
+installed program loader. Its selectors passed the `tests/test.sh` CSS contract
+checks. The rendered-pixel smoke passed, and its compositor-backed integration
+passed for dark and light palettes, live palette switching, disable/enable
+without restarting Zen, and WindowActor-backed Settings state. The browser
+integration proves the loader and current CSS run on this version. The new-tab
+and pre-paint selectors were checked by the CSS contract tests and against the
+installed Zen stylesheet; the compositor test does not assert a dedicated
+empty-tab pixel.
+
+`omazen doctor --json` on the active installation reports zero failures and
+one warning because the installed `1.6.3` executable predates Zen `1.24.2b`.
+The `1.6.3` CI workflow remains pinned to its verified Zen `1.24b` archive.
+Validation used a disposable profile and did not modify the active Omazen or
+Zen profiles.
+
 ## 1.6.3 release qualification
 
 Date: 2026-10-30 (America/Mexico_City)

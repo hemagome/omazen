@@ -4,6 +4,27 @@ All notable changes to Omazen are documented here.
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-11-12
+
+### Changed
+
+- Updated the locked `const-oid` dependency to `0.10.3`.
+- Recognized Zen `1.24.2b` as fully validated and extended the local
+  compatibility qualification to Omarchy `4.5.0-3` with native Zen
+  `1.24.2b-1`.
+
+### Fixed
+
+- Theme Zen's empty-tab background and content-browser pre-paint background
+  with the active Omazen palette.
+
+### Validation
+
+- Kept the compiler and minimum supported Rust version aligned at `1.99.1`.
+- Passed the full release gate with Rust/Cargo `1.99.1`; the seven existing
+  advisory palette contrast warning groups remain documented in the
+  [validation report](docs/validation.md#164-release-validation).
+
 ## [1.6.3] - 2026-10-30
 
 ### Changed

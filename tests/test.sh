@@ -176,6 +176,15 @@ printf '%s\n' "$doctor_json" | node -e '
 ' || fail "doctor JSON report shape"
 pass "doctor emits a structured JSON report"
 
+for version in 1.24b 1.24.2b; do
+  printf '[App]\nVersion=%s\n' "$version" >"$FAKE_ZEN/application.ini"
+  version_doctor=$(run_omazen doctor)
+  grep -Fq "[PASS] Zen $version (fully validated version)" <<<"$version_doctor" || \
+    fail "doctor did not recognize Zen $version as fully validated"
+done
+printf '[App]\nVersion=1.21.15b\n' >"$FAKE_ZEN/application.ini"
+pass "doctor recognizes the currently validated Zen versions"
+
 doctor_v3_output=$(run_omazen_with_os_release "$FAKE_OLD_OS_RELEASE" doctor 2>&1 || true)
 grep -Fq '[FAIL] unsupported platform: Omarchy 3.8.4 (omarchy); supported platform is Omarchy Quattro (4.x)' <<<"$doctor_v3_output" || \
   fail "doctor did not reject Omarchy 3"
@@ -739,4 +748,4 @@ grep -Fq -- 'background-color: transparent !important;' <<<"$CONTENT_SELECT_RULE
   fail "content select dropdown host must not carry a palette background"
 pass "chrome stylesheet leaves web-page select dropdowns on Zen's stock palette"
 
-printf '1..13\n'
+printf '1..14\n'
